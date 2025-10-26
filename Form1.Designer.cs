@@ -26,6 +26,7 @@ namespace ClasificadorNoticiasGUI
         {
             tabControl1 = new TabControl();
             tabClasificar = new TabPage();
+            btnReentrenarSentimientos = new Button();
             btnReentrenarCategorias = new Button();
             btnGuardar = new Button();
             btnClasificar = new Button();
@@ -42,7 +43,8 @@ namespace ClasificadorNoticiasGUI
             btnExportarResultados = new Button();
             dgvExcelResultados = new DataGridView();
             btnCargarExcel = new Button();
-            btnReentrenarSentimientos = new Button();
+            btnReentrenarCategoriasExcel = new Button();
+            btnReentrenarSentimientosExcel = new Button();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
@@ -85,6 +87,15 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.Text = "Clasificar titular";
             tabClasificar.UseVisualStyleBackColor = true;
             // 
+            // btnReentrenarSentimientos
+            // 
+            btnReentrenarSentimientos.Location = new Point(28, 492);
+            btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
+            btnReentrenarSentimientos.Size = new Size(217, 48);
+            btnReentrenarSentimientos.TabIndex = 0;
+            btnReentrenarSentimientos.Text = "Reentrenar Sentimientos";
+            btnReentrenarSentimientos.Click += btnReentrenarSentimientos_Click;
+            // 
             // btnReentrenarCategorias
             // 
             btnReentrenarCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -120,7 +131,6 @@ namespace ClasificadorNoticiasGUI
             // 
             txtSentimiento.Location = new Point(140, 170);
             txtSentimiento.Name = "txtSentimiento";
-            txtSentimiento.ReadOnly = false;
             txtSentimiento.Size = new Size(600, 25);
             txtSentimiento.TabIndex = 5;
             // 
@@ -128,7 +138,6 @@ namespace ClasificadorNoticiasGUI
             // 
             txtCategoria.Location = new Point(140, 130);
             txtCategoria.Name = "txtCategoria";
-            txtCategoria.ReadOnly = false;
             txtCategoria.Size = new Size(300, 25);
             txtCategoria.TabIndex = 4;
             // 
@@ -161,7 +170,7 @@ namespace ClasificadorNoticiasGUI
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(20, 40);
+            label1.Location = new Point(28, 59);
             label1.Name = "label1";
             label1.Size = new Size(47, 19);
             label1.TabIndex = 0;
@@ -204,6 +213,8 @@ namespace ClasificadorNoticiasGUI
             tabExcel.Controls.Add(btnExportarResultados);
             tabExcel.Controls.Add(dgvExcelResultados);
             tabExcel.Controls.Add(btnCargarExcel);
+            tabExcel.Controls.Add(btnReentrenarCategoriasExcel);
+            tabExcel.Controls.Add(btnReentrenarSentimientosExcel);
             tabExcel.Location = new Point(4, 26);
             tabExcel.Name = "tabExcel";
             tabExcel.Size = new Size(892, 570);
@@ -241,17 +252,27 @@ namespace ClasificadorNoticiasGUI
             btnCargarExcel.UseVisualStyleBackColor = true;
             btnCargarExcel.Click += btnCargarExcel_Click;
             // 
-            // btnReentrenarSentimientos
+            // btnReentrenarCategoriasExcel
             // 
-            btnReentrenarSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarSentimientos.Location = new Point(55, 508);
-            btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
-            btnReentrenarSentimientos.Size = new Size(172, 30);
-            btnReentrenarSentimientos.TabIndex = 9;
-            btnReentrenarSentimientos.Text = "Reentrenar Sentimientos";
-            btnReentrenarSentimientos.TextAlign = ContentAlignment.BottomLeft;
-            btnReentrenarSentimientos.UseVisualStyleBackColor = true;
-            btnReentrenarSentimientos.Click += btnReentrenarSentimientos_Click;
+            btnReentrenarCategoriasExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReentrenarCategoriasExcel.Location = new Point(480, 520);
+            btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
+            btnReentrenarCategoriasExcel.Size = new Size(160, 30);
+            btnReentrenarCategoriasExcel.TabIndex = 4;
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categorías";
+            btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
+            btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
+            // 
+            // btnReentrenarSentimientosExcel
+            // 
+            btnReentrenarSentimientosExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReentrenarSentimientosExcel.Location = new Point(100, 520);
+            btnReentrenarSentimientosExcel.Name = "btnReentrenarSentimientosExcel";
+            btnReentrenarSentimientosExcel.Size = new Size(207, 30);
+            btnReentrenarSentimientosExcel.TabIndex = 5;
+            btnReentrenarSentimientosExcel.Text = "Reentrenar Sentimientos";
+            btnReentrenarSentimientosExcel.UseVisualStyleBackColor = true;
+            btnReentrenarSentimientosExcel.Click += btnReentrenarSentimientos_Click;
             // 
             // Form1
             // 
@@ -273,7 +294,6 @@ namespace ClasificadorNoticiasGUI
             tabExcel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).EndInit();
             ResumeLayout(false);
-
         }
 
         #endregion
@@ -296,6 +316,8 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.Button btnExportarResultados;
         private System.Windows.Forms.DataGridView dgvExcelResultados;
         private System.Windows.Forms.Button btnCargarExcel;
+        private System.Windows.Forms.Button btnReentrenarCategoriasExcel;
+        private System.Windows.Forms.Button btnReentrenarSentimientosExcel;
         private Button btnReentrenarSentimientos;
     }
 }

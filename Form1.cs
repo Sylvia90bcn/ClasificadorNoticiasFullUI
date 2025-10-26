@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using ClosedXML.Excel;
 using ExcelDataReader;
 using Microsoft.ML;
+using Microsoft.ML.Data;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -87,7 +88,7 @@ namespace ClasificadorNoticiasGUI
             txtCategoria.Text = pred.CategoriaPredicha;
             txtSentimiento.Text = predSent.SentimientoPredicho;
 
-     
+
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -106,64 +107,187 @@ namespace ClasificadorNoticiasGUI
 
         private void btnReentrenarCategorias_Click(object sender, EventArgs e)
         {
-            EntrenarModeloCategorias(ml, guardar: true);
+            // Tomar filas de la grid de Excel si existen (las columnas deben ser Titular y Categoria)
+            var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
+            IEnumerable<Articulo> extrasArt = null;
+            if (extras != null && extras.Any())
+            {
+                extrasArt = extras
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Categoria))
+                    .Select(r => new Articulo { Texto = r.Titular.Trim(), Categoria = r.Categoria.Trim() })
+                    .ToList();
+            }
+
+            var modelo = EntrenarModeloCategorias(ml, extrasArt, guardar: true);
             MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
         }
 
         private void btnReentrenarSentimientos_Click(object sender, EventArgs e)
         {
-            EntrenarModeloSentimientos(ml, guardar: true);
+            // Tomar filas de la grid de Excel si existen (las columnas deben ser Titular y Sentimiento)
+            var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
+            IEnumerable<Sentimiento> extrasSen = null;
+            if (extras != null && extras.Any())
+            {
+                extrasSen = extras
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Sentimiento))
+                    .Select(r => new Sentimiento { Texto = r.Titular.Trim(), Label = r.Sentimiento.Trim() })
+                    .ToList();
+            }
+
+            var modelo = EntrenarModeloSentimientos(ml, extrasSen, guardar: true);
             MessageBox.Show("El modelo de sentimientos ha sido reentrenado exitosamente.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
         }
 
-        static ITransformer EntrenarModeloCategorias(MLContext ml, bool guardar = false)
+
+        // Nueva sobrecarga: acepta datos extra (por ejemplo, filas de dgvExcelResultados)
+        static ITransformer EntrenarModeloCategorias(MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de categorías...");
 
-            var datos = ml.Data.LoadFromTextFile<Articulo>(
-                path: DatosCategoriasPath, hasHeader: true, separatorChar: ',');
+            // Cargar dataset base desde CSV en memoria
+            var datosList = new List<Articulo>();
+            if (File.Exists(DatosCategoriasPath))
+            {
+                var lines = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+                foreach (var l in lines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var texto = parts[0].Trim();
+                        var categoria = parts[1].Trim();
+                        if (!string.IsNullOrWhiteSpace(texto))
+                            datosList.Add(new Articulo { Texto = texto, Categoria = categoria });
+                    }
+                }
+            }
 
-            var pipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Articulo.Categoria))
+            // Añadir extras (sin duplicados por Texto)
+            if (extras != null)
+            {
+                foreach (var e in extras)
+                {
+                    if (string.IsNullOrWhiteSpace(e.Texto)) continue;
+                    if (!datosList.Any(x => x.Texto.Equals(e.Texto, StringComparison.OrdinalIgnoreCase)))
+                        datosList.Add(new Articulo { Texto = e.Texto.Trim(), Categoria = e.Categoria?.Trim() ?? "" });
+                }
+            }
+
+            if (datosList.Count == 0)
+                throw new Exception("No hay datos para entrenar categorías.");
+
+            var datos = ml.Data.LoadFromEnumerable(datosList);
+
+            // Pipeline sin MapKeyToValue para evaluar
+            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Articulo.Categoria))
                 .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Articulo.Texto)))
-                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"))
-                .Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
 
-            var modelo = pipeline.Fit(datos);
+            // Pipeline final (incluye MapKeyToValue) para guardar / usar predicción
+            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            // Train/Test split para obtener métricas
+            var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
+            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var preds = modelForEval.Transform(split.TestSet);
+
+            var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
+
+            // Mostrar métricas básicas
+            MessageBox.Show($"Métricas categorías:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Categorías", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Ajustar el modelo final usando todos los datos y con MapKeyToValue para predicción/string labels
+            var modeloFinal = finalPipeline.Fit(datos);
 
             if (guardar)
             {
                 Directory.CreateDirectory("Modelo");
-                ml.Model.Save(modelo, datos.Schema, ModeloCategoriasPath);
+                ml.Model.Save(modeloFinal, datos.Schema, ModeloCategoriasPath);
                 Console.WriteLine($"✅ Modelo de categorías guardado en {ModeloCategoriasPath}\n");
             }
 
-            return modelo;
+            return modeloFinal;
         }
 
-        static ITransformer EntrenarModeloSentimientos(MLContext ml, bool guardar = false)
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        static ITransformer EntrenarModeloCategorias(MLContext ml, bool guardar = false)
+        {
+            // Llamar a la sobrecarga que acepta extras con null
+            return EntrenarModeloCategorias(ml, extras: null, guardar: guardar);
+        }
+
+        // Nueva sobrecarga para sentimientos
+        static ITransformer EntrenarModeloSentimientos(MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de sentimientos...");
 
-            var datos = ml.Data.LoadFromTextFile<Sentimiento>(
-                path: DatosSentimientosPath, hasHeader: true, separatorChar: ',');
+            var datosList = new List<Sentimiento>();
+            if (File.Exists(DatosSentimientosPath))
+            {
+                var lines = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+                foreach (var l in lines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var texto = parts[0].Trim();
+                        var label = parts[1].Trim();
+                        if (!string.IsNullOrWhiteSpace(texto))
+                            datosList.Add(new Sentimiento { Texto = texto, Label = label });
+                    }
+                }
+            }
 
-            var pipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Sentimiento.Label))
+            if (extras != null)
+            {
+                foreach (var e in extras)
+                {
+                    if (string.IsNullOrWhiteSpace(e.Texto)) continue;
+                    if (!datosList.Any(x => x.Texto.Equals(e.Texto, StringComparison.OrdinalIgnoreCase)))
+                        datosList.Add(new Sentimiento { Texto = e.Texto.Trim(), Label = e.Label?.Trim() ?? "" });
+                }
+            }
+
+            if (datosList.Count == 0)
+                throw new Exception("No hay datos para entrenar sentimientos.");
+
+            var datos = ml.Data.LoadFromEnumerable(datosList);
+
+            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Sentimiento.Label))
                 .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Sentimiento.Texto)))
-                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"))
-                .Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
 
-            var modelo = pipeline.Fit(datos);
+            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
+            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var preds = modelForEval.Transform(split.TestSet);
+
+            var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
+
+            MessageBox.Show($"Métricas sentimientos:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Sentimientos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            var modeloFinal = finalPipeline.Fit(datos);
 
             if (guardar)
             {
                 Directory.CreateDirectory("Modelo");
-                ml.Model.Save(modelo, datos.Schema, ModeloSentimientosPath);
+                ml.Model.Save(modeloFinal, datos.Schema, ModeloSentimientosPath);
                 Console.WriteLine($"✅ Modelo de sentimientos guardado en {ModeloSentimientosPath}\n");
             }
 
-            return modelo;
+            return modeloFinal;
+        }
+
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        static ITransformer EntrenarModeloSentimientos(MLContext ml, bool guardar = false)
+        {
+            return EntrenarModeloSentimientos(ml, extras: null, guardar: guardar);
         }
 
 
@@ -273,8 +397,8 @@ namespace ClasificadorNoticiasGUI
             lblProgreso.Text = "Clasificación completada ✅";
         }
 
-        
-      
+
+
 
 
         private void btnExportarResultados_Click(object sender, EventArgs e)
@@ -494,6 +618,6 @@ namespace ClasificadorNoticiasGUI
             return lista;
         }
 
-
+     
     }
 }
