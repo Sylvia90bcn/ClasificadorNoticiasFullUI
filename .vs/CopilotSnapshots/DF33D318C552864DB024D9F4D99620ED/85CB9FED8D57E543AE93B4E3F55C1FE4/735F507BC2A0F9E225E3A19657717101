@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -1124,30 +1124,29 @@ namespace ClasificadorNoticiasGUI
             var categories = catOrdered.Select(k => k.Key).ToList();
             var catValues = catOrdered.Select(k => k.Value).ToList();
 
-            // Use BarSeries (horizontal bars)
             var modelCat = new PlotModel { Title = "Titulares por categoría" };
-            var catCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var c in categories) catCategoryAxis.Labels.Add(c);
-            var catValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelCat.Axes.Add(catCategoryAxis);
-            modelCat.Axes.Add(catValueAxis);
-            var catSeries = new OxyPlot.Series.BarSeries { Title = "Categorias", IsStacked = false };
-            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
+            var categoryAxis = new CategoryAxis { Position = AxisPosition.Bottom };
+            foreach (var c in categories) categoryAxis.Labels.Add(c);
+            var valueAxis = new LinearAxis { Position = AxisPosition.Left, Minimum = 0 };
+            modelCat.Axes.Add(categoryAxis);
+            modelCat.Axes.Add(valueAxis);
+            var catSeries = new ColumnSeries { Title = "Categorias", IsStacked = false };
+            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new ColumnItem(catValues[i]));
             modelCat.Series.Add(catSeries);
 
-            // Sentimientos plot using BarSeries
+            // Sentimientos plot
             var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
             var sents = senOrdered.Select(k => k.Key).ToList();
             var senValues = senOrdered.Select(k => k.Value).ToList();
 
             var modelSen = new PlotModel { Title = "Titulares por sentimiento" };
-            var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var s in sents) senCategoryAxis.Labels.Add(s);
-            var senValueAxis2 = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelSen.Axes.Add(senCategoryAxis);
-            modelSen.Axes.Add(senValueAxis2);
-            var senSeries = new OxyPlot.Series.BarSeries { Title = "Sentimientos", IsStacked = false };
-            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new OxyPlot.Series.BarItem { Value = senValues[i] });
+            var senAxis = new CategoryAxis { Position = AxisPosition.Bottom };
+            foreach (var s in sents) senAxis.Labels.Add(s);
+            var senValueAxis = new LinearAxis { Position = AxisPosition.Left, Minimum = 0 };
+            modelSen.Axes.Add(senAxis);
+            modelSen.Axes.Add(senValueAxis);
+            var senSeries = new ColumnSeries { Title = "Sentimientos", IsStacked = false };
+            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new ColumnItem(senValues[i]));
             modelSen.Series.Add(senSeries);
 
             plotViewCategorias.Model = modelCat;

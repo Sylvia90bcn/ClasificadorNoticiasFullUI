@@ -66,6 +66,10 @@
             "Microsoft.ML": {
               "target": "Package",
               "version": "[4.0.2, )"
+            },
+            "OxyPlot.WindowsForms": {
+              "target": "Package",
+              "version": "[2.1.0, )"
             }
           },
           "imports": [

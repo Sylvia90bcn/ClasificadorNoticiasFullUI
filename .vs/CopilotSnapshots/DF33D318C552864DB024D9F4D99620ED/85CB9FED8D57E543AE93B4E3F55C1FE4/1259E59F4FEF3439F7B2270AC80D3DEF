@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -8,9 +8,6 @@ using ClosedXML.Excel;
 using ExcelDataReader;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using OxyPlot;
-using OxyPlot.Series;
-using OxyPlot.Axes;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -1038,120 +1035,6 @@ namespace ClasificadorNoticiasGUI
 
             CargarDatasetEnGrilla();
             MessageBox.Show($"Importación completada. Filas añadidas al dataset completo: {added}", "Importado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void btnActualizarGraficas_Click(object sender, EventArgs e)
-        {
-            CargarGraficasDesdeDataset();
-        }
-
-        void CargarGraficasDesdeDataset()
-        {
-            var tabla = new DataTable();
-            if (File.Exists(DatosCompletosPath))
-            {
-                var lines = File.ReadAllLines(DatosCompletosPath);
-                if (lines.Length > 0)
-                {
-                    var headers = SplitCsvLine(lines[0]).ToList();
-                    foreach (var h in headers) tabla.Columns.Add(h);
-                    for (int i = 1; i < lines.Length; i++)
-                    {
-                        var parts = SplitCsvLine(lines[i]);
-                        var row = tabla.NewRow();
-                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
-                        tabla.Rows.Add(row);
-                    }
-                }
-            }
-            else
-            {
-                tabla.Columns.Add("Texto"); tabla.Columns.Add("Categoria"); tabla.Columns.Add("Sentimiento");
-                var lista = new List<(string Texto, string Categoria, string Sentimiento)>();
-                if (File.Exists(DatosCategoriasPath))
-                {
-                    var catLines = File.ReadAllLines(DatosCategoriasPath).Skip(1);
-                    foreach (var l in catLines)
-                    {
-                        var parts = SplitCsvLine(l);
-                        if (parts.Length >= 2)
-                            lista.Add((parts[0], parts[1], ""));
-                    }
-                }
-                if (File.Exists(DatosSentimientosPath))
-                {
-                    var senLines = File.ReadAllLines(DatosSentimientosPath).Skip(1);
-                    foreach (var l in senLines)
-                    {
-                        var parts = SplitCsvLine(l);
-                        if (parts.Length >= 2)
-                        {
-                            var idx = lista.FindIndex(x => x.Texto.Equals(parts[0], StringComparison.OrdinalIgnoreCase));
-                            if (idx >= 0)
-                                lista[idx] = (lista[idx].Texto, lista[idx].Categoria, parts[1]);
-                            else
-                                lista.Add((parts[0], "", parts[1]));
-                        }
-                    }
-                }
-                foreach (var it in lista)
-                {
-                    var r = tabla.NewRow(); r["Texto"] = it.Texto; r["Categoria"] = it.Categoria; r["Sentimiento"] = it.Sentimiento; tabla.Rows.Add(r);
-                }
-            }
-
-            var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (DataRow r in tabla.Rows)
-            {
-                var cat = "";
-                var sen = "";
-                if (tabla.Columns.Contains("Categoria")) cat = r["Categoria"]?.ToString() ?? "";
-                if (tabla.Columns.Contains("Sentimiento")) sen = r["Sentimiento"]?.ToString() ?? "";
-
-                if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
-                if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
-
-                if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0;
-                catCounts[cat]++;
-                if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0;
-                senCounts[sen]++;
-            }
-
-            // Categorias plot
-            var catOrdered = catCounts.OrderByDescending(k => k.Value).ToList();
-            var categories = catOrdered.Select(k => k.Key).ToList();
-            var catValues = catOrdered.Select(k => k.Value).ToList();
-
-            // Use BarSeries (horizontal bars)
-            var modelCat = new PlotModel { Title = "Titulares por categoría" };
-            var catCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var c in categories) catCategoryAxis.Labels.Add(c);
-            var catValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelCat.Axes.Add(catCategoryAxis);
-            modelCat.Axes.Add(catValueAxis);
-            var catSeries = new OxyPlot.Series.BarSeries { Title = "Categorias", IsStacked = false };
-            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
-            modelCat.Series.Add(catSeries);
-
-            // Sentimientos plot using BarSeries
-            var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
-            var sents = senOrdered.Select(k => k.Key).ToList();
-            var senValues = senOrdered.Select(k => k.Value).ToList();
-
-            var modelSen = new PlotModel { Title = "Titulares por sentimiento" };
-            var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var s in sents) senCategoryAxis.Labels.Add(s);
-            var senValueAxis2 = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelSen.Axes.Add(senCategoryAxis);
-            modelSen.Axes.Add(senValueAxis2);
-            var senSeries = new OxyPlot.Series.BarSeries { Title = "Sentimientos", IsStacked = false };
-            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new OxyPlot.Series.BarItem { Value = senValues[i] });
-            modelSen.Series.Add(senSeries);
-
-            plotViewCategorias.Model = modelCat;
-            plotViewSentimientos.Model = modelSen;
         }
     }
 }

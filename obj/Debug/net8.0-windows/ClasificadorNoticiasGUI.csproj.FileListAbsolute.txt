@@ -19,6 +19,8 @@ C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\Microsoft.ML.CpuMath.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\Microsoft.ML.DataView.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\OxyPlot.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\OxyPlot.WindowsForms.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\RBush.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\SixLabors.Fonts.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\System.IO.Packaging.dll

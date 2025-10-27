@@ -1,4 +1,4 @@
-namespace ClasificadorNoticiasGUI
+Ôªønamespace ClasificadorNoticiasGUI
 {
     partial class Form1
     {
@@ -315,7 +315,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
             btnReentrenarCategoriasExcel.Size = new Size(160, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
-            btnReentrenarCategoriasExcel.Text = "Reentrenar CategorÌas";
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categor√≠as";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
             btnReentrenarCategoriasExcel.Visible = false;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
@@ -341,7 +341,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas.Name = "tabGraficas";
             tabGraficas.Size = new Size(892, 570);
             tabGraficas.TabIndex = 3;
-            tabGraficas.Text = "Gr·ficas";
+            tabGraficas.Text = "Gr√°ficas";
             tabGraficas.UseVisualStyleBackColor = true;
             // 
             // plotViewCategorias

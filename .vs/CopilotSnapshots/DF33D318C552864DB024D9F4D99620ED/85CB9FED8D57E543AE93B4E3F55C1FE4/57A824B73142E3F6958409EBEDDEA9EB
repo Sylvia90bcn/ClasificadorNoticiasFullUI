@@ -1,4 +1,4 @@
-namespace ClasificadorNoticiasGUI
+Ôªønamespace ClasificadorNoticiasGUI
 {
     partial class Form1
     {
@@ -50,8 +50,8 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel = new Button();
             btnReentrenarSentimientosExcel = new Button();
             tabGraficas = new TabPage();
-            plotViewCategorias = new OxyPlot.WindowsForms.PlotView();
-            plotViewSentimientos = new OxyPlot.WindowsForms.PlotView();
+            chartCategorias = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            chartSentimientos = new System.Windows.Forms.DataVisualization.Charting.Chart();
             btnActualizarGraficas = new Button();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
@@ -60,6 +60,8 @@ namespace ClasificadorNoticiasGUI
             tabExcel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).BeginInit();
             tabGraficas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)chartCategorias).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)chartSentimientos).BeginInit();
             SuspendLayout();
             // 
             // tabControl1
@@ -315,7 +317,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
             btnReentrenarCategoriasExcel.Size = new Size(160, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
-            btnReentrenarCategoriasExcel.Text = "Reentrenar CategorÌas";
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categor√≠as";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
             btnReentrenarCategoriasExcel.Visible = false;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
@@ -335,28 +337,30 @@ namespace ClasificadorNoticiasGUI
             // tabGraficas
             // 
             tabGraficas.Controls.Add(btnActualizarGraficas);
-            tabGraficas.Controls.Add(plotViewSentimientos);
-            tabGraficas.Controls.Add(plotViewCategorias);
+            tabGraficas.Controls.Add(chartSentimientos);
+            tabGraficas.Controls.Add(chartCategorias);
             tabGraficas.Location = new Point(4, 26);
             tabGraficas.Name = "tabGraficas";
             tabGraficas.Size = new Size(892, 570);
             tabGraficas.TabIndex = 3;
-            tabGraficas.Text = "Gr·ficas";
+            tabGraficas.Text = "Gr√°ficas";
             tabGraficas.UseVisualStyleBackColor = true;
             // 
-            // plotViewCategorias
+            // chartCategorias
             // 
-            plotViewCategorias.Location = new Point(10, 10);
-            plotViewCategorias.Name = "plotViewCategorias";
-            plotViewCategorias.Size = new Size(872, 250);
-            plotViewCategorias.TabIndex = 0;
+            chartCategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            chartCategorias.Location = new Point(10, 10);
+            chartCategorias.Name = "chartCategorias";
+            chartCategorias.Size = new Size(872, 250);
+            chartCategorias.TabIndex = 0;
             // 
-            // plotViewSentimientos
+            // chartSentimientos
             // 
-            plotViewSentimientos.Location = new Point(10, 270);
-            plotViewSentimientos.Name = "plotViewSentimientos";
-            plotViewSentimientos.Size = new Size(872, 250);
-            plotViewSentimientos.TabIndex = 1;
+            chartSentimientos.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            chartSentimientos.Location = new Point(10, 270);
+            chartSentimientos.Name = "chartSentimientos";
+            chartSentimientos.Size = new Size(872, 250);
+            chartSentimientos.TabIndex = 1;
             // 
             // btnActualizarGraficas
             // 
@@ -389,6 +393,8 @@ namespace ClasificadorNoticiasGUI
             tabExcel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).EndInit();
             tabGraficas.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)chartCategorias).EndInit();
+            ((System.ComponentModel.ISupportInitialize)chartSentimientos).EndInit();
             ResumeLayout(false);
         }
 
@@ -419,9 +425,8 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.Button btnCargarExcel;
         private System.Windows.Forms.Button btnReentrenarCategoriasExcel;
         private System.Windows.Forms.Button btnReentrenarSentimientosExcel;
-        private OxyPlot.WindowsForms.PlotView plotViewCategorias;
-        private OxyPlot.WindowsForms.PlotView plotViewSentimientos;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartCategorias;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chartSentimientos;
         private System.Windows.Forms.Button btnActualizarGraficas;
-        private System.Windows.Forms.Button btnReentrenarSentimientos;
     }
 }

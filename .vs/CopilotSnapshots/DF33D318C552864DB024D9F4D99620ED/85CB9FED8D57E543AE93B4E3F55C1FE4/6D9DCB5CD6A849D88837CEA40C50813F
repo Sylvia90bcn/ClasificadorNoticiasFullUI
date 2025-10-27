@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -465,7 +465,7 @@ namespace ClasificadorNoticiasGUI
                 var newRow = resultadosDt.NewRow();
                 newRow["Titular"] = titular;
                 newRow["Categoria"] = predCat.CategoriaPredicha;
-                newRow["Sentimiento"] = predSent.SentimientoPredicho;
+                newRow["Sentimiento"] = predSent.SentimientoPredijo;
 
                 // Copiar columnas extra en el mismo orden que en original
                 for (int ec = 0; ec < extraCols.Count; ec++)
@@ -1136,10 +1136,6 @@ namespace ClasificadorNoticiasGUI
             modelCat.Series.Add(catSeries);
 
             // Sentimientos plot using BarSeries
-            var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
-            var sents = senOrdered.Select(k => k.Key).ToList();
-            var senValues = senOrdered.Select(k => k.Value).ToList();
-
             var modelSen = new PlotModel { Title = "Titulares por sentimiento" };
             var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
             foreach (var s in sents) senCategoryAxis.Labels.Add(s);
