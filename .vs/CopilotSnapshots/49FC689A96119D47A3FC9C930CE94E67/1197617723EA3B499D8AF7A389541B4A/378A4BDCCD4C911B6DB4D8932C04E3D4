@@ -1,0 +1,298 @@
+﻿namespace ClasificadorNoticiasGUI
+{
+    partial class Form1
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        private void InitializeComponent()
+        {
+            tabControl1 = new TabControl();
+            tabClasificar = new TabPage();
+            btnReentrenarSentimientos = new Button();
+            btnReentrenarCategorias = new Button();
+            btnGuardar = new Button();
+            btnClasificar = new Button();
+            txtSentimiento = new TextBox();
+            txtCategoria = new TextBox();
+            txtTitular = new TextBox();
+            label3 = new Label();
+            label2 = new Label();
+            label1 = new Label();
+            tabDataset = new TabPage();
+            btnActualizarDataset = new Button();
+            dgvDataset = new DataGridView();
+            tabExcel = new TabPage();
+            btnExportarResultados = new Button();
+            dgvExcelResultados = new DataGridView();
+            btnCargarExcel = new Button();
+            tabControl1.SuspendLayout();
+            tabClasificar.SuspendLayout();
+            tabDataset.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvDataset).BeginInit();
+            tabExcel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).BeginInit();
+            SuspendLayout();
+            // 
+            // tabControl1
+            // 
+            tabControl1.Controls.Add(tabClasificar);
+            tabControl1.Controls.Add(tabDataset);
+            tabControl1.Controls.Add(tabExcel);
+            tabControl1.Dock = DockStyle.Fill;
+            tabControl1.Font = new Font("Segoe UI", 10F);
+            tabControl1.Location = new Point(0, 0);
+            tabControl1.Margin = new Padding(10);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new Size(900, 600);
+            tabControl1.TabIndex = 0;
+            // 
+            // tabClasificar
+            // 
+            tabClasificar.Controls.Add(btnReentrenarSentimientos);
+            tabClasificar.Controls.Add(btnReentrenarCategorias);
+            tabClasificar.Controls.Add(btnGuardar);
+            tabClasificar.Controls.Add(btnClasificar);
+            tabClasificar.Controls.Add(txtSentimiento);
+            tabClasificar.Controls.Add(txtCategoria);
+            tabClasificar.Controls.Add(txtTitular);
+            tabClasificar.Controls.Add(label3);
+            tabClasificar.Controls.Add(label2);
+            tabClasificar.Controls.Add(label1);
+            tabClasificar.Location = new Point(4, 26);
+            tabClasificar.Name = "tabClasificar";
+            tabClasificar.Padding = new Padding(3);
+            tabClasificar.Size = new Size(892, 570);
+            tabClasificar.TabIndex = 0;
+            tabClasificar.Text = "Clasificar titular";
+            tabClasificar.UseVisualStyleBackColor = true;
+            // 
+            // btnReentrenarSentimientos
+            // 
+            btnReentrenarSentimientos.Location = new Point(28, 492);
+            btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
+            btnReentrenarSentimientos.Size = new Size(217, 48);
+            btnReentrenarSentimientos.TabIndex = 0;
+            btnReentrenarSentimientos.Text = "Reentrenar Sentimientos";
+            btnReentrenarSentimientos.Click += btnReentrenarSentimientos_Click;
+            // 
+            // btnReentrenarCategorias
+            // 
+            btnReentrenarCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReentrenarCategorias.Location = new Point(655, 520);
+            btnReentrenarCategorias.Name = "btnReentrenarCategorias";
+            btnReentrenarCategorias.Size = new Size(182, 30);
+            btnReentrenarCategorias.TabIndex = 8;
+            btnReentrenarCategorias.Text = "Reentrenar Categorias";
+            btnReentrenarCategorias.UseVisualStyleBackColor = true;
+            btnReentrenarCategorias.Click += btnReentrenarCategorias_Click;
+            // 
+            // btnGuardar
+            // 
+            btnGuardar.Location = new Point(620, 120);
+            btnGuardar.Name = "btnGuardar";
+            btnGuardar.Size = new Size(120, 30);
+            btnGuardar.TabIndex = 7;
+            btnGuardar.Text = "Guardar";
+            btnGuardar.UseVisualStyleBackColor = true;
+            btnGuardar.Click += btnGuardar_Click;
+            // 
+            // btnClasificar
+            // 
+            btnClasificar.Location = new Point(480, 120);
+            btnClasificar.Name = "btnClasificar";
+            btnClasificar.Size = new Size(120, 30);
+            btnClasificar.TabIndex = 6;
+            btnClasificar.Text = "Clasificar";
+            btnClasificar.UseVisualStyleBackColor = true;
+            btnClasificar.Click += btnClasificar_Click;
+            // 
+            // txtSentimiento
+            // 
+            txtSentimiento.Location = new Point(140, 170);
+            txtSentimiento.Name = "txtSentimiento";
+            txtSentimiento.Size = new Size(600, 25);
+            txtSentimiento.TabIndex = 5;
+            // 
+            // txtCategoria
+            // 
+            txtCategoria.Location = new Point(140, 130);
+            txtCategoria.Name = "txtCategoria";
+            txtCategoria.Size = new Size(300, 25);
+            txtCategoria.TabIndex = 4;
+            // 
+            // txtTitular
+            // 
+            txtTitular.Location = new Point(140, 40);
+            txtTitular.Multiline = true;
+            txtTitular.Name = "txtTitular";
+            txtTitular.Size = new Size(720, 60);
+            txtTitular.TabIndex = 3;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(20, 173);
+            label3.Name = "label3";
+            label3.Size = new Size(82, 19);
+            label3.TabIndex = 2;
+            label3.Text = "Sentimiento";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(20, 133);
+            label2.Name = "label2";
+            label2.Size = new Size(68, 19);
+            label2.TabIndex = 1;
+            label2.Text = "Categoria";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(28, 59);
+            label1.Name = "label1";
+            label1.Size = new Size(47, 19);
+            label1.TabIndex = 0;
+            label1.Text = "Titular";
+            // 
+            // tabDataset
+            // 
+            tabDataset.Controls.Add(btnActualizarDataset);
+            tabDataset.Controls.Add(dgvDataset);
+            tabDataset.Location = new Point(4, 26);
+            tabDataset.Name = "tabDataset";
+            tabDataset.Padding = new Padding(3);
+            tabDataset.Size = new Size(892, 570);
+            tabDataset.TabIndex = 1;
+            tabDataset.Text = "Dataset actual";
+            tabDataset.UseVisualStyleBackColor = true;
+            // 
+            // btnActualizarDataset
+            // 
+            btnActualizarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnActualizarDataset.Location = new Point(740, 520);
+            btnActualizarDataset.Name = "btnActualizarDataset";
+            btnActualizarDataset.Size = new Size(120, 30);
+            btnActualizarDataset.TabIndex = 1;
+            btnActualizarDataset.Text = "Actualizar vista";
+            btnActualizarDataset.UseVisualStyleBackColor = true;
+            btnActualizarDataset.Click += btnActualizarDataset_Click;
+            // 
+            // dgvDataset
+            // 
+            dgvDataset.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvDataset.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvDataset.Location = new Point(10, 10);
+            dgvDataset.Name = "dgvDataset";
+            dgvDataset.Size = new Size(872, 500);
+            dgvDataset.TabIndex = 0;
+            // 
+            // tabExcel
+            // 
+            tabExcel.Controls.Add(btnExportarResultados);
+            tabExcel.Controls.Add(dgvExcelResultados);
+            tabExcel.Controls.Add(btnCargarExcel);
+            tabExcel.Location = new Point(4, 26);
+            tabExcel.Name = "tabExcel";
+            tabExcel.Size = new Size(892, 570);
+            tabExcel.TabIndex = 2;
+            tabExcel.Text = "Clasificar desde Excel";
+            tabExcel.UseVisualStyleBackColor = true;
+            // 
+            // btnExportarResultados
+            // 
+            btnExportarResultados.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnExportarResultados.Location = new Point(740, 520);
+            btnExportarResultados.Name = "btnExportarResultados";
+            btnExportarResultados.Size = new Size(120, 30);
+            btnExportarResultados.TabIndex = 2;
+            btnExportarResultados.Text = "Exportar resultados";
+            btnExportarResultados.UseVisualStyleBackColor = true;
+            btnExportarResultados.Click += btnExportarResultados_Click;
+            // 
+            // dgvExcelResultados
+            // 
+            dgvExcelResultados.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvExcelResultados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvExcelResultados.Location = new Point(10, 60);
+            dgvExcelResultados.Name = "dgvExcelResultados";
+            dgvExcelResultados.Size = new Size(872, 450);
+            dgvExcelResultados.TabIndex = 1;
+            // 
+            // btnCargarExcel
+            // 
+            btnCargarExcel.Location = new Point(10, 15);
+            btnCargarExcel.Name = "btnCargarExcel";
+            btnCargarExcel.Size = new Size(160, 30);
+            btnCargarExcel.TabIndex = 0;
+            btnCargarExcel.Text = "Cargar archivo Excel";
+            btnCargarExcel.UseVisualStyleBackColor = true;
+            btnCargarExcel.Click += btnCargarExcel_Click;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(7F, 17F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(900, 600);
+            Controls.Add(tabControl1);
+            Font = new Font("Segoe UI", 9.75F);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Clasificador de Noticias - GUI";
+            tabControl1.ResumeLayout(false);
+            tabClasificar.ResumeLayout(false);
+            tabClasificar.PerformLayout();
+            tabDataset.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvDataset).EndInit();
+            tabExcel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).EndInit();
+            ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabClasificar;
+        private System.Windows.Forms.TabPage tabDataset;
+        private System.Windows.Forms.TabPage tabExcel;
+        private System.Windows.Forms.TextBox txtTitular;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnClasificar;
+        private System.Windows.Forms.TextBox txtSentimiento;
+        private System.Windows.Forms.TextBox txtCategoria;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button btnGuardar;
+        private System.Windows.Forms.Button btnReentrenarCategorias;
+        private System.Windows.Forms.Button btnActualizarDataset;
+        private System.Windows.Forms.DataGridView dgvDataset;
+        private System.Windows.Forms.Button btnExportarResultados;
+        private System.Windows.Forms.DataGridView dgvExcelResultados;
+        private System.Windows.Forms.Button btnCargarExcel;
+        private System.Windows.Forms.Button btnReentrenarCategoriasExcel;
+        private System.Windows.Forms.Button btnReentrenarSentimientosExcel;
+        private Button btnReentrenarSentimientos;
+    }
+}

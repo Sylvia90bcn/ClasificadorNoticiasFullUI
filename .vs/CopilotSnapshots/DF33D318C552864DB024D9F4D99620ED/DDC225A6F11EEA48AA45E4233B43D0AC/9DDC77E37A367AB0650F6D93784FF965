@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,20 +107,11 @@ namespace ClasificadorNoticiasGUI
 
         private void btnReentrenarCategorias_Click(object sender, EventArgs e)
         {
-            // Tomar filas de la grid de Excel si existen
+            // Tomar filas de la grid de Excel si existen (las columnas deben ser Titular y Categoria)
             var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
             IEnumerable<Articulo> extrasArt = null;
             if (extras != null && extras.Any())
             {
-                // Primero guardar en el dataset si no existen
-                foreach (var extra in extras)
-                {
-                    if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Categoria))
-                    {
-                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
-                    }
-                }
-
                 extrasArt = extras
                     .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Categoria))
                     .Select(r => new Articulo { Texto = r.Titular.Trim(), Categoria = r.Categoria.Trim() })
@@ -128,27 +119,17 @@ namespace ClasificadorNoticiasGUI
             }
 
             var modelo = EntrenarModeloCategorias(ml, extrasArt, guardar: true);
-            MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
+            MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
         }
 
         private void btnReentrenarSentimientos_Click(object sender, EventArgs e)
         {
-            // Tomar filas de la grid de Excel si existen
+            // Tomar filas de la grid de Excel si existen (las columnas deben ser Titular y Sentimiento)
             var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
             IEnumerable<Sentimiento> extrasSen = null;
             if (extras != null && extras.Any())
             {
-                // Primero guardar en el dataset si no existen
-                foreach (var extra in extras)
-                {
-                    if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Sentimiento))
-                    {
-                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
-                    }
-                }
-
                 extrasSen = extras
                     .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Sentimiento))
                     .Select(r => new Sentimiento { Texto = r.Titular.Trim(), Label = r.Sentimiento.Trim() })
@@ -156,8 +137,7 @@ namespace ClasificadorNoticiasGUI
             }
 
             var modelo = EntrenarModeloSentimientos(ml, extrasSen, guardar: true);
-            MessageBox.Show("El modelo de sentimientos ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
+            MessageBox.Show("El modelo de sentimientos ha sido reentrenado exitosamente.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
         }
 
