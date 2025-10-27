@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -108,30 +107,13 @@ namespace ClasificadorNoticiasGUI
 
         private void btnReentrenarCategorias_Click(object sender, EventArgs e)
         {
-            // Soportar tanto DataSource como DataTable o IEnumerable<ResultadoExcel>
-            List<ResultadoExcel> extrasLista = new();
-            if (dgvExcelResultados.DataSource is DataTable dtSrc)
-            {
-                // Convertir filas de DataTable a ResultadoExcel
-                foreach (DataRow r in dtSrc.Rows)
-                {
-                    var tit = r.Table.Columns.Contains("Titular") ? (r["Titular"]?.ToString() ?? "") : "";
-                    var cat = r.Table.Columns.Contains("Categoria") ? (r["Categoria"]?.ToString() ?? "") : "";
-                    var sen = r.Table.Columns.Contains("Sentimiento") ? (r["Sentimiento"]?.ToString() ?? "") : "";
-                    extrasLista.Add(new ResultadoExcel { Titular = tit, Categoria = cat, Sentimiento = sen });
-                }
-            }
-            else
-            {
-                var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
-                if (extras != null) extrasLista.AddRange(extras);
-            }
-
+            // Tomar filas de la grid de Excel si existen
+            var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
             IEnumerable<Articulo> extrasArt = null;
-            if (extrasLista.Any())
+            if (extras != null && extras.Any())
             {
                 // Primero guardar en el dataset si no existen
-                foreach (var extra in extrasLista)
+                foreach (var extra in extras)
                 {
                     if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Categoria))
                     {
@@ -139,7 +121,7 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
 
-                extrasArt = extrasLista
+                extrasArt = extras
                     .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Categoria))
                     .Select(r => new Articulo { Texto = r.Titular.Trim(), Categoria = r.Categoria.Trim() })
                     .ToList();
@@ -153,29 +135,13 @@ namespace ClasificadorNoticiasGUI
 
         private void btnReentrenarSentimientos_Click(object sender, EventArgs e)
         {
-            // Soportar tanto DataTable como IEnumerable<ResultadoExcel>
-            List<ResultadoExcel> extrasLista = new();
-            if (dgvExcelResultados.DataSource is DataTable dtSrc)
-            {
-                foreach (DataRow r in dtSrc.Rows)
-                {
-                    var tit = r.Table.Columns.Contains("Titular") ? (r["Titular"]?.ToString() ?? "") : "";
-                    var cat = r.Table.Columns.Contains("Categoria") ? (r["Categoria"]?.ToString() ?? "") : "";
-                    var sen = r.Table.Columns.Contains("Sentimiento") ? (r["Sentimiento"]?.ToString() ?? "") : "";
-                    extrasLista.Add(new ResultadoExcel { Titular = tit, Categoria = cat, Sentimiento = sen });
-                }
-            }
-            else
-            {
-                var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
-                if (extras != null) extrasLista.AddRange(extras);
-            }
-
+            // Tomar filas de la grid de Excel si existen
+            var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
             IEnumerable<Sentimiento> extrasSen = null;
-            if (extrasLista.Any())
+            if (extras != null && extras.Any())
             {
                 // Primero guardar en el dataset si no existen
-                foreach (var extra in extrasLista)
+                foreach (var extra in extras)
                 {
                     if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Sentimiento))
                     {
@@ -183,7 +149,7 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
 
-                extrasSen = extrasLista
+                extrasSen = extras
                     .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Sentimiento))
                     .Select(r => new Sentimiento { Texto = r.Titular.Trim(), Label = r.Sentimiento.Trim() })
                     .ToList();
@@ -388,12 +354,12 @@ namespace ClasificadorNoticiasGUI
 
             var path = ofd.FileName;
 
-            // Leer tabla completa desde Excel
-            DataTable original;
+            // Leer titulares desde Excel
+            List<string> filas;
             try
             {
-                original = LeerExcelComoDataTable(path);
-                if (original == null || original.Rows.Count == 0)
+                filas = LeerExcelTitulares(path); // Debes devolver solo los titulares
+                if (filas.Count == 0)
                 {
                     MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
@@ -412,79 +378,48 @@ namespace ClasificadorNoticiasGUI
                 return;
             }
 
-            // Buscar columna de titulares (case-insensitive)
-            string titularCol = null;
-            foreach (DataColumn c in original.Columns)
-            {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
-                { titularCol = c.ColumnName; break; }
-            }
-            if (titularCol == null)
-            {
-                MessageBox.Show("No se encontró columna 'Titular' en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
             // Crear motores de predicción
             var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
             var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
 
-            // Preparar DataTable de resultados: Titular, Categoria, Sentimiento, luego todas las columnas originales (excepto Titular duplicada)
-            var resultadosDt = new DataTable();
-            resultadosDt.Columns.Add("Titular");
-            resultadosDt.Columns.Add("Categoria");
-            resultadosDt.Columns.Add("Sentimiento");
-            var extraCols = new List<string>();
-            foreach (DataColumn c in original.Columns)
-            {
-                if (c.ColumnName == titularCol) continue;
-                // Evitar nombres reservados
-                var colName = c.ColumnName;
-                int suffix = 1;
-                while (resultadosDt.Columns.Contains(colName)) { colName = c.ColumnName + "_" + suffix; suffix++; }
-                resultadosDt.Columns.Add(colName);
-                extraCols.Add(c.ColumnName);
-            }
-
-            int total = original.Rows.Count;
+            // Clasificar titulares
+            var resultados = new List<ResultadoExcel>();
+            int total = filas.Count;
             int i = 1;
-            foreach (DataRow row in original.Rows)
+            foreach (var titular in filas)
             {
-                var titular = row[titularCol]?.ToString()?.Trim();
                 if (string.IsNullOrWhiteSpace(titular)) continue;
 
                 // Predicción
                 var predCat = engineCat.Predict(new Articulo { Texto = titular });
                 var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
 
-                var newRow = resultadosDt.NewRow();
-                newRow["Titular"] = titular;
-                newRow["Categoria"] = predCat.CategoriaPredicha;
-                newRow["Sentimiento"] = predSent.SentimientoPredicho;
-
-                // Copiar columnas extra en el mismo orden que en original
-                for (int ec = 0; ec < extraCols.Count; ec++)
+                resultados.Add(new ResultadoExcel
                 {
-                    var origName = extraCols[ec];
-                    var targetName = resultadosDt.Columns[3 + ec].ColumnName; // offset
-                    newRow[targetName] = row[origName]?.ToString() ?? "";
-                }
+                    Titular = titular,
+                    Categoria = predCat.CategoriaPredicha,
+                    Sentimiento = predSent.SentimientoPredicho
+                });
 
-                resultadosDt.Rows.Add(newRow);
-
-                // Mostrar progreso
+                // Opcional: mostrar progreso
                 lblProgreso.Text = $"Clasificando {i}/{total}";
-                Application.DoEvents();
+                Application.DoEvents(); // refresca UI
                 i++;
             }
 
-            dgvExcelResultados.DataSource = resultadosDt;
+            // Mostrar resultados en DataGridView
+            dgvExcelResultados.DataSource = resultados;
+
+            // Ajustar columnas
             dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvExcelResultados.Refresh();
 
             lblProgreso.Text = "Clasificación completada ✅";
         }
+
+
+
+
 
         private void btnExportarResultados_Click(object sender, EventArgs e)
         {
@@ -494,37 +429,19 @@ namespace ClasificadorNoticiasGUI
             sfd.FileName = "ResultadosClasificacion.xlsx";
             if (sfd.ShowDialog() != DialogResult.OK) return;
 
-            if (dgvExcelResultados.DataSource is DataTable dt)
-            {
-                using var wb = new XLWorkbook();
-                var ws = wb.Worksheets.Add("Resultados");
-                // Encabezados
-                for (int c = 0; c < dt.Columns.Count; c++)
-                    ws.Cell(1, c + 1).Value = dt.Columns[c].ColumnName;
-                // Filas
-                for (int r = 0; r < dt.Rows.Count; r++)
-                {
-                    for (int c = 0; c < dt.Columns.Count; c++)
-                        ws.Cell(r + 2, c + 1).Value = dt.Rows[r][c]?.ToString() ?? "";
-                }
-                wb.SaveAs(sfd.FileName);
-                MessageBox.Show($"Exportado: {sfd.FileName}");
-                return;
-            }
-
             var list = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList() ?? new();
-            using var wb2 = new XLWorkbook();
-            var ws2 = wb2.Worksheets.Add("Resultados");
-            ws2.Cell(1, 1).Value = "Titular";
-            ws2.Cell(1, 2).Value = "Categoria";
-            ws2.Cell(1, 3).Value = "Sentimiento";
+            using var wb = new XLWorkbook();
+            var ws = wb.Worksheets.Add("Resultados");
+            ws.Cell(1, 1).Value = "Titular";
+            ws.Cell(1, 2).Value = "Categoria";
+            ws.Cell(1, 3).Value = "Sentimiento";
             for (int i = 0; i < list.Count; i++)
             {
-                ws2.Cell(i + 2, 1).Value = list[i].Titular;
-                ws2.Cell(i + 2, 2).Value = list[i].Categoria;
-                ws2.Cell(i + 2, 3).Value = list[i].Sentimiento;
+                ws.Cell(i + 2, 1).Value = list[i].Titular;
+                ws.Cell(i + 2, 2).Value = list[i].Categoria;
+                ws.Cell(i + 2, 3).Value = list[i].Sentimiento;
             }
-            wb2.SaveAs(sfd.FileName);
+            wb.SaveAs(sfd.FileName);
             MessageBox.Show($"Exportado: {sfd.FileName}");
         }
 
@@ -721,53 +638,6 @@ namespace ClasificadorNoticiasGUI
             return lista;
         }
 
-        static DataTable LeerExcelComoDataTable(string ruta)
-        {
-            var dt = new DataTable();
-
-            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                using var wb = new XLWorkbook(ruta);
-                var ws = wb.Worksheets.First();
-                var rango = ws.RangeUsed();
-                if (rango == null) return dt;
-                int totalFilas = rango.RowCount();
-                int totalCols = rango.ColumnCount();
-
-                // Leer encabezados
-                for (int c = 1; c <= totalCols; c++)
-                {
-                    var header = ws.Cell(1, c).GetString().Trim();
-                    if (string.IsNullOrWhiteSpace(header)) header = "Column" + c;
-                    // Asegurar nombres únicos
-                    var colName = header;
-                    int suffix = 1;
-                    while (dt.Columns.Contains(colName)) { colName = header + "_" + suffix; suffix++; }
-                    dt.Columns.Add(colName);
-                }
-
-                // Leer filas
-                for (int r = 2; r <= totalFilas; r++)
-                {
-                    var row = dt.NewRow();
-                    for (int c = 1; c <= totalCols; c++)
-                        row[c - 1] = ws.Cell(r, c).GetString().Trim();
-                    dt.Rows.Add(row);
-                }
-            }
-            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
-            {
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
-                using var reader = ExcelReaderFactory.CreateReader(stream);
-                var result = reader.AsDataSet(new ExcelDataSetConfiguration()
-                {
-                    ConfigureDataTable = _ => new ExcelDataTableConfiguration() { UseHeaderRow = true }
-                });
-                dt = result.Tables[0].Copy();
-            }
-
-            return dt;
-        }
+     
     }
 }
