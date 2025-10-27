@@ -311,6 +311,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.TabIndex = 4;
             btnReentrenarCategoriasExcel.Text = "Reentrenar Categorías";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
+            btnReentrenarCategoriasExcel.Visible = false;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
             // 
             // btnReentrenarSentimientosExcel
@@ -322,6 +323,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarSentimientosExcel.TabIndex = 5;
             btnReentrenarSentimientosExcel.Text = "Reentrenar Sentimientos";
             btnReentrenarSentimientosExcel.UseVisualStyleBackColor = true;
+            btnReentrenarSentimientosExcel.Visible = false;
             btnReentrenarSentimientosExcel.Click += btnReentrenarSentimientos_Click;
             // 
             // Form1
