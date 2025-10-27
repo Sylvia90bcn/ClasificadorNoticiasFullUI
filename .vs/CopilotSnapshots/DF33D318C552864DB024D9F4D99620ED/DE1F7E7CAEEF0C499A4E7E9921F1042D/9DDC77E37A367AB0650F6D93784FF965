@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -802,7 +802,6 @@ namespace ClasificadorNoticiasGUI
             {
                 if (File.Exists(DatosCategoriasPath)) File.Delete(DatosCategoriasPath);
                 if (File.Exists(DatosSentimientosPath)) File.Delete(DatosSentimientosPath);
-                if (File.Exists(DatosCompletosPath)) File.Delete(DatosCompletosPath);
 
                 // Re-crear archivos con encabezados vacíos
                 Directory.CreateDirectory(Path.GetDirectoryName(DatosCategoriasPath) ?? "Datos");
@@ -810,12 +809,6 @@ namespace ClasificadorNoticiasGUI
                 Directory.CreateDirectory(Path.GetDirectoryName(DatosSentimientosPath) ?? "Datos");
                 File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
 
-                // Crear dataset_completo vacío con encabezados básicos
-                Directory.CreateDirectory(Path.GetDirectoryName(DatosCompletosPath) ?? "Datos");
-                File.WriteAllText(DatosCompletosPath, "Texto,Categoria,Sentimiento\n");
-
-                // Clear grid and reload
-                dgvDataset.DataSource = null;
                 CargarDatasetEnGrilla();
                 MessageBox.Show("Dataset reiniciado correctamente.", "Reinicio completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
