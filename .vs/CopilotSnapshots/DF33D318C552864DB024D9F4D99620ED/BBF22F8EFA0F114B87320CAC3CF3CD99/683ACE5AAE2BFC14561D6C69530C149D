@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -486,9 +486,6 @@ namespace ClasificadorNoticiasGUI
             dgvExcelResultados.DataSource = resultadosDt;
             dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvExcelResultados.Refresh();
-
-            // Update Excel graphs automatically
-            CargarGraficasDesdeExcelResultados();
 
             lblProgreso.Text = "Clasificación completada ✅";
         }
@@ -1239,7 +1236,7 @@ namespace ClasificadorNoticiasGUI
             {
                 CargarGraficasDesdeDataset();
             }
-            else if (tabControl1.SelectedTab == tabGraficasExcel)
+            else if (tabControl1.SelectedTab == tabExcelResultados)
             {
                 CargarGraficasDesdeExcelResultados();
             }

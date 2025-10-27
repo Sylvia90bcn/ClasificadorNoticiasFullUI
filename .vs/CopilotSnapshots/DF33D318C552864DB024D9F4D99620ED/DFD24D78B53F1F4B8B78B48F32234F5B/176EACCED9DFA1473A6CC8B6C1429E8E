@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -486,9 +486,6 @@ namespace ClasificadorNoticiasGUI
             dgvExcelResultados.DataSource = resultadosDt;
             dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvExcelResultados.Refresh();
-
-            // Update Excel graphs automatically
-            CargarGraficasDesdeExcelResultados();
 
             lblProgreso.Text = "Clasificación completada ✅";
         }
@@ -1157,91 +1154,12 @@ namespace ClasificadorNoticiasGUI
             plotViewSentimientos.Model = modelSen;
         }
 
-        private void btnActualizarGraficasExcel_Click(object sender, EventArgs e)
-        {
-            CargarGraficasDesdeExcelResultados();
-        }
-
-        void CargarGraficasDesdeExcelResultados()
-        {
-            // Read data from dgvExcelResultados (DataTable or IEnumerable<ResultadoExcel>)
-            var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            if (dgvExcelResultados.DataSource is DataTable dt)
-            {
-                // Determine column names (case-insensitive)
-                string colTit = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "titular", "título", "titulo", "title", "headline" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
-                string colCat = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "categoria", "category" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
-                string colSen = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "sentimiento", "sentiment", "label" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
-
-                foreach (DataRow r in dt.Rows)
-                {
-                    var cat = colCat != null ? (r[colCat]?.ToString() ?? "") : "";
-                    var sen = colSen != null ? (r[colSen]?.ToString() ?? "") : "";
-                    if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
-                    if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
-                    if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
-                    if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
-                }
-            }
-            else
-            {
-                var list = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList() ?? new List<ResultadoExcel>();
-                foreach (var it in list)
-                {
-                    var cat = it.Categoria ?? "";
-                    var sen = it.Sentimiento ?? "";
-                    if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
-                    if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
-                    if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
-                    if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
-                }
-            }
-
-            // Build OxyPlot models (horizontal bars)
-            var catOrdered = catCounts.OrderByDescending(k => k.Value).ToList();
-            var categories = catOrdered.Select(k => k.Key).ToList();
-            var catValues = catOrdered.Select(k => k.Value).ToList();
-
-            var modelCat = new PlotModel { Title = "Titulares por categoría (Excel)" };
-            var catCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var c in categories) catCategoryAxis.Labels.Add(c);
-            var catValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelCat.Axes.Add(catCategoryAxis);
-            modelCat.Axes.Add(catValueAxis);
-            var catSeries = new OxyPlot.Series.BarSeries { Title = "Categorias", IsStacked = false };
-            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
-            modelCat.Series.Add(catSeries);
-
-            var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
-            var sents = senOrdered.Select(k => k.Key).ToList();
-            var senValues = senOrdered.Select(k => k.Value).ToList();
-
-            var modelSen = new PlotModel { Title = "Titulares por sentimiento (Excel)" };
-            var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
-            foreach (var s in sents) senCategoryAxis.Labels.Add(s);
-            var senValueAxis2 = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
-            modelSen.Axes.Add(senCategoryAxis);
-            modelSen.Axes.Add(senValueAxis2);
-            var senSeries = new OxyPlot.Series.BarSeries { Title = "Sentimientos", IsStacked = false };
-            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new OxyPlot.Series.BarItem { Value = senValues[i] });
-            modelSen.Series.Add(senSeries);
-
-            plotViewExcelCategorias.Model = modelCat;
-            plotViewExcelSentimientos.Model = modelSen;
-        }
-
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // If the selected tab is the Graficas Dataset tab, refresh graphs
             if (tabControl1.SelectedTab == tabGraficas)
             {
                 CargarGraficasDesdeDataset();
-            }
-            else if (tabControl1.SelectedTab == tabGraficasExcel)
-            {
-                CargarGraficasDesdeExcelResultados();
             }
         }
     }
