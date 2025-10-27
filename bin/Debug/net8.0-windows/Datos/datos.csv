@@ -1,24 +1,4 @@
 Texto,Categoria
-"La inflación sube en Europa",Economia
-"El precio del alquiler baja en Madrid",Vivienda
-"El Ibex 35 cierra con pérdidas",Economia
-"Construcción de nuevas viviendas aumenta",Vivienda
-"Las exportaciones españolas crecen un 10%",Economia
-"El mercado inmobiliario se estabiliza",Vivienda
-"El Real Madrid gana la Champions League",Deportes
-"España vence a Francia en baloncesto",Deportes
-"Nadal anuncia su retirada del tenis",Deportes
-"Apple lanza un nuevo iPhone con IA",Tecnologia
-"Google presenta avances en computación cuántica",Tecnologia
-"Microsoft anuncia actualizaciones en Windows",Tecnologia
-"Las elecciones generales serán en diciembre",Politica
-"El congreso aprueba una nueva ley de vivienda",Politica
-"Se debate la reforma fiscal en el senado",Politica
-"Descubren un nuevo exoplaneta habitable",Ciencia
-"Avances en la investigación del cáncer",Ciencia
-"La NASA prepara una misión a Marte",Ciencia
-el precio del aguacate sube,economia
-pedro sanchez la lia,Politica
 Els danys col·laterals dApple,Politica
 "El nombre de passatgers de l'aeroport del Prat creix un 3,6% al febrer",Vivienda
 Els 12 'smartphones' més interessants del Mobile World Congress 2015,Politica
@@ -87,44 +67,216 @@ Veure néixer el segon operador del món,economia
 Ada Colau: No pactarem amb partits del règim,Ciencia
 "Tot a punt per al Mobile World Congress, un any més",Ciencia
 Trias proposa un salari mínim per als treballadors de Barcelona,Vivienda
-"El nombre de passatgers de l'aeroport del Prat creix un 3,6% al febrer",Vivienda
-"Barcelonas Mobile World Congress is record smasher with over 93,000 visitors",Politica
-"Mark Zuckerberg va sopar aquest dimarts amb la seva parella, Gerard Piqué i Shakira al restaurant Petit Comitè de Barcelona",Politica
-"Si tot està connectat, em vigilen? Del control total a través del mòbil als telèfons a prova d'espies",Ciencia
-"Marck Zuckerberg a Barcelona, protagonista de les portades de la premsa econòmica",Politica
-"Conversar amb el mòbil, el gran repte pendent del sector",economia
-"Els Pujol s'emboliquen al detallar el presumpte llegat, a la portada d''El Periódico'",Politica
-"Mòbils, tauletes i bicis elèctriques: les primeres novetats del MWC",Ciencia
-"Telefónica i Vodafone s'uneixen per frenar Apple, a la portada d''Expansión'",Politica
-"Volem connectar l'altra meitat del planeta, la conferència de Zuckerberg al MWC, en 8 frases",Politica
-"Microsoft anuncia els nous telèfons Lumia 640 i 640 XL, amb Office i Skype de franc",Politica
-"'Mobile: el metro ple de corbates, acreditacions i accent: l'editorial d'Antoni Bassas",Politica
-"El perill jihadista amenaça Catalunya, portada de l''Abc'",Politica
-"El Mobile World Congress i el 'boom' de l'internet de les coses, aquest diumenge a l'ARA",Politica
-"Els informatius de BTV, només amb mòbils durant una setmana",Politica
-"Tot a punt per al Mobile World Congress, un any més",Ciencia
-Los asistentes al Mobile realizan cerca de 215.000 viajes con la T-Mobilitat específica del congreso,Politica
-Acaba el Mobile World Congress 2025,Politica
-El Mobile World Congress iguala el seu rècord històric i tanca amb 109.000 assistents,Politica
-El MWC iguala su récord histórico y cierra con 109.000 asistentes,Economia
-Cinco 'startups' catalanas que demuestran que la IA es mucho más que el despertar de las máquinas,Politica
-"El metaverso no ha muerto, ha mutado: el MWC expone las últimas novedades en gafas inmersivas",Politica
-Comença el Mobile World Congress a Barcelona,Politica
-Els cinc mòbils més sorprenents que s'han presentat al Mobile World Congress,Politica
-Els mitjans de comunicació debuten a l'MWC per abordar la irrupció de la IA en el periodisme,Politica
-Mòbils (gairebé) sense interacció humana,Politica
-Mistral AI demana a la UE que acceleri i ampliï la seva IA,Politica
-Vithas y Telefónica exponen en el Mobile World Congress su investigación sobre comunicación cuántica en sanidad,Politica
-Los 5 móviles más sorprendentes del Mobile World Congress,Politica
-El gemelo digital de Barcelona muestra en el MWC cómo puede mejorar la ciudad,Politica
-El cofundador d'Apple Steve Wozniak reivindica la curiositat innovadora al Mobile World Congress,Politica
-¿Quan és el MWC 2025 de Barcelona? Dates i horari del Mobile World Congress,Politica
-L'enigmàtic soci de Laporta,Politica
-La indústria xinesa deixa patent en el Mobile la seva creixent influència global,Politica
-València presenta l'estratègia d'internacionalització en el Mobile World Congress,Politica
-València presenta su estrategia de internacionalización en el Mobile World Congress,Politica
-Montoya asiste al Mobile World Congress 2025,Politica
-"Mistral AI, rival europeo de ChatGPT, pide acelerar el despliegue de la IA para competir con EEUU",Politica
-"Mobile World Congress 2025, en directe: última hora del MWC i novetats",Politica
-El Mobile World Congress 2025 llena restaurantes y discotecas en Barcelona,Politica
-"Steve Wozniak, cofundador de Apple, revoluciona el MWC",Politica
+Los asistentes al Mobile realizan cerca de 215.000 viajes con la T-Mobilitat específica del congreso,
+Acaba el Mobile World Congress 2025,
+El Mobile World Congress iguala el seu rècord històric i tanca amb 109.000 assistents,
+El MWC iguala su récord histórico y cierra con 109.000 asistentes,
+Cinco 'startups' catalanas que demuestran que la IA es mucho más que el despertar de las máquinas,
+"El metaverso no ha muerto, ha mutado: el MWC expone las últimas novedades en gafas inmersivas",
+Comença el Mobile World Congress a Barcelona,
+Els cinc mòbils més sorprenents que s'han presentat al Mobile World Congress,
+Els mitjans de comunicació debuten a l'MWC per abordar la irrupció de la IA en el periodisme,
+Mòbils (gairebé) sense interacció humana,
+Mistral AI demana a la UE que acceleri i ampliï la seva IA,
+Vithas y Telefónica exponen en el Mobile World Congress su investigación sobre comunicación cuántica en sanidad,
+Los 5 móviles más sorprendentes del Mobile World Congress,
+El gemelo digital de Barcelona muestra en el MWC cómo puede mejorar la ciudad,
+El cofundador d'Apple Steve Wozniak reivindica la curiositat innovadora al Mobile World Congress,
+¿Quan és el MWC 2025 de Barcelona? Dates i horari del Mobile World Congress,
+L'enigmàtic soci de Laporta,
+La indústria xinesa deixa patent en el Mobile la seva creixent influència global,
+València presenta l'estratègia d'internacionalització en el Mobile World Congress,
+València presenta su estrategia de internacionalización en el Mobile World Congress,
+Montoya asiste al Mobile World Congress 2025,
+"Mistral AI, rival europeo de ChatGPT, pide acelerar el despliegue de la IA para competir con EEUU",
+"Mobile World Congress 2025, en directe: última hora del MWC i novetats",
+El Mobile World Congress 2025 llena restaurantes y discotecas en Barcelona,
+"Steve Wozniak, cofundador de Apple, revoluciona el MWC",
+"El móvil, siempre cargado",Politica
+Col·locada abans de la rebolcada,Politica
+Porro World Congress,Politica
+Vodafone anuncia avances en la capacidad y posibilidades de su red,Tecnologia
+Colocón antes del revolcón,Ciencia
+Catalunya serà tecnològica o no serà,Politica
+Barcelona organizará el primer congreso mundial de blockchain,Politica
+Cómo nace una estrella,Ciencia
+Salvar la bretxa digital no és gratis,Politica
+Salvar la brecha digital no es gratis,Politica
+Entender a la 'generación millennial',Politica
+Carta de un trabajador del Metro: Negociar no significa rendirse,Vivienda
+¿Quin balanç fem del Mobile?,Vivienda
+"Nápoles-Madrid, 'Got talent' y 'Sense ficció'",Politica
+Tu coche es un asesino,Ciencia
+¿Qué balance hacemos del Mobile?,Ciencia
+EL PERIÓDICO sorteja 10 abonaments per al Saló del Còmic,economia
+La falta de modales en los transportes públicos,Politica
+EL PERIÓDICO sortea 10 abonos para el Salón del Cómic,economia
+Reed Hastings: Netflix encara és petit en el món d'internet,Politica
+"Un colegio de Sabadell, premiado por su iniciativa para implementar la tecnología",Politica
+"Chester in love', 'Salvados', '30 minuts', 'El objetivo' y 'Trinxeres'",Politica
+Reed Hastings: Netflix aún es pequeño en el mundo de internet,Politica
+El cotxe del futur ja és aquí,economia
+Llum verda a la prolongació de la plaça d'Europa fins a Bellvitge,Politica
+EDITORIAL | El coche del futuro ya está aquí,economia
+Pymes catalanas de Mobile,Vivienda
+"Mobile World Congress: Barcelona, que bé sona",Politica
+La nova escola digital,Politica
+Revolució digital més humanista,Politica
+El rebut del telèfon s'encareix a canvi de més dades,Deportes
+"Mobile World Congress: Barcelona, que bé sona",Politica
+"John Hanke, creador de Pokémon Go: Hemos conseguido que la gente salga de casa",Politica
+Alcatel lanza un móvil cuya carcasa cambia de color según la notificación recibida,Tecnologia
+Renée Jiménez: La feria de móviles no es solo para hombres,Politica
+Luz verde a la prolongación de la plaza de Europa hasta Bellvitge,Politica
+"España, el segundo país de Europa más caro en banda ancha",Politica
+Els robots envaeixen el Mobile World Congress,Politica
+El 4YFN acaba consolidat com a plataforma global de 'start-ups',Politica
+La confirmació de l'hegemonia de l'MWC,Politica
+El Mobile World Congress 2017 bat tots els rècords amb 108.000 visitants,Politica
+Les 'foques connectades' busquen descobrir què les està matant,Politica
+"La T-Mobilitat, una tomadura de pelo",Politica
+Tecnologia en masculí,Tecnologia
+Victòria del Barça amb la gorra,Politica
+Las 'focas conectadas' buscan descubrir qué las está matando,Politica
+El MWC cierra con récord de 108.000 visitantes,Economia
+EDITORIAL | La confirmación de la hegemonía del MWC,Politica
+Revolución digital más humanista,Vivienda
+El recibo del teléfono se encarece a cambio de más datos para internet,Vivienda
+Dani Sordo presenta el MWC17 la cuarta generación de móviles Innjoo,Politica
+Tecnología en masculino,Tecnologia
+"La T-Mobilitat, una tomadura de pelo",Politica
+El Mobile World Congress deixa l'Sporting sense hotel a Barcelona,Politica
+Els taxistes denuncien l'augment de l'intrusisme durant el Mobile World Congress,Politica
+La T-Mobilitat es començarà a implantar a finals del 2018,Ciencia
+Els avenços que conquisten els joves,Politica
+Gabinet polític 'Marhuinda',Politica
+Vodafone apuja preus entre 3 i 5 euros a canvi de més megues,Politica
+MWC: Cada cop més tecnològics i menys humanitaris,Politica
+"Mòbils, gogós i Dom Pérignon",Vivienda
+"Mòbils, gogós i Dom Pérignon",Vivienda
+Netflix reduirà el consum de dades de l'usuari el 50% mantenint la qualitat,Politica
+Los robots invaden la feria de móviles,Politica
+El 4YFN acaba consolidado como plataforma global de 'start-ups',Politica
+Vodafone sube precios entre 3 y 5 euros a cambio de más megas,Economia
+El Mobile World Congress deja al Sporting sin hotel en Barcelona,Politica
+Friki-educadores' para la generación digital,Politica
+Los taxistas denuncian el aumento del intrusismo durante el Mobile World Congress,economia
+Las 10 primeras 'start-ups' de Numa Barcelona se estrenan,Vivienda
+Netflix reducirá el consumo de datos del usuario el 50% manteniendo la misma calidad,Politica
+Telefónica presenta una red móvil LTE para situaciones de emergencia,Politica
+Soluciones de transporte para desplazamientos cortos,Politica
+"Móviles, gogós y Dom Pérignon",Politica
+Gabinete político 'Marhuinda',Politica
+"Xiaomi, el gran ausente del MWC",economia
+El grafeno exhibe sus potenciales para la industria móvil,Politica
+Preguntas inquietantes acerca de un fenómeno emergente,Vivienda
+"Nuevo retraso en el estreno de la T-Mobilitat, que se desplegará en el 2017",Politica
+Victoria con la gorra del Barça,Ciencia
+La nueva escuela digital,Politica
+Grafeno: el material que revolucionará el mundo,Politica
+"BCN, 'innovation friendly'",Economia
+Els inversors es llancen a la caça de 'start-ups' en el 4YFN,Politica
+"Emprenedoria tecnològica, l'imant del Mobile",Vivienda
+BCN impulsa negocis tecnològics amb impacte social,Politica
+JxSí registra una reforma del reglament del Parlament per agilitzar la desconnexió,Politica
+"Wiko presenta Wim, el seu 'smartphone' màxim de gamma",Politica
+¿S'ha d'innovar en innovació?,Tecnologia
+Del vibrador connectat a la pitonissa virtual,Ciencia
+Tres punts a millorar per escalar posicions,Ciencia
+Del mòbil a la transformació digital: impacte social de l'MWC,Politica
+Apostant per la ciutat innovadora,Politica
+"Innovació, emprenedors i ocupació",Economia
+"BCN, ciutat d'oportunitats",Politica
+"Wiko presenta Wim, su 'smartphone' tope de gama",Tecnologia
+"BCN, 'innovation friendly'",Economia
+ZTE lanza el Blade V8 que llega también con versión lite,Tecnologia
+Los inversores se lanzan a la caza de 'start-ups' en el 4YFN,Politica
+Hisense presenta un 'smartphone' ultrarresistente,Tecnologia
+Del móvil a la transformación digital: impacto social del MWC,Ciencia
+"Emprendeduría tecnológica, el imán del Mobile",economia
+Los móviles ya se pueden cargar totalmente en 20 minutos,Politica
+BCN impulsa negocios tecnológicos con impacto social,Tecnologia
+El futuro del Mobile,economia
+BMW a control remoto,Deportes
+La realidad virtual toma el Mobile,Politica
+¿Hay que innovar en innovación?,Tecnologia
+Tres puntos a mejorar para escalar posiciones,Ciencia
+"John Hanke, creador de Pokémon Go: ¿Hemos conseguido que la gente salga de casa?",Politica
+Apostando por la ciudad innovadora,Politica
+"Innovación, emprendedores y empleo",Tecnologia
+"Barcelona, ciudad de oportunidades",Politica
+El 4YFN comença amb un nou rècord de participants,Politica
+El 4YFN congrega gairebé un 40% més de 'start-ups' i s'expandeix fins a San Francisco,Politica
+El creador de Netflix defensa que ha ajudat a reduir la pirateria,Politica
+La imparable digitalització del mercat laboral,Ciencia
+La fira de mòbils de Barcelona defineix les tecnologies del futur,Politica
+"El triomf per sorpresa de 'Moonlight' en els Oscars i altres notícies que has de saber avui, en un minut",Politica
+"MWC 17: Xperia XZ Premium, un dispositiu més que 'premium'",Ciencia
+Talls de trànsit a la Gran Via per una protesta estudiantil,Politica
+Transformar-se o morir,Politica
+El Mobile impulsa els cotxes connectats i a la carta,Politica
+Resum del dia zero de l'MWC: Nokia ho torna a intentar,Deportes
+La crida de Felip VI a la lleialtat institucional sedueix la premsa no independentista,Politica
+Iniesta: Hem de creure i creure. Tenim arguments,Vivienda
+IVACE participa en el Mobile World Congress,Politica
+El creador de Netflix defiende que ha ayudado a reducir la piratería,Politica
+El futuro se cita en Barcelona,Politica
+El 4YFN comienza con un nuevo récord de participantes,Tecnologia
+La imparable digitalización del mercado laboral,Ciencia
+Bartomeu anuncia el Barça innovation hub,Deportes
+El 4YFN congrega casi un 40% más de 'start-ups' y se expande hasta San Francisco,Politica
+Puigdemont pide al Gobierno que se aplique el mensaje del Rey sobre la colaboración,Politica
+"Xperia XZ Premium, un dispositivo más que prémium",Ciencia
+Coches conectados y a la carta,Politica
+Los paquetes llegarán volando,Politica
+Peugeot escribe el futuro en Barcelona,Politica
+Barcelona alerta sobre el discurso del odio en las redes sociales,Politica
+Conectado y a la carta,Politica
+Cortes de tráfico en la Gran Via por una protesta estudiantil,Politica
+Transformarse o morir,Politica
+Vodafone supera las 50 millones de conexiones de dispositivos a la internet de las cosas,Politica
+Las operadoras de móviles actualizan sus tarifas,Politica
+Iniesta: Hay que creer y creer. Tenemos argumentos,Politica
+"MWC 2017: el Mobile World Congress, en directe",Politica
+El Rei i Puigdemont connecten el Mobile per uns minuts,Politica
+La consolidació de l'MWC,Politica
+Un Mobile més femení i jove,Tecnologia
+"Guardians amb texans, fins i tot quan els congressistes surtin de copes. Així és la seguretat del Mobile",Politica
+"Mas va donar un poder especial a Viloca per als negocis de CDC, diu 'El Mundo'",Vivienda
+"Huawei presenta el P10, su nuevo teléfono estrella",Tecnologia
+Fechas y entradas de la feria,Politica
+Samsung anuncia la nueva Galaxy Tab 3,Politica
+"MWC 2017: El Mobile World Congress, en directo",Politica
+Nokia resurge con tres 'smartphones' y el relanzamiento de un clásico,Tecnologia
+"Gigabit Phone de ZTE, internet a 1 Gbps gracias al 5G",Vivienda
+"LG G6 l pantalla de 5,7 pulgadas en un móvil con tamaño de 5,2 pulgadas",Economia
+El Rey y Puigdemont conectan en el Mobile por unos minutos,Politica
+Telefónica devuelve a los clientes el control sobre los datos que generan,Politica
+La feria de móviles de Barcelona define las tecnologías del futuro,Politica
+Vodafone muestra cómo su 4G gana características de 5G,Deportes
+Resumen del día cero del MWC: Nokia vuelve a intentarlo,Deportes
+El coche conectado lo sabe todo de ti,Politica
+Un Mobile más femenino y joven,Vivienda
+Guardianes con tejanos. Así es la seguridad del Mobile,Politica
+El Brooklyn de Núria Marín,Politica
+"Un proyecto del CIPF, UPV y ApoyoDravet participará en la feria YOMO",Ciencia
+El Outlet de Viladecans habilita un autobús lanzadera gratuito desde el MWC,Politica
+A un 'smartphone' pegados,Ciencia
+El component humà de cada telèfon mòbil,Politica
+Llagostes més cares pel Mobile,Politica
+Bol·lards i barreres New Jersey per protegir el Mobile World Congress de Barcelona,Politica
+El cotxe connectat ho sap tot de tu,Politica
+L'agenda del Rei a Barcelona per l'MWC inclou dos actes amb Puigdemont,Deportes
+Nits de fins a 14.000 euros a Barcelona durant el Mobile,Deportes
+El componente humano de cada teléfono móvil,Politica
+Smartphone sobre ruedas,Politica
+Bolardos y barreras de hormigón,Politica
+Langostas más caras por el Mobile,Politica
+El Rey y Puigdemont coincidirán en dos actos en el Mobile,Politica
+EasyGOband y Cuatroochenta seleccionadas para el Pabellón de España en el Mobile World Congress,Politica
+EasyGOband i Cuatroochenta seleccionades per al Pavelló d'Espanya en el Mobile World Congress,Politica
+BCN y las empresas tecnológicas se unen contra la brecha digital,Politica
+La evolución del Mobile World Congres,Ciencia
+Tejer redes para trabajar juntas,Politica
+"Tu coche, tu mejor amigo",Politica
+Sáenz de Santamaría presideix l'entrega del premi Empresa de l'Any,Vivienda

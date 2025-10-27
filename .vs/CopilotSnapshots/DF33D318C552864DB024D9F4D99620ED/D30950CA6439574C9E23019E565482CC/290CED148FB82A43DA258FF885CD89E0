@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -17,7 +17,6 @@ namespace ClasificadorNoticiasGUI
         static readonly string ModeloSentimientosPath = Path.Combine("Modelo", "modelo_sentimientos.zip");
         static readonly string DatosCategoriasPath = Path.Combine("Datos", "datos.csv");
         static readonly string DatosSentimientosPath = Path.Combine("Datos", "sentimientos.csv");
-        static readonly string DatosCompletosPath = Path.Combine("Datos", "dataset_completo.csv");
 
         MLContext ml = new MLContext(seed: 1);
         ITransformer modeloCat = null, modeloSent = null;
@@ -575,28 +574,6 @@ namespace ClasificadorNoticiasGUI
 
         void CargarDatasetEnGrilla()
         {
-            // If dataset_completo exists, load it and show all columns
-            if (File.Exists(DatosCompletosPath))
-            {
-                var lines = File.ReadAllLines(DatosCompletosPath);
-                if (lines.Length > 0)
-                {
-                    var headers = SplitCsvLine(lines[0]).ToList();
-                    var dt = new DataTable();
-                    foreach (var h in headers) dt.Columns.Add(h);
-                    for (int i = 1; i < lines.Length; i++)
-                    {
-                        var parts = SplitCsvLine(lines[i]);
-                        var row = dt.NewRow();
-                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
-                        dt.Rows.Add(row);
-                    }
-                    dgvDataset.DataSource = dt;
-                    return;
-                }
-            }
-
-            // Fallback: existing behavior
             var lista = new List<(string Texto, string Categoria, string Sentimiento)>();
 
             if (File.Exists(DatosCategoriasPath))
@@ -627,8 +604,8 @@ namespace ClasificadorNoticiasGUI
                 }
             }
 
-            var dt2 = lista.Select(x => new { Texto = x.Texto, Categoria = x.Categoria, Sentimiento = x.Sentimiento }).ToList();
-            dgvDataset.DataSource = dt2;
+            var dt = lista.Select(x => new { Texto = x.Texto, Categoria = x.Categoria, Sentimiento = x.Sentimiento }).ToList();
+            dgvDataset.DataSource = dt;
         }
 
         static string[] SplitCsvLine(string line)
@@ -852,182 +829,6 @@ namespace ClasificadorNoticiasGUI
             {
                 MessageBox.Show($"Error al reiniciar modelo de sentimientos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void btnCargarDatasetExcel_Click(object sender, EventArgs e)
-        {
-            using var ofd = new OpenFileDialog();
-            ofd.Filter = "Excel Files|*.xlsx;*.xls";
-            if (ofd.ShowDialog() != DialogResult.OK) return;
-
-            DataTable dt;
-            try
-            {
-                dt = LeerExcelComoDataTable(ofd.FileName);
-                if (dt == null || dt.Rows.Count == 0)
-                {
-                    MessageBox.Show("No se encontraron datos en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Buscar columna de titular (case-insensitive)
-            string titularCol = null;
-            foreach (DataColumn c in dt.Columns)
-            {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
-                { titularCol = c.ColumnName; break; }
-            }
-            if (titularCol == null)
-            {
-                MessageBox.Show("No se encontró columna 'Titular' en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            // Determine categoria and sentimiento columns (if any)
-            string categoriaCol = null, sentimientoCol = null;
-            var extraCols = new List<string>();
-            foreach (DataColumn c in dt.Columns)
-            {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "categoria", "category" }.Contains(name)) categoriaCol = c.ColumnName;
-                else if (new[] { "sentimiento", "sentiment", "label" }.Contains(name)) sentimientoCol = c.ColumnName;
-                else if (c.ColumnName != titularCol)
-                    extraCols.Add(c.ColumnName);
-            }
-
-            // Load or prepare existing dataset_completo
-            DataTable existing = null;
-            if (File.Exists(DatosCompletosPath))
-            {
-                var lines = File.ReadAllLines(DatosCompletosPath);
-                if (lines.Length > 0)
-                {
-                    var headers = SplitCsvLine(lines[0]).ToList();
-                    existing = new DataTable();
-                    foreach (var h in headers) existing.Columns.Add(h);
-                    for (int i = 1; i < lines.Length; i++)
-                    {
-                        var parts = SplitCsvLine(lines[i]);
-                        var row = existing.NewRow();
-                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
-                        existing.Rows.Add(row);
-                    }
-                }
-            }
-
-            // Build union headers: Texto,Categoria,Sentimiento, then existing extras, then new extras
-            var baseHeaders = new List<string> { "Texto", "Categoria", "Sentimiento" };
-            var union = new List<string>(baseHeaders);
-            if (existing != null)
-            {
-                foreach (DataColumn c in existing.Columns)
-                {
-                    if (!union.Contains(c.ColumnName)) union.Add(c.ColumnName);
-                }
-            }
-            foreach (var ec in extraCols)
-            {
-                if (!union.Contains(ec)) union.Add(ec);
-            }
-
-            // Create new DataTable with union headers and copy existing rows
-            var newDt = new DataTable();
-            foreach (var h in union) newDt.Columns.Add(h);
-            if (existing != null)
-            {
-                foreach (DataRow er in existing.Rows)
-                {
-                    var nr = newDt.NewRow();
-                    foreach (DataColumn c in existing.Columns)
-                    {
-                        nr[c.ColumnName] = er[c.ColumnName];
-                    }
-                    newDt.Rows.Add(nr);
-                }
-            }
-
-            int added = 0;
-            // Process Excel rows
-            foreach (DataRow r in dt.Rows)
-            {
-                var titular = r[titularCol]?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(titular)) continue;
-
-                // Get categoria/sentimiento from excel if present
-                var cat = categoriaCol != null ? (r[categoriaCol]?.ToString()?.Trim() ?? "") : "";
-                var sen = sentimientoCol != null ? (r[sentimientoCol]?.ToString()?.Trim() ?? "") : "";
-
-                // Append to minimal CSVs for training (if not present)
-                var existedCat = false;
-                if (!File.Exists(DatosCategoriasPath)) File.WriteAllText(DatosCategoriasPath, "Texto,Categoria\n");
-                var lineasCategorias = File.ReadAllLines(DatosCategoriasPath).Skip(1);
-                if (!lineasCategorias.Any(l => l.Split(',')[0].Trim().Equals(titular.Trim(), StringComparison.OrdinalIgnoreCase)))
-                {
-                    File.AppendAllText(DatosCategoriasPath, EscapeCSV(titular) + "," + EscapeCSV(cat) + "\n");
-                }
-                else
-                {
-                    existedCat = true;
-                }
-
-                var existedSen = false;
-                if (!File.Exists(DatosSentimientosPath)) File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
-                var lineasSent = File.ReadAllLines(DatosSentimientosPath).Skip(1);
-                if (!lineasSent.Any(l => l.Split(',')[0].Trim().Equals(titular.Trim(), StringComparison.OrdinalIgnoreCase)))
-                {
-                    File.AppendAllText(DatosSentimientosPath, EscapeCSV(titular) + "," + EscapeCSV(sen) + "\n");
-                }
-                else
-                {
-                    existedSen = true;
-                }
-
-                // Add to newDt if Texto not present
-                var existsInNew = newDt.Rows.Cast<DataRow>().Any(rr => rr["Texto"]?.ToString()?.Equals(titular, StringComparison.OrdinalIgnoreCase) == true);
-                if (!existsInNew)
-                {
-                    var nr = newDt.NewRow();
-                    nr["Texto"] = titular;
-                    nr["Categoria"] = cat;
-                    nr["Sentimiento"] = sen;
-                    // fill extra columns
-                    foreach (var ec in extraCols)
-                    {
-                        nr[ec] = r[ec]?.ToString() ?? "";
-                    }
-                    newDt.Rows.Add(nr);
-                    added++;
-                }
-            }
-
-            // Save newDt to DatosCompletosPath
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(DatosCompletosPath) ?? "Datos");
-                using var sw = new StreamWriter(DatosCompletosPath, false);
-                // header
-                sw.WriteLine(string.Join(",", newDt.Columns.Cast<DataColumn>().Select(c => EscapeCSV(c.ColumnName))));
-                // rows
-                foreach (DataRow row in newDt.Rows)
-                {
-                    var vals = newDt.Columns.Cast<DataColumn>().Select(c => EscapeCSV(row[c.ColumnName]?.ToString() ?? ""));
-                    sw.WriteLine(string.Join(",", vals));
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"No se pudo guardar dataset completo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            CargarDatasetEnGrilla();
-            MessageBox.Show($"Importación completada. Filas añadidas al dataset completo: {added}", "Importado", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

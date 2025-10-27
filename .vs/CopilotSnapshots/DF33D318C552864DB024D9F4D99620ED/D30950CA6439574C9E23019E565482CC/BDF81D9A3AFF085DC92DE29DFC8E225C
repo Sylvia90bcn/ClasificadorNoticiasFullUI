@@ -1,4 +1,4 @@
-namespace ClasificadorNoticiasGUI
+﻿namespace ClasificadorNoticiasGUI
 {
     partial class Form1
     {
@@ -37,11 +37,10 @@ namespace ClasificadorNoticiasGUI
             label2 = new Label();
             label1 = new Label();
             tabDataset = new TabPage();
-            btnReiniciarModeloSentimientos = new Button();
-            btnReiniciarModeloCategorias = new Button();
-            btnReiniciarDataset = new Button();
             btnActualizarDataset = new Button();
-            btnCargarDatasetExcel = new Button();
+            btnReiniciarDataset = new Button();
+            btnReiniciarModeloCategorias = new Button();
+            btnReiniciarModeloSentimientos = new Button();
             dgvDataset = new DataGridView();
             tabExcel = new TabPage();
             btnExportarResultados = new Button();
@@ -186,7 +185,6 @@ namespace ClasificadorNoticiasGUI
             tabDataset.Controls.Add(btnReiniciarModeloCategorias);
             tabDataset.Controls.Add(btnReiniciarDataset);
             tabDataset.Controls.Add(btnActualizarDataset);
-            tabDataset.Controls.Add(btnCargarDatasetExcel);
             tabDataset.Controls.Add(dgvDataset);
             tabDataset.Location = new Point(4, 26);
             tabDataset.Name = "tabDataset";
@@ -196,43 +194,10 @@ namespace ClasificadorNoticiasGUI
             tabDataset.Text = "Dataset actual";
             tabDataset.UseVisualStyleBackColor = true;
             // 
-            // btnReiniciarModeloSentimientos
-            // 
-            btnReiniciarModeloSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloSentimientos.Location = new Point(8, 520);
-            btnReiniciarModeloSentimientos.Name = "btnReiniciarModeloSentimientos";
-            btnReiniciarModeloSentimientos.Size = new Size(203, 30);
-            btnReiniciarModeloSentimientos.TabIndex = 4;
-            btnReiniciarModeloSentimientos.Text = "Reiniciar Modelo Sentimientos";
-            btnReiniciarModeloSentimientos.UseVisualStyleBackColor = true;
-            btnReiniciarModeloSentimientos.Click += btnReiniciarModeloSentimientos_Click;
-            // 
-            // btnReiniciarModeloCategorias
-            // 
-            btnReiniciarModeloCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloCategorias.Location = new Point(228, 520);
-            btnReiniciarModeloCategorias.Name = "btnReiniciarModeloCategorias";
-            btnReiniciarModeloCategorias.Size = new Size(193, 30);
-            btnReiniciarModeloCategorias.TabIndex = 3;
-            btnReiniciarModeloCategorias.Text = "Reiniciar Modelo Categorias";
-            btnReiniciarModeloCategorias.UseVisualStyleBackColor = true;
-            btnReiniciarModeloCategorias.Click += btnReiniciarModeloCategorias_Click;
-            // 
-            // btnReiniciarDataset
-            // 
-            btnReiniciarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarDataset.Location = new Point(442, 520);
-            btnReiniciarDataset.Name = "btnReiniciarDataset";
-            btnReiniciarDataset.Size = new Size(120, 30);
-            btnReiniciarDataset.TabIndex = 3;
-            btnReiniciarDataset.Text = "Reiniciar dataset";
-            btnReiniciarDataset.UseVisualStyleBackColor = true;
-            btnReiniciarDataset.Click += btnReiniciarDataset_Click;
-            // 
             // btnActualizarDataset
             // 
             btnActualizarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarDataset.Location = new Point(750, 520);
+            btnActualizarDataset.Location = new Point(740, 520);
             btnActualizarDataset.Name = "btnActualizarDataset";
             btnActualizarDataset.Size = new Size(120, 30);
             btnActualizarDataset.TabIndex = 1;
@@ -240,23 +205,38 @@ namespace ClasificadorNoticiasGUI
             btnActualizarDataset.UseVisualStyleBackColor = true;
             btnActualizarDataset.Click += btnActualizarDataset_Click;
             // 
-            // btnCargarDatasetExcel
+            // btnReiniciarDataset
             // 
-            btnCargarDatasetExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnCargarDatasetExcel.Location = new Point(584, 520);
-            btnCargarDatasetExcel.Name = "btnCargarDatasetExcel";
-            btnCargarDatasetExcel.Size = new Size(140, 30);
-            btnCargarDatasetExcel.TabIndex = 2;
-            btnCargarDatasetExcel.Text = "Cargar desde Excel";
-            btnCargarDatasetExcel.UseVisualStyleBackColor = true;
-            btnCargarDatasetExcel.Click += btnCargarDatasetExcel_Click;
+            btnReiniciarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReiniciarDataset.Location = new Point(600, 520);
+            btnReiniciarDataset.Name = "btnReiniciarDataset";
+            btnReiniciarDataset.Size = new Size(120, 30);
+            btnReiniciarDataset.TabIndex = 2;
+            btnReiniciarDataset.Text = "Reiniciar dataset";
+            btnReiniciarDataset.UseVisualStyleBackColor = true;
+            btnReiniciarDataset.Click += btnReiniciarDataset_Click;
             // 
-            // dgvDataset
+            // btnReiniciarModeloCategorias
             // 
-            dgvDataset.Location = new Point(0, 0);
-            dgvDataset.Name = "dgvDataset";
-            dgvDataset.Size = new Size(870, 501);
-            dgvDataset.TabIndex = 5;
+            btnReiniciarModeloCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReiniciarModeloCategorias.Location = new Point(460, 520);
+            btnReiniciarModeloCategorias.Name = "btnReiniciarModeloCategorias";
+            btnReiniciarModeloCategorias.Size = new Size(120, 30);
+            btnReiniciarModeloCategorias.TabIndex = 3;
+            btnReiniciarModeloCategorias.Text = "Reiniciar modelo Cat";
+            btnReiniciarModeloCategorias.UseVisualStyleBackColor = true;
+            btnReiniciarModeloCategorias.Click += btnReiniciarModeloCategorias_Click;
+            // 
+            // btnReiniciarModeloSentimientos
+            // 
+            btnReiniciarModeloSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReiniciarModeloSentimientos.Location = new Point(320, 520);
+            btnReiniciarModeloSentimientos.Name = "btnReiniciarModeloSentimientos";
+            btnReiniciarModeloSentimientos.Size = new Size(120, 30);
+            btnReiniciarModeloSentimientos.TabIndex = 4;
+            btnReiniciarModeloSentimientos.Text = "Reiniciar modelo Sent";
+            btnReiniciarModeloSentimientos.UseVisualStyleBackColor = true;
+            btnReiniciarModeloSentimientos.Click += btnReiniciarModeloSentimientos_Click;
             // 
             // tabExcel
             // 
@@ -309,7 +289,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
             btnReentrenarCategoriasExcel.Size = new Size(160, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
-            btnReentrenarCategoriasExcel.Text = "Reentrenar Categor�as";
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categorías";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
             // 
@@ -366,7 +346,6 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.Button btnReiniciarModeloCategorias;
         private System.Windows.Forms.Button btnReiniciarModeloSentimientos;
         private System.Windows.Forms.DataGridView dgvDataset;
-        private System.Windows.Forms.Button btnCargarDatasetExcel;
         private System.Windows.Forms.Button btnExportarResultados;
         private System.Windows.Forms.DataGridView dgvExcelResultados;
         private System.Windows.Forms.Button btnCargarExcel;

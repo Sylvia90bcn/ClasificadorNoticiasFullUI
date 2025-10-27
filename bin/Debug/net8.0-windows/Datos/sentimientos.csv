@@ -1,10 +1,4 @@
-"El gobierno anuncia nuevas ayudas econ�micas",Positivo
-"La inflaci�n golpea los bolsillos de los ciudadanos",Negativo
-"Se espera un crecimiento moderado en el pr�ximo trimestre",Neutral
-"El precio de la vivienda sube r�pidamente",Negativo
-"Los bancos ofrecen mejores condiciones de cr�dito",Positivoel precio del aguacate sube,Negativo
-el precio del aguacate sube,Negativo
-pedro sanchez la lia,Negativo
+Texto,Label
 Els danys col·laterals dApple,Negativo
 "El nombre de passatgers de l'aeroport del Prat creix un 3,6% al febrer",Negativo
 Els 12 'smartphones' més interessants del Mobile World Congress 2015,Negativo
@@ -73,44 +67,216 @@ Veure néixer el segon operador del món,Negativo
 Ada Colau: No pactarem amb partits del règim,Negativo
 "Tot a punt per al Mobile World Congress, un any més",Negativo
 Trias proposa un salari mínim per als treballadors de Barcelona,Negativo
-"El nombre de passatgers de l'aeroport del Prat creix un 3,6% al febrer",Negativo
-"Barcelonas Mobile World Congress is record smasher with over 93,000 visitors",Negativo
-"Mark Zuckerberg va sopar aquest dimarts amb la seva parella, Gerard Piqué i Shakira al restaurant Petit Comitè de Barcelona",Negativo
-"Si tot està connectat, em vigilen? Del control total a través del mòbil als telèfons a prova d'espies",Negativo
-"Marck Zuckerberg a Barcelona, protagonista de les portades de la premsa econòmica",Negativo
-"Conversar amb el mòbil, el gran repte pendent del sector",Negativo
-"Els Pujol s'emboliquen al detallar el presumpte llegat, a la portada d''El Periódico'",Negativo
-"Mòbils, tauletes i bicis elèctriques: les primeres novetats del MWC",Negativo
-"Telefónica i Vodafone s'uneixen per frenar Apple, a la portada d''Expansión'",Negativo
-"Volem connectar l'altra meitat del planeta, la conferència de Zuckerberg al MWC, en 8 frases",Negativo
-"Microsoft anuncia els nous telèfons Lumia 640 i 640 XL, amb Office i Skype de franc",Negativo
-"'Mobile: el metro ple de corbates, acreditacions i accent: l'editorial d'Antoni Bassas",Negativo
-"El perill jihadista amenaça Catalunya, portada de l''Abc'",Negativo
-"El Mobile World Congress i el 'boom' de l'internet de les coses, aquest diumenge a l'ARA",Negativo
-"Els informatius de BTV, només amb mòbils durant una setmana",Negativo
-"Tot a punt per al Mobile World Congress, un any més",Negativo
-Los asistentes al Mobile realizan cerca de 215.000 viajes con la T-Mobilitat específica del congreso,Negativo
-Acaba el Mobile World Congress 2025,Negativo
-El Mobile World Congress iguala el seu rècord històric i tanca amb 109.000 assistents,Negativo
-El MWC iguala su récord histórico y cierra con 109.000 asistentes,Negativo
-Cinco 'startups' catalanas que demuestran que la IA es mucho más que el despertar de las máquinas,Negativo
-"El metaverso no ha muerto, ha mutado: el MWC expone las últimas novedades en gafas inmersivas",Negativo
-Comença el Mobile World Congress a Barcelona,Negativo
-Els cinc mòbils més sorprenents que s'han presentat al Mobile World Congress,Negativo
-Els mitjans de comunicació debuten a l'MWC per abordar la irrupció de la IA en el periodisme,Negativo
-Mòbils (gairebé) sense interacció humana,Negativo
-Mistral AI demana a la UE que acceleri i ampliï la seva IA,Negativo
-Vithas y Telefónica exponen en el Mobile World Congress su investigación sobre comunicación cuántica en sanidad,Negativo
-Los 5 móviles más sorprendentes del Mobile World Congress,Negativo
-El gemelo digital de Barcelona muestra en el MWC cómo puede mejorar la ciudad,Negativo
-El cofundador d'Apple Steve Wozniak reivindica la curiositat innovadora al Mobile World Congress,Negativo
-¿Quan és el MWC 2025 de Barcelona? Dates i horari del Mobile World Congress,Negativo
-L'enigmàtic soci de Laporta,Negativo
-La indústria xinesa deixa patent en el Mobile la seva creixent influència global,Negativo
-València presenta l'estratègia d'internacionalització en el Mobile World Congress,Negativo
-València presenta su estrategia de internacionalización en el Mobile World Congress,Negativo
-Montoya asiste al Mobile World Congress 2025,Negativo
-"Mistral AI, rival europeo de ChatGPT, pide acelerar el despliegue de la IA para competir con EEUU",Negativo
-"Mobile World Congress 2025, en directe: última hora del MWC i novetats",Negativo
-El Mobile World Congress 2025 llena restaurantes y discotecas en Barcelona,Negativo
-"Steve Wozniak, cofundador de Apple, revoluciona el MWC",Negativo
+Los asistentes al Mobile realizan cerca de 215.000 viajes con la T-Mobilitat específica del congreso,
+Acaba el Mobile World Congress 2025,
+El Mobile World Congress iguala el seu rècord històric i tanca amb 109.000 assistents,
+El MWC iguala su récord histórico y cierra con 109.000 asistentes,
+Cinco 'startups' catalanas que demuestran que la IA es mucho más que el despertar de las máquinas,
+"El metaverso no ha muerto, ha mutado: el MWC expone las últimas novedades en gafas inmersivas",
+Comença el Mobile World Congress a Barcelona,
+Els cinc mòbils més sorprenents que s'han presentat al Mobile World Congress,
+Els mitjans de comunicació debuten a l'MWC per abordar la irrupció de la IA en el periodisme,
+Mòbils (gairebé) sense interacció humana,
+Mistral AI demana a la UE que acceleri i ampliï la seva IA,
+Vithas y Telefónica exponen en el Mobile World Congress su investigación sobre comunicación cuántica en sanidad,
+Los 5 móviles más sorprendentes del Mobile World Congress,
+El gemelo digital de Barcelona muestra en el MWC cómo puede mejorar la ciudad,
+El cofundador d'Apple Steve Wozniak reivindica la curiositat innovadora al Mobile World Congress,
+¿Quan és el MWC 2025 de Barcelona? Dates i horari del Mobile World Congress,
+L'enigmàtic soci de Laporta,
+La indústria xinesa deixa patent en el Mobile la seva creixent influència global,
+València presenta l'estratègia d'internacionalització en el Mobile World Congress,
+València presenta su estrategia de internacionalización en el Mobile World Congress,
+Montoya asiste al Mobile World Congress 2025,
+"Mistral AI, rival europeo de ChatGPT, pide acelerar el despliegue de la IA para competir con EEUU",
+"Mobile World Congress 2025, en directe: última hora del MWC i novetats",
+El Mobile World Congress 2025 llena restaurantes y discotecas en Barcelona,
+"Steve Wozniak, cofundador de Apple, revoluciona el MWC",
+"El móvil, siempre cargado",Negativo
+Col·locada abans de la rebolcada,Negativo
+Porro World Congress,Negativo
+Vodafone anuncia avances en la capacidad y posibilidades de su red,Negativo
+Colocón antes del revolcón,Negativo
+Catalunya serà tecnològica o no serà,Negativo
+Barcelona organizará el primer congreso mundial de blockchain,Negativo
+Cómo nace una estrella,Negativo
+Salvar la bretxa digital no és gratis,Negativo
+Salvar la brecha digital no es gratis,Negativo
+Entender a la 'generación millennial',Negativo
+Carta de un trabajador del Metro: Negociar no significa rendirse,Negativo
+¿Quin balanç fem del Mobile?,Negativo
+"Nápoles-Madrid, 'Got talent' y 'Sense ficció'",Negativo
+Tu coche es un asesino,Negativo
+¿Qué balance hacemos del Mobile?,Negativo
+EL PERIÓDICO sorteja 10 abonaments per al Saló del Còmic,Negativo
+La falta de modales en los transportes públicos,Negativo
+EL PERIÓDICO sortea 10 abonos para el Salón del Cómic,Negativo
+Reed Hastings: Netflix encara és petit en el món d'internet,Negativo
+"Un colegio de Sabadell, premiado por su iniciativa para implementar la tecnología",Negativo
+"Chester in love', 'Salvados', '30 minuts', 'El objetivo' y 'Trinxeres'",Negativo
+Reed Hastings: Netflix aún es pequeño en el mundo de internet,Negativo
+El cotxe del futur ja és aquí,Negativo
+Llum verda a la prolongació de la plaça d'Europa fins a Bellvitge,Negativo
+EDITORIAL | El coche del futuro ya está aquí,Negativo
+Pymes catalanas de Mobile,Negativo
+"Mobile World Congress: Barcelona, que bé sona",Negativo
+La nova escola digital,Negativo
+Revolució digital més humanista,Negativo
+El rebut del telèfon s'encareix a canvi de més dades,Negativo
+"Mobile World Congress: Barcelona, que bé sona",Negativo
+"John Hanke, creador de Pokémon Go: Hemos conseguido que la gente salga de casa",Negativo
+Alcatel lanza un móvil cuya carcasa cambia de color según la notificación recibida,Negativo
+Renée Jiménez: La feria de móviles no es solo para hombres,Negativo
+Luz verde a la prolongación de la plaza de Europa hasta Bellvitge,Negativo
+"España, el segundo país de Europa más caro en banda ancha",Negativo
+Els robots envaeixen el Mobile World Congress,Negativo
+El 4YFN acaba consolidat com a plataforma global de 'start-ups',Negativo
+La confirmació de l'hegemonia de l'MWC,Negativo
+El Mobile World Congress 2017 bat tots els rècords amb 108.000 visitants,Negativo
+Les 'foques connectades' busquen descobrir què les està matant,Negativo
+"La T-Mobilitat, una tomadura de pelo",Negativo
+Tecnologia en masculí,Negativo
+Victòria del Barça amb la gorra,Negativo
+Las 'focas conectadas' buscan descubrir qué las está matando,Negativo
+El MWC cierra con récord de 108.000 visitantes,Negativo
+EDITORIAL | La confirmación de la hegemonía del MWC,Negativo
+Revolución digital más humanista,Negativo
+El recibo del teléfono se encarece a cambio de más datos para internet,Negativo
+Dani Sordo presenta el MWC17 la cuarta generación de móviles Innjoo,Negativo
+Tecnología en masculino,Negativo
+"La T-Mobilitat, una tomadura de pelo",Negativo
+El Mobile World Congress deixa l'Sporting sense hotel a Barcelona,Negativo
+Els taxistes denuncien l'augment de l'intrusisme durant el Mobile World Congress,Negativo
+La T-Mobilitat es començarà a implantar a finals del 2018,Negativo
+Els avenços que conquisten els joves,Negativo
+Gabinet polític 'Marhuinda',Negativo
+Vodafone apuja preus entre 3 i 5 euros a canvi de més megues,Negativo
+MWC: Cada cop més tecnològics i menys humanitaris,Negativo
+"Mòbils, gogós i Dom Pérignon",Negativo
+"Mòbils, gogós i Dom Pérignon",Negativo
+Netflix reduirà el consum de dades de l'usuari el 50% mantenint la qualitat,Negativo
+Los robots invaden la feria de móviles,Negativo
+El 4YFN acaba consolidado como plataforma global de 'start-ups',Negativo
+Vodafone sube precios entre 3 y 5 euros a cambio de más megas,Negativo
+El Mobile World Congress deja al Sporting sin hotel en Barcelona,Negativo
+Friki-educadores' para la generación digital,Negativo
+Los taxistas denuncian el aumento del intrusismo durante el Mobile World Congress,Negativo
+Las 10 primeras 'start-ups' de Numa Barcelona se estrenan,Negativo
+Netflix reducirá el consumo de datos del usuario el 50% manteniendo la misma calidad,Negativo
+Telefónica presenta una red móvil LTE para situaciones de emergencia,Negativo
+Soluciones de transporte para desplazamientos cortos,Negativo
+"Móviles, gogós y Dom Pérignon",Negativo
+Gabinete político 'Marhuinda',Negativo
+"Xiaomi, el gran ausente del MWC",Negativo
+El grafeno exhibe sus potenciales para la industria móvil,Negativo
+Preguntas inquietantes acerca de un fenómeno emergente,Negativo
+"Nuevo retraso en el estreno de la T-Mobilitat, que se desplegará en el 2017",Negativo
+Victoria con la gorra del Barça,Negativo
+La nueva escuela digital,Negativo
+Grafeno: el material que revolucionará el mundo,Negativo
+"BCN, 'innovation friendly'",Negativo
+Els inversors es llancen a la caça de 'start-ups' en el 4YFN,Negativo
+"Emprenedoria tecnològica, l'imant del Mobile",Negativo
+BCN impulsa negocis tecnològics amb impacte social,Negativo
+JxSí registra una reforma del reglament del Parlament per agilitzar la desconnexió,Negativo
+"Wiko presenta Wim, el seu 'smartphone' màxim de gamma",Negativo
+¿S'ha d'innovar en innovació?,Negativo
+Del vibrador connectat a la pitonissa virtual,Negativo
+Tres punts a millorar per escalar posicions,Negativo
+Del mòbil a la transformació digital: impacte social de l'MWC,Negativo
+Apostant per la ciutat innovadora,Negativo
+"Innovació, emprenedors i ocupació",Negativo
+"BCN, ciutat d'oportunitats",Negativo
+"Wiko presenta Wim, su 'smartphone' tope de gama",Negativo
+"BCN, 'innovation friendly'",Negativo
+ZTE lanza el Blade V8 que llega también con versión lite,Negativo
+Los inversores se lanzan a la caza de 'start-ups' en el 4YFN,Negativo
+Hisense presenta un 'smartphone' ultrarresistente,Negativo
+Del móvil a la transformación digital: impacto social del MWC,Negativo
+"Emprendeduría tecnológica, el imán del Mobile",Negativo
+Los móviles ya se pueden cargar totalmente en 20 minutos,Negativo
+BCN impulsa negocios tecnológicos con impacto social,Negativo
+El futuro del Mobile,Negativo
+BMW a control remoto,Negativo
+La realidad virtual toma el Mobile,Negativo
+¿Hay que innovar en innovación?,Negativo
+Tres puntos a mejorar para escalar posiciones,Negativo
+"John Hanke, creador de Pokémon Go: ¿Hemos conseguido que la gente salga de casa?",Negativo
+Apostando por la ciudad innovadora,Negativo
+"Innovación, emprendedores y empleo",Negativo
+"Barcelona, ciudad de oportunidades",Negativo
+El 4YFN comença amb un nou rècord de participants,Negativo
+El 4YFN congrega gairebé un 40% més de 'start-ups' i s'expandeix fins a San Francisco,Negativo
+El creador de Netflix defensa que ha ajudat a reduir la pirateria,Negativo
+La imparable digitalització del mercat laboral,Negativo
+La fira de mòbils de Barcelona defineix les tecnologies del futur,Negativo
+"El triomf per sorpresa de 'Moonlight' en els Oscars i altres notícies que has de saber avui, en un minut",Negativo
+"MWC 17: Xperia XZ Premium, un dispositiu més que 'premium'",Negativo
+Talls de trànsit a la Gran Via per una protesta estudiantil,Negativo
+Transformar-se o morir,Negativo
+El Mobile impulsa els cotxes connectats i a la carta,Negativo
+Resum del dia zero de l'MWC: Nokia ho torna a intentar,Negativo
+La crida de Felip VI a la lleialtat institucional sedueix la premsa no independentista,Negativo
+Iniesta: Hem de creure i creure. Tenim arguments,Negativo
+IVACE participa en el Mobile World Congress,Negativo
+El creador de Netflix defiende que ha ayudado a reducir la piratería,Negativo
+El futuro se cita en Barcelona,Negativo
+El 4YFN comienza con un nuevo récord de participantes,Negativo
+La imparable digitalización del mercado laboral,Negativo
+Bartomeu anuncia el Barça innovation hub,Negativo
+El 4YFN congrega casi un 40% más de 'start-ups' y se expande hasta San Francisco,Negativo
+Puigdemont pide al Gobierno que se aplique el mensaje del Rey sobre la colaboración,Negativo
+"Xperia XZ Premium, un dispositivo más que prémium",Negativo
+Coches conectados y a la carta,Negativo
+Los paquetes llegarán volando,Negativo
+Peugeot escribe el futuro en Barcelona,Negativo
+Barcelona alerta sobre el discurso del odio en las redes sociales,Negativo
+Conectado y a la carta,Negativo
+Cortes de tráfico en la Gran Via por una protesta estudiantil,Negativo
+Transformarse o morir,Negativo
+Vodafone supera las 50 millones de conexiones de dispositivos a la internet de las cosas,Negativo
+Las operadoras de móviles actualizan sus tarifas,Negativo
+Iniesta: Hay que creer y creer. Tenemos argumentos,Negativo
+"MWC 2017: el Mobile World Congress, en directe",Negativo
+El Rei i Puigdemont connecten el Mobile per uns minuts,Negativo
+La consolidació de l'MWC,Negativo
+Un Mobile més femení i jove,Negativo
+"Guardians amb texans, fins i tot quan els congressistes surtin de copes. Així és la seguretat del Mobile",Negativo
+"Mas va donar un poder especial a Viloca per als negocis de CDC, diu 'El Mundo'",Negativo
+"Huawei presenta el P10, su nuevo teléfono estrella",Negativo
+Fechas y entradas de la feria,Negativo
+Samsung anuncia la nueva Galaxy Tab 3,Negativo
+"MWC 2017: El Mobile World Congress, en directo",Negativo
+Nokia resurge con tres 'smartphones' y el relanzamiento de un clásico,Negativo
+"Gigabit Phone de ZTE, internet a 1 Gbps gracias al 5G",Negativo
+"LG G6 l pantalla de 5,7 pulgadas en un móvil con tamaño de 5,2 pulgadas",Negativo
+El Rey y Puigdemont conectan en el Mobile por unos minutos,Negativo
+Telefónica devuelve a los clientes el control sobre los datos que generan,Negativo
+La feria de móviles de Barcelona define las tecnologías del futuro,Negativo
+Vodafone muestra cómo su 4G gana características de 5G,Negativo
+Resumen del día cero del MWC: Nokia vuelve a intentarlo,Negativo
+El coche conectado lo sabe todo de ti,Negativo
+Un Mobile más femenino y joven,Negativo
+Guardianes con tejanos. Así es la seguridad del Mobile,Negativo
+El Brooklyn de Núria Marín,Negativo
+"Un proyecto del CIPF, UPV y ApoyoDravet participará en la feria YOMO",Negativo
+El Outlet de Viladecans habilita un autobús lanzadera gratuito desde el MWC,Negativo
+A un 'smartphone' pegados,Negativo
+El component humà de cada telèfon mòbil,Negativo
+Llagostes més cares pel Mobile,Negativo
+Bol·lards i barreres New Jersey per protegir el Mobile World Congress de Barcelona,Negativo
+El cotxe connectat ho sap tot de tu,Negativo
+L'agenda del Rei a Barcelona per l'MWC inclou dos actes amb Puigdemont,Negativo
+Nits de fins a 14.000 euros a Barcelona durant el Mobile,Negativo
+El componente humano de cada teléfono móvil,Negativo
+Smartphone sobre ruedas,Negativo
+Bolardos y barreras de hormigón,Negativo
+Langostas más caras por el Mobile,Negativo
+El Rey y Puigdemont coincidirán en dos actos en el Mobile,Negativo
+EasyGOband y Cuatroochenta seleccionadas para el Pabellón de España en el Mobile World Congress,Negativo
+EasyGOband i Cuatroochenta seleccionades per al Pavelló d'Espanya en el Mobile World Congress,Negativo
+BCN y las empresas tecnológicas se unen contra la brecha digital,Negativo
+La evolución del Mobile World Congres,Negativo
+Tejer redes para trabajar juntas,Negativo
+"Tu coche, tu mejor amigo",Negativo
+Sáenz de Santamaría presideix l'entrega del premi Empresa de l'Any,Negativo
