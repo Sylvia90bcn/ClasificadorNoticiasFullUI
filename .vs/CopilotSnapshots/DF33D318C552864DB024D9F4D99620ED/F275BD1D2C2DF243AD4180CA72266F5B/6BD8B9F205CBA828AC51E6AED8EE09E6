@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -1275,62 +1275,6 @@ namespace ClasificadorNoticiasGUI
             {
                 CargarGraficasDesdeExcelResultados();
             }
-        }
-
-        // If the header row wasn't properly read, try to detect it within the first few rows and rebuild the DataTable
-        static DataTable EnsureHeaderRow(DataTable dt)
-        {
-            if (dt == null || dt.Rows.Count == 0) return dt;
-
-            // Quick heuristic: if columns are named like 'Column1' or empty, try to locate a header row
-            bool hasGenericCols = dt.Columns.Cast<DataColumn>().All(c => c.ColumnName.StartsWith("Column", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(c.ColumnName));
-            if (!hasGenericCols) return dt; // already has meaningful column names
-
-            var possibleHeaders = new[] { "titular", "título", "titulo", "title", "headline", "categoria", "category", "sentimiento", "sentiment", "autor", "autor" };
-
-            // Scan first N rows to find a header row where at least one cell matches known headers
-            int maxRowsToCheck = Math.Min(10, dt.Rows.Count);
-            int headerRowIndex = -1;
-            for (int r = 0; r < maxRowsToCheck; r++)
-            {
-                int matchCount = 0;
-                for (int c = 0; c < dt.Columns.Count; c++)
-                {
-                    var cell = dt.Rows[r][c]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(cell)) continue;
-                    var cl = cell.ToLowerInvariant();
-                    if (possibleHeaders.Any(h => cl.Contains(h))) matchCount++;
-                }
-                if (matchCount >= 1)
-                {
-                    headerRowIndex = r;
-                    break;
-                }
-            }
-
-            if (headerRowIndex == -1) return dt; // cannot detect header
-
-            // Build new DataTable using that row as header
-            var newDt = new DataTable();
-            for (int c = 0; c < dt.Columns.Count; c++)
-            {
-                var h = dt.Rows[headerRowIndex][c]?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(h)) h = "Column" + (c + 1);
-                var colName = h;
-                int suffix = 1;
-                while (newDt.Columns.Contains(colName)) { colName = h + "_" + suffix; suffix++; }
-                newDt.Columns.Add(colName);
-            }
-
-            // Copy data rows after headerRowIndex
-            for (int r = headerRowIndex + 1; r < dt.Rows.Count; r++)
-            {
-                var nr = newDt.NewRow();
-                for (int c = 0; c < dt.Columns.Count; c++) nr[c] = dt.Rows[r][c];
-                newDt.Rows.Add(nr);
-            }
-
-            return newDt;
         }
     }
 }
