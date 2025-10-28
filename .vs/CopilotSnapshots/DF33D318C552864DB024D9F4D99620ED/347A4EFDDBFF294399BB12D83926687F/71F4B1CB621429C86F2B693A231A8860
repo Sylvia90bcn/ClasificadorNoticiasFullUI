@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -11,7 +11,6 @@ using Microsoft.ML.Data;
 using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.Axes;
-using System.Diagnostics;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -471,16 +470,10 @@ namespace ClasificadorNoticiasGUI
 
             int total = original.Rows.Count;
             int i = 1;
-
-            var stopwatch = Stopwatch.StartNew();
-
-            var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
             foreach (DataRow row in original.Rows)
             {
                 var titular = row[titularCol]?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
+                if (string.IsNullOrWhiteSpace(titular)) continue;
 
                 // Predicción
                 var predCat = engineCat.Predict(new Articulo { Texto = titular });
@@ -501,19 +494,11 @@ namespace ClasificadorNoticiasGUI
 
                 resultadosDt.Rows.Add(newRow);
 
-                // acumular métricas
-                var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
-                var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
-                if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0; catCountsLocal[catKey]++;
-                if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0; senCountsLocal[senKey]++;
-
                 // Mostrar progreso
                 lblProgreso.Text = $"Clasificando {i}/{total}";
                 Application.DoEvents();
                 i++;
             }
-
-            stopwatch.Stop();
 
             dgvExcelResultados.DataSource = resultadosDt;
             dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
@@ -521,16 +506,6 @@ namespace ClasificadorNoticiasGUI
 
             // Update Excel graphs automatically
             CargarGraficasDesdeExcelResultados();
-
-            // Mostrar tiempo y métricas resumidas
-            txtTiempoClasificacion.Text = stopwatch.Elapsed.ToString();
-            var metricsSb = new System.Text.StringBuilder();
-            metricsSb.AppendLine("Categorías:");
-            foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-            metricsSb.AppendLine();
-            metricsSb.AppendLine("Sentimientos:");
-            foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-            txtMetricasClasificacion.Text = metricsSb.ToString();
 
             lblProgreso.Text = "Clasificación completada ✅";
         }

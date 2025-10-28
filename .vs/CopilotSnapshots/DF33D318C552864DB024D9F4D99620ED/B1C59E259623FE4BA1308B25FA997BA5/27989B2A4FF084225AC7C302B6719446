@@ -1,4 +1,4 @@
-namespace ClasificadorNoticiasGUI
+Ôªønamespace ClasificadorNoticiasGUI
 {
     partial class Form1
     {
@@ -308,14 +308,14 @@ namespace ClasificadorNoticiasGUI
             // 
             dgvExcelResultados.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dgvExcelResultados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvExcelResultados.Location = new Point(0, 77);
+            dgvExcelResultados.Location = new Point(10, 60);
             dgvExcelResultados.Name = "dgvExcelResultados";
-            dgvExcelResultados.Size = new Size(884, 427);
+            dgvExcelResultados.Size = new Size(872, 450);
             dgvExcelResultados.TabIndex = 1;
             // 
             // btnCargarExcel
             // 
-            btnCargarExcel.Location = new Point(25, 13);
+            btnCargarExcel.Location = new Point(324, 13);
             btnCargarExcel.Name = "btnCargarExcel";
             btnCargarExcel.Size = new Size(160, 30);
             btnCargarExcel.TabIndex = 0;
@@ -330,7 +330,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
             btnReentrenarCategoriasExcel.Size = new Size(160, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
-            btnReentrenarCategoriasExcel.Text = "Reentrenar CategorÌas";
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categor√≠as";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
             btnReentrenarCategoriasExcel.Visible = false;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
@@ -350,15 +350,15 @@ namespace ClasificadorNoticiasGUI
             // labelTiempoClasificacion
             // 
             labelTiempoClasificacion.AutoSize = true;
-            labelTiempoClasificacion.Location = new Point(214, 13);
+            labelTiempoClasificacion.Location = new Point(600, 20);
             labelTiempoClasificacion.Name = "labelTiempoClasificacion";
-            labelTiempoClasificacion.Size = new Size(147, 19);
+            labelTiempoClasificacion.Size = new Size(140, 19);
             labelTiempoClasificacion.TabIndex = 10;
-            labelTiempoClasificacion.Text = "Tiempo de clasificaciÛn";
+            labelTiempoClasificacion.Text = "Tiempo de clasificaci√≥n";
             // 
             // txtTiempoClasificacion
             // 
-            txtTiempoClasificacion.Location = new Point(367, 13);
+            txtTiempoClasificacion.Location = new Point(750, 16);
             txtTiempoClasificacion.Name = "txtTiempoClasificacion";
             txtTiempoClasificacion.ReadOnly = true;
             txtTiempoClasificacion.Size = new Size(130, 25);
@@ -367,20 +367,20 @@ namespace ClasificadorNoticiasGUI
             // labelMetricasClasificacion
             // 
             labelMetricasClasificacion.AutoSize = true;
-            labelMetricasClasificacion.Location = new Point(537, 0);
+            labelMetricasClasificacion.Location = new Point(600, 55);
             labelMetricasClasificacion.Name = "labelMetricasClasificacion";
-            labelMetricasClasificacion.Size = new Size(154, 19);
+            labelMetricasClasificacion.Size = new Size(150, 19);
             labelMetricasClasificacion.TabIndex = 12;
-            labelMetricasClasificacion.Text = "MÈtricas de clasificaciÛn";
+            labelMetricasClasificacion.Text = "M√©tricas de clasificaci√≥n";
             // 
             // txtMetricasClasificacion
             // 
-            txtMetricasClasificacion.Location = new Point(551, 22);
-            txtMetricasClasificacion.Multiline = true;
+            txtMetricasClasificacion.Location = new Point(600, 80);
             txtMetricasClasificacion.Name = "txtMetricasClasificacion";
             txtMetricasClasificacion.ReadOnly = true;
+            txtMetricasClasificacion.Multiline = true;
             txtMetricasClasificacion.ScrollBars = ScrollBars.Vertical;
-            txtMetricasClasificacion.Size = new Size(317, 49);
+            txtMetricasClasificacion.Size = new Size(280, 180);
             txtMetricasClasificacion.TabIndex = 13;
             // 
             // tabGraficas
@@ -392,7 +392,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas.Name = "tabGraficas";
             tabGraficas.Size = new Size(892, 570);
             tabGraficas.TabIndex = 3;
-            tabGraficas.Text = "Gr·ficas Dataset";
+            tabGraficas.Text = "Gr√°ficas Dataset";
             tabGraficas.UseVisualStyleBackColor = true;
             // 
             // btnActualizarGraficas
@@ -437,7 +437,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel.Name = "tabGraficasExcel";
             tabGraficasExcel.Size = new Size(892, 570);
             tabGraficasExcel.TabIndex = 4;
-            tabGraficasExcel.Text = "Gr·ficas Clasificar Excel";
+            tabGraficasExcel.Text = "Gr√°ficas Clasificar Excel";
             tabGraficasExcel.UseVisualStyleBackColor = true;
             // 
             // btnActualizarGraficasExcel
