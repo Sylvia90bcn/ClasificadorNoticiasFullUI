@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -523,7 +523,7 @@ namespace ClasificadorNoticiasGUI
             CargarGraficasDesdeExcelResultados();
 
             // Mostrar tiempo y métricas resumidas
-            txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
+            txtTiempoClasificacion.Text = stopwatch.Elapsed.ToString();
             var metricsSb = new System.Text.StringBuilder();
             metricsSb.AppendLine("Categorías:");
             foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
@@ -1356,17 +1356,6 @@ namespace ClasificadorNoticiasGUI
             }
 
             return newDt;
-        }
-
-        static string FormatElapsed(TimeSpan ts)
-        {
-            if (ts.TotalMilliseconds < 1000)
-                return $"{ts.TotalMilliseconds:F0} ms";
-            if (ts.TotalSeconds < 60)
-                return $"{ts.TotalSeconds:F2} s";
-            if (ts.TotalMinutes < 60)
-                return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
-            return $"{(int)ts.TotalHours}h {ts.Minutes}m";
         }
     }
 }
