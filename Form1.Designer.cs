@@ -26,6 +26,8 @@ namespace ClasificadorNoticiasGUI
         {
             tabControl1 = new TabControl();
             tabClasificar = new TabPage();
+            labelFiabilidadSentimientos = new Label();
+            txtFiabilidadSentimiento = new TextBox();
             labelFiabilidadSentimiento = new Label();
             txtFiabilidadCategoria = new TextBox();
             btnReentrenarSentimientos = new Button();
@@ -39,6 +41,8 @@ namespace ClasificadorNoticiasGUI
             label2 = new Label();
             label1 = new Label();
             tabDataset = new TabPage();
+            btnReentrenarCategoriasDataset = new Button();
+            btnReentrenarSentimientosDataset = new Button();
             btnReiniciarModeloSentimientos = new Button();
             btnReiniciarModeloCategorias = new Button();
             btnReiniciarDataset = new Button();
@@ -63,8 +67,10 @@ namespace ClasificadorNoticiasGUI
             btnActualizarGraficasExcel = new Button();
             plotViewExcelSentimientos = new OxyPlot.WindowsForms.PlotView();
             plotViewExcelCategorias = new OxyPlot.WindowsForms.PlotView();
-            txtFiabilidadSentimiento = new TextBox();
-            labelFiabilidadSentimientos = new Label();
+            label4 = new Label();
+            txtFiabilidadCategoriaExcel = new TextBox();
+            label5 = new Label();
+            txtFiabilidadSentimientosExcel = new TextBox();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
@@ -88,7 +94,7 @@ namespace ClasificadorNoticiasGUI
             tabControl1.Margin = new Padding(10);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(900, 600);
+            tabControl1.Size = new Size(1208, 776);
             tabControl1.TabIndex = 0;
             tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
@@ -111,15 +117,32 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.Location = new Point(4, 26);
             tabClasificar.Name = "tabClasificar";
             tabClasificar.Padding = new Padding(3);
-            tabClasificar.Size = new Size(892, 570);
+            tabClasificar.Size = new Size(1200, 746);
             tabClasificar.TabIndex = 0;
             tabClasificar.Text = "Clasificar titular";
             tabClasificar.UseVisualStyleBackColor = true;
             // 
+            // labelFiabilidadSentimientos
+            // 
+            labelFiabilidadSentimientos.AutoSize = true;
+            labelFiabilidadSentimientos.Location = new Point(20, 277);
+            labelFiabilidadSentimientos.Name = "labelFiabilidadSentimientos";
+            labelFiabilidadSentimientos.Size = new Size(149, 19);
+            labelFiabilidadSentimientos.TabIndex = 15;
+            labelFiabilidadSentimientos.Text = "Fiabilidad Sentimientos";
+            // 
+            // txtFiabilidadSentimiento
+            // 
+            txtFiabilidadSentimiento.Location = new Point(173, 274);
+            txtFiabilidadSentimiento.Name = "txtFiabilidadSentimiento";
+            txtFiabilidadSentimiento.ReadOnly = true;
+            txtFiabilidadSentimiento.Size = new Size(130, 25);
+            txtFiabilidadSentimiento.TabIndex = 14;
+            // 
             // labelFiabilidadSentimiento
             // 
             labelFiabilidadSentimiento.AutoSize = true;
-            labelFiabilidadSentimiento.Location = new Point(44, 370);
+            labelFiabilidadSentimiento.Location = new Point(20, 229);
             labelFiabilidadSentimiento.Name = "labelFiabilidadSentimiento";
             labelFiabilidadSentimiento.Size = new Size(129, 19);
             labelFiabilidadSentimiento.TabIndex = 12;
@@ -127,7 +150,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtFiabilidadCategoria
             // 
-            txtFiabilidadCategoria.Location = new Point(197, 370);
+            txtFiabilidadCategoria.Location = new Point(173, 229);
             txtFiabilidadCategoria.Name = "txtFiabilidadCategoria";
             txtFiabilidadCategoria.ReadOnly = true;
             txtFiabilidadCategoria.Size = new Size(130, 25);
@@ -135,7 +158,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // btnReentrenarSentimientos
             // 
-            btnReentrenarSentimientos.Location = new Point(655, 476);
+            btnReentrenarSentimientos.Location = new Point(377, 225);
             btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
             btnReentrenarSentimientos.Size = new Size(193, 29);
             btnReentrenarSentimientos.TabIndex = 0;
@@ -145,9 +168,9 @@ namespace ClasificadorNoticiasGUI
             // btnReentrenarCategorias
             // 
             btnReentrenarCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarCategorias.Location = new Point(655, 520);
+            btnReentrenarCategorias.Location = new Point(377, 277);
             btnReentrenarCategorias.Name = "btnReentrenarCategorias";
-            btnReentrenarCategorias.Size = new Size(182, 30);
+            btnReentrenarCategorias.Size = new Size(193, 30);
             btnReentrenarCategorias.TabIndex = 8;
             btnReentrenarCategorias.Text = "Reentrenar Categorias";
             btnReentrenarCategorias.UseVisualStyleBackColor = true;
@@ -224,6 +247,8 @@ namespace ClasificadorNoticiasGUI
             // 
             // tabDataset
             // 
+            tabDataset.Controls.Add(btnReentrenarCategoriasDataset);
+            tabDataset.Controls.Add(btnReentrenarSentimientosDataset);
             tabDataset.Controls.Add(btnReiniciarModeloSentimientos);
             tabDataset.Controls.Add(btnReiniciarModeloCategorias);
             tabDataset.Controls.Add(btnReiniciarDataset);
@@ -233,15 +258,35 @@ namespace ClasificadorNoticiasGUI
             tabDataset.Location = new Point(4, 26);
             tabDataset.Name = "tabDataset";
             tabDataset.Padding = new Padding(3);
-            tabDataset.Size = new Size(892, 570);
+            tabDataset.Size = new Size(1200, 746);
             tabDataset.TabIndex = 1;
             tabDataset.Text = "Dataset actual";
             tabDataset.UseVisualStyleBackColor = true;
             // 
+            // btnReentrenarCategoriasDataset
+            // 
+            btnReentrenarCategoriasDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReentrenarCategoriasDataset.Location = new Point(20, 676);
+            btnReentrenarCategoriasDataset.Name = "btnReentrenarCategoriasDataset";
+            btnReentrenarCategoriasDataset.Size = new Size(193, 30);
+            btnReentrenarCategoriasDataset.TabIndex = 9;
+            btnReentrenarCategoriasDataset.Text = "Reentrenar Categorias";
+            btnReentrenarCategoriasDataset.UseVisualStyleBackColor = true;
+            btnReentrenarCategoriasDataset.Click += btnReentrenarCategorias_Click;
+            // 
+            // btnReentrenarSentimientosDataset
+            // 
+            btnReentrenarSentimientosDataset.Location = new Point(20, 625);
+            btnReentrenarSentimientosDataset.Name = "btnReentrenarSentimientosDataset";
+            btnReentrenarSentimientosDataset.Size = new Size(193, 29);
+            btnReentrenarSentimientosDataset.TabIndex = 6;
+            btnReentrenarSentimientosDataset.Text = "Reentrenar Sentimientos";
+            btnReentrenarSentimientosDataset.Click += btnReentrenarSentimientos_Click;
+            // 
             // btnReiniciarModeloSentimientos
             // 
             btnReiniciarModeloSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloSentimientos.Location = new Point(8, 520);
+            btnReiniciarModeloSentimientos.Location = new Point(237, 625);
             btnReiniciarModeloSentimientos.Name = "btnReiniciarModeloSentimientos";
             btnReiniciarModeloSentimientos.Size = new Size(203, 30);
             btnReiniciarModeloSentimientos.TabIndex = 4;
@@ -252,9 +297,9 @@ namespace ClasificadorNoticiasGUI
             // btnReiniciarModeloCategorias
             // 
             btnReiniciarModeloCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloCategorias.Location = new Point(228, 520);
+            btnReiniciarModeloCategorias.Location = new Point(237, 676);
             btnReiniciarModeloCategorias.Name = "btnReiniciarModeloCategorias";
-            btnReiniciarModeloCategorias.Size = new Size(193, 30);
+            btnReiniciarModeloCategorias.Size = new Size(203, 30);
             btnReiniciarModeloCategorias.TabIndex = 3;
             btnReiniciarModeloCategorias.Text = "Reiniciar Modelo Categorias";
             btnReiniciarModeloCategorias.UseVisualStyleBackColor = true;
@@ -263,7 +308,7 @@ namespace ClasificadorNoticiasGUI
             // btnReiniciarDataset
             // 
             btnReiniciarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarDataset.Location = new Point(442, 520);
+            btnReiniciarDataset.Location = new Point(475, 625);
             btnReiniciarDataset.Name = "btnReiniciarDataset";
             btnReiniciarDataset.Size = new Size(120, 30);
             btnReiniciarDataset.TabIndex = 3;
@@ -274,7 +319,7 @@ namespace ClasificadorNoticiasGUI
             // btnActualizarDataset
             // 
             btnActualizarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarDataset.Location = new Point(750, 520);
+            btnActualizarDataset.Location = new Point(810, 625);
             btnActualizarDataset.Name = "btnActualizarDataset";
             btnActualizarDataset.Size = new Size(120, 30);
             btnActualizarDataset.TabIndex = 1;
@@ -285,7 +330,7 @@ namespace ClasificadorNoticiasGUI
             // btnCargarDatasetExcel
             // 
             btnCargarDatasetExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnCargarDatasetExcel.Location = new Point(584, 520);
+            btnCargarDatasetExcel.Location = new Point(639, 625);
             btnCargarDatasetExcel.Name = "btnCargarDatasetExcel";
             btnCargarDatasetExcel.Size = new Size(140, 30);
             btnCargarDatasetExcel.TabIndex = 2;
@@ -297,11 +342,15 @@ namespace ClasificadorNoticiasGUI
             // 
             dgvDataset.Location = new Point(0, 0);
             dgvDataset.Name = "dgvDataset";
-            dgvDataset.Size = new Size(870, 501);
+            dgvDataset.Size = new Size(1178, 608);
             dgvDataset.TabIndex = 5;
             // 
             // tabExcel
             // 
+            tabExcel.Controls.Add(label5);
+            tabExcel.Controls.Add(txtFiabilidadSentimientosExcel);
+            tabExcel.Controls.Add(label4);
+            tabExcel.Controls.Add(txtFiabilidadCategoriaExcel);
             tabExcel.Controls.Add(btnExportarResultados);
             tabExcel.Controls.Add(dgvExcelResultados);
             tabExcel.Controls.Add(btnCargarExcel);
@@ -313,7 +362,7 @@ namespace ClasificadorNoticiasGUI
             tabExcel.Controls.Add(txtMetricasClasificacion);
             tabExcel.Location = new Point(4, 26);
             tabExcel.Name = "tabExcel";
-            tabExcel.Size = new Size(892, 570);
+            tabExcel.Size = new Size(1200, 746);
             tabExcel.TabIndex = 2;
             tabExcel.Text = "Clasificar desde Excel";
             tabExcel.UseVisualStyleBackColor = true;
@@ -321,7 +370,7 @@ namespace ClasificadorNoticiasGUI
             // btnExportarResultados
             // 
             btnExportarResultados.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnExportarResultados.Location = new Point(740, 520);
+            btnExportarResultados.Location = new Point(1048, 696);
             btnExportarResultados.Name = "btnExportarResultados";
             btnExportarResultados.Size = new Size(120, 30);
             btnExportarResultados.TabIndex = 2;
@@ -335,7 +384,7 @@ namespace ClasificadorNoticiasGUI
             dgvExcelResultados.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvExcelResultados.Location = new Point(0, 77);
             dgvExcelResultados.Name = "dgvExcelResultados";
-            dgvExcelResultados.Size = new Size(884, 427);
+            dgvExcelResultados.Size = new Size(1192, 575);
             dgvExcelResultados.TabIndex = 1;
             // 
             // btnCargarExcel
@@ -351,9 +400,9 @@ namespace ClasificadorNoticiasGUI
             // btnReentrenarCategoriasExcel
             // 
             btnReentrenarCategoriasExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarCategoriasExcel.Location = new Point(480, 520);
+            btnReentrenarCategoriasExcel.Location = new Point(8, 694);
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
-            btnReentrenarCategoriasExcel.Size = new Size(160, 30);
+            btnReentrenarCategoriasExcel.Size = new Size(207, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
             btnReentrenarCategoriasExcel.Text = "Reentrenar Categorías";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
@@ -363,7 +412,7 @@ namespace ClasificadorNoticiasGUI
             // btnReentrenarSentimientosExcel
             // 
             btnReentrenarSentimientosExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarSentimientosExcel.Location = new Point(100, 520);
+            btnReentrenarSentimientosExcel.Location = new Point(8, 658);
             btnReentrenarSentimientosExcel.Name = "btnReentrenarSentimientosExcel";
             btnReentrenarSentimientosExcel.Size = new Size(207, 30);
             btnReentrenarSentimientosExcel.TabIndex = 5;
@@ -415,7 +464,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas.Controls.Add(plotViewCategorias);
             tabGraficas.Location = new Point(4, 26);
             tabGraficas.Name = "tabGraficas";
-            tabGraficas.Size = new Size(892, 570);
+            tabGraficas.Size = new Size(1200, 718);
             tabGraficas.TabIndex = 3;
             tabGraficas.Text = "Gráficas Dataset";
             tabGraficas.UseVisualStyleBackColor = true;
@@ -423,7 +472,7 @@ namespace ClasificadorNoticiasGUI
             // btnActualizarGraficas
             // 
             btnActualizarGraficas.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarGraficas.Location = new Point(740, 520);
+            btnActualizarGraficas.Location = new Point(1048, 668);
             btnActualizarGraficas.Name = "btnActualizarGraficas";
             btnActualizarGraficas.Size = new Size(120, 30);
             btnActualizarGraficas.TabIndex = 2;
@@ -460,7 +509,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel.Controls.Add(plotViewExcelCategorias);
             tabGraficasExcel.Location = new Point(4, 26);
             tabGraficasExcel.Name = "tabGraficasExcel";
-            tabGraficasExcel.Size = new Size(892, 570);
+            tabGraficasExcel.Size = new Size(1200, 718);
             tabGraficasExcel.TabIndex = 4;
             tabGraficasExcel.Text = "Gráficas Clasificar Excel";
             tabGraficasExcel.UseVisualStyleBackColor = true;
@@ -498,28 +547,45 @@ namespace ClasificadorNoticiasGUI
             plotViewExcelCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewExcelCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
-            // txtFiabilidadSentimiento
+            // label4
             // 
-            txtFiabilidadSentimiento.Location = new Point(197, 415);
-            txtFiabilidadSentimiento.Name = "txtFiabilidadSentimiento";
-            txtFiabilidadSentimiento.ReadOnly = true;
-            txtFiabilidadSentimiento.Size = new Size(130, 25);
-            txtFiabilidadSentimiento.TabIndex = 14;
+            label4.AutoSize = true;
+            label4.Location = new Point(280, 669);
+            label4.Name = "label4";
+            label4.Size = new Size(129, 19);
+            label4.TabIndex = 14;
+            label4.Text = "Fiabilidad Categoría";
             // 
-            // labelFiabilidadSentimientos
+            // txtFiabilidadCategoriaExcel
             // 
-            labelFiabilidadSentimientos.AutoSize = true;
-            labelFiabilidadSentimientos.Location = new Point(44, 418);
-            labelFiabilidadSentimientos.Name = "labelFiabilidadSentimientos";
-            labelFiabilidadSentimientos.Size = new Size(149, 19);
-            labelFiabilidadSentimientos.TabIndex = 15;
-            labelFiabilidadSentimientos.Text = "Fiabilidad Sentimientos";
+            txtFiabilidadCategoriaExcel.Location = new Point(433, 666);
+            txtFiabilidadCategoriaExcel.Name = "txtFiabilidadCategoriaExcel";
+            txtFiabilidadCategoriaExcel.ReadOnly = true;
+            txtFiabilidadCategoriaExcel.Size = new Size(130, 25);
+            txtFiabilidadCategoriaExcel.TabIndex = 15;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(280, 703);
+            label5.Name = "label5";
+            label5.Size = new Size(149, 19);
+            label5.TabIndex = 17;
+            label5.Text = "Fiabilidad Sentimientos";
+            // 
+            // txtFiabilidadSentimientosExcel
+            // 
+            txtFiabilidadSentimientosExcel.Location = new Point(433, 700);
+            txtFiabilidadSentimientosExcel.Name = "txtFiabilidadSentimientosExcel";
+            txtFiabilidadSentimientosExcel.ReadOnly = true;
+            txtFiabilidadSentimientosExcel.Size = new Size(130, 25);
+            txtFiabilidadSentimientosExcel.TabIndex = 16;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(900, 600);
+            ClientSize = new Size(1208, 776);
             Controls.Add(tabControl1);
             Font = new Font("Segoe UI", 9.75F);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -583,5 +649,11 @@ namespace ClasificadorNoticiasGUI
         private TextBox txtFiabilidadCategoria;
         private Label labelFiabilidadSentimientos;
         private TextBox txtFiabilidadSentimiento;
+        private Button btnReentrenarCategoriasDataset;
+        private Button btnReentrenarSentimientosDataset;
+        private Label label5;
+        private TextBox txtFiabilidadSentimientosExcel;
+        private Label label4;
+        private TextBox txtFiabilidadCategoriaExcel;
     }
 }

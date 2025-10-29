@@ -420,7 +420,7 @@ namespace ClasificadorNoticiasGUI
             dgvExcelResultados.DataSource = resultados;
         }
 
-        private void btnCargarExcel_Click(object sender, EventArgs e)
+        private void OldbtnCargarExcel_Click(object sender, EventArgs e)
         {
             // Abrir diálogo para seleccionar archivo
             using var ofd = new OpenFileDialog();
@@ -570,6 +570,179 @@ namespace ClasificadorNoticiasGUI
 
             lblProgreso.Text = "Clasificación completada ✅";
         }
+
+        private void btnCargarExcel_Click(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog();
+            ofd.Filter = "Excel Files|*.xlsx;*.xls";
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            var path = ofd.FileName;
+
+            DataTable original;
+            try
+            {
+                original = LeerExcelComoDataTable(path);
+                if (original == null || original.Rows.Count == 0)
+                {
+                    MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (modeloCat == null || modeloSent == null)
+            {
+                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Buscar columna de titulares
+            string titularCol = null;
+            foreach (DataColumn c in original.Columns)
+            {
+                var name = c.ColumnName.ToLower();
+                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+                {
+                    titularCol = c.ColumnName;
+                    break;
+                }
+            }
+            if (titularCol == null)
+            {
+                foreach (DataColumn c in original.Columns)
+                {
+                    var name = c.ColumnName.Trim().ToLowerInvariant();
+                    if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
+                    {
+                        titularCol = c.ColumnName;
+                        break;
+                    }
+                }
+            }
+
+            if (titularCol == null)
+            {
+                var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
+                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
+                              "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Crear motores
+            var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+            // Preparar DataTable de resultados
+            var resultadosDt = new DataTable();
+            resultadosDt.Columns.Add("Titular");
+            resultadosDt.Columns.Add("Categoria");
+            resultadosDt.Columns.Add("Sentimiento");
+
+            // 🔹 NUEVO: columnas de fiabilidad
+            resultadosDt.Columns.Add("Fiabilidad Categoria");
+            resultadosDt.Columns.Add("Fiabilidad Sentimiento");
+
+            var extraCols = new List<string>();
+            foreach (DataColumn c in original.Columns)
+            {
+                if (c.ColumnName == titularCol) continue;
+                var colName = c.ColumnName;
+                int suffix = 1;
+                while (resultadosDt.Columns.Contains(colName))
+                {
+                    colName = c.ColumnName + "_" + suffix;
+                    suffix++;
+                }
+                resultadosDt.Columns.Add(colName);
+                extraCols.Add(c.ColumnName);
+            }
+
+            int total = original.Rows.Count;
+            int i = 1;
+
+            var stopwatch = Stopwatch.StartNew();
+
+            var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (DataRow row in original.Rows)
+            {
+                var titular = row[titularCol]?.ToString()?.Trim();
+                if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
+
+                // Predicción
+                var predCat = engineCat.Predict(new Articulo { Texto = titular });
+                var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
+
+                // 🔹 Calcular fiabilidad
+                var maxScoreCat = (predCat.Score != null && predCat.Score.Length > 0) ? predCat.Score.Max() : 0f;
+                var maxScoreSent = (predSent.Score != null && predSent.Score.Length > 0) ? predSent.Score.Max() : 0f;
+
+                // Crear fila nueva
+                var newRow = resultadosDt.NewRow();
+                newRow["Titular"] = titular;
+                newRow["Categoria"] = predCat.CategoriaPredicha;
+                newRow["Sentimiento"] = predSent.SentimientoPredicho;
+                newRow["Fiabilidad Categoria"] = $"{maxScoreCat:P1}";
+                newRow["Fiabilidad Sentimiento"] = $"{maxScoreSent:P1}";
+
+                // Copiar columnas extra
+                for (int ec = 0; ec < extraCols.Count; ec++)
+                {
+                    var origName = extraCols[ec];
+                    var targetName = resultadosDt.Columns[5 + ec].ColumnName;
+                    newRow[targetName] = row[origName]?.ToString() ?? "";
+                }
+
+                resultadosDt.Rows.Add(newRow);
+
+                // 🔹 Mostrar la última fiabilidad calculada en los TextBox
+                txtFiabilidadCategoriaExcel.Text = $"{maxScoreCat:P1}";
+                txtFiabilidadSentimientosExcel.Text = $"{maxScoreSent:P1}";
+                txtFiabilidadCategoriaExcel.ForeColor = maxScoreCat < 0.5f ? Color.Red : Color.Green;
+                txtFiabilidadSentimientosExcel.ForeColor = maxScoreSent < 0.5f ? Color.Red : Color.Green;
+
+                // Contadores
+                var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
+                var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
+                if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0;
+                catCountsLocal[catKey]++;
+                if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0;
+                senCountsLocal[senKey]++;
+
+                lblProgreso.Text = $"Clasificando {i}/{total}";
+                Application.DoEvents();
+                i++;
+            }
+
+            stopwatch.Stop();
+
+            dgvExcelResultados.DataSource = resultadosDt;
+            dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvExcelResultados.Refresh();
+
+            CargarGraficasDesdeExcelResultados();
+
+            txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
+
+            var metricsSb = new System.Text.StringBuilder();
+            metricsSb.AppendLine("Categorías:");
+            foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value))
+                metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+            metricsSb.AppendLine();
+            metricsSb.AppendLine("Sentimientos:");
+            foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value))
+                metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+            txtMetricasClasificacion.Text = metricsSb.ToString();
+
+            lblProgreso.Text = "Clasificación completada ✅";
+        }
+
 
         private void btnExportarResultados_Click(object sender, EventArgs e)
         {
@@ -1408,7 +1581,5 @@ namespace ClasificadorNoticiasGUI
                 return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
         }
-
-     
     }
 }
