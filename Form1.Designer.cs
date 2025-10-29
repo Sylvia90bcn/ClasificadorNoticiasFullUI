@@ -41,6 +41,10 @@ namespace ClasificadorNoticiasGUI
             label2 = new Label();
             label1 = new Label();
             tabDataset = new TabPage();
+            label6 = new Label();
+            txtLogLoss = new TextBox();
+            label7 = new Label();
+            txtMicroAccuracy = new TextBox();
             btnReentrenarCategoriasDataset = new Button();
             btnReentrenarSentimientosDataset = new Button();
             btnReiniciarModeloSentimientos = new Button();
@@ -50,6 +54,10 @@ namespace ClasificadorNoticiasGUI
             btnCargarDatasetExcel = new Button();
             dgvDataset = new DataGridView();
             tabExcel = new TabPage();
+            label5 = new Label();
+            txtFiabilidadSentimientosExcel = new TextBox();
+            label4 = new Label();
+            txtFiabilidadCategoriaExcel = new TextBox();
             btnExportarResultados = new Button();
             dgvExcelResultados = new DataGridView();
             btnCargarExcel = new Button();
@@ -67,10 +75,10 @@ namespace ClasificadorNoticiasGUI
             btnActualizarGraficasExcel = new Button();
             plotViewExcelSentimientos = new OxyPlot.WindowsForms.PlotView();
             plotViewExcelCategorias = new OxyPlot.WindowsForms.PlotView();
-            label4 = new Label();
-            txtFiabilidadCategoriaExcel = new TextBox();
-            label5 = new Label();
-            txtFiabilidadSentimientosExcel = new TextBox();
+            txtMicroAccuracySent = new TextBox();
+            txtLogLossSent = new TextBox();
+            label8 = new Label();
+            label9 = new Label();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
@@ -247,6 +255,14 @@ namespace ClasificadorNoticiasGUI
             // 
             // tabDataset
             // 
+            tabDataset.Controls.Add(label9);
+            tabDataset.Controls.Add(label8);
+            tabDataset.Controls.Add(txtLogLossSent);
+            tabDataset.Controls.Add(txtMicroAccuracySent);
+            tabDataset.Controls.Add(label6);
+            tabDataset.Controls.Add(txtLogLoss);
+            tabDataset.Controls.Add(label7);
+            tabDataset.Controls.Add(txtMicroAccuracy);
             tabDataset.Controls.Add(btnReentrenarCategoriasDataset);
             tabDataset.Controls.Add(btnReentrenarSentimientosDataset);
             tabDataset.Controls.Add(btnReiniciarModeloSentimientos);
@@ -262,6 +278,42 @@ namespace ClasificadorNoticiasGUI
             tabDataset.TabIndex = 1;
             tabDataset.Text = "Dataset actual";
             tabDataset.UseVisualStyleBackColor = true;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(475, 710);
+            label6.Name = "label6";
+            label6.Size = new Size(128, 19);
+            label6.TabIndex = 21;
+            label6.Text = "LogLoss Categorias";
+            label6.Click += label6_Click;
+            // 
+            // txtLogLoss
+            // 
+            txtLogLoss.Location = new Point(661, 707);
+            txtLogLoss.Name = "txtLogLoss";
+            txtLogLoss.ReadOnly = true;
+            txtLogLoss.Size = new Size(130, 25);
+            txtLogLoss.TabIndex = 20;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(475, 676);
+            label7.Name = "label7";
+            label7.Size = new Size(167, 19);
+            label7.TabIndex = 18;
+            label7.Text = "MicroAccuracy Categorias";
+            label7.Click += label7_Click;
+            // 
+            // txtMicroAccuracy
+            // 
+            txtMicroAccuracy.Location = new Point(661, 670);
+            txtMicroAccuracy.Name = "txtMicroAccuracy";
+            txtMicroAccuracy.ReadOnly = true;
+            txtMicroAccuracy.Size = new Size(130, 25);
+            txtMicroAccuracy.TabIndex = 19;
             // 
             // btnReentrenarCategoriasDataset
             // 
@@ -340,7 +392,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // dgvDataset
             // 
-            dgvDataset.Location = new Point(0, 0);
+            dgvDataset.Location = new Point(0, 4);
             dgvDataset.Name = "dgvDataset";
             dgvDataset.Size = new Size(1178, 608);
             dgvDataset.TabIndex = 5;
@@ -366,6 +418,40 @@ namespace ClasificadorNoticiasGUI
             tabExcel.TabIndex = 2;
             tabExcel.Text = "Clasificar desde Excel";
             tabExcel.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(280, 703);
+            label5.Name = "label5";
+            label5.Size = new Size(149, 19);
+            label5.TabIndex = 17;
+            label5.Text = "Fiabilidad Sentimientos";
+            // 
+            // txtFiabilidadSentimientosExcel
+            // 
+            txtFiabilidadSentimientosExcel.Location = new Point(433, 700);
+            txtFiabilidadSentimientosExcel.Name = "txtFiabilidadSentimientosExcel";
+            txtFiabilidadSentimientosExcel.ReadOnly = true;
+            txtFiabilidadSentimientosExcel.Size = new Size(130, 25);
+            txtFiabilidadSentimientosExcel.TabIndex = 16;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(280, 669);
+            label4.Name = "label4";
+            label4.Size = new Size(129, 19);
+            label4.TabIndex = 14;
+            label4.Text = "Fiabilidad Categoría";
+            // 
+            // txtFiabilidadCategoriaExcel
+            // 
+            txtFiabilidadCategoriaExcel.Location = new Point(433, 666);
+            txtFiabilidadCategoriaExcel.Name = "txtFiabilidadCategoriaExcel";
+            txtFiabilidadCategoriaExcel.ReadOnly = true;
+            txtFiabilidadCategoriaExcel.Size = new Size(130, 25);
+            txtFiabilidadCategoriaExcel.TabIndex = 15;
             // 
             // btnExportarResultados
             // 
@@ -464,7 +550,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas.Controls.Add(plotViewCategorias);
             tabGraficas.Location = new Point(4, 26);
             tabGraficas.Name = "tabGraficas";
-            tabGraficas.Size = new Size(1200, 718);
+            tabGraficas.Size = new Size(1200, 746);
             tabGraficas.TabIndex = 3;
             tabGraficas.Text = "Gráficas Dataset";
             tabGraficas.UseVisualStyleBackColor = true;
@@ -509,7 +595,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel.Controls.Add(plotViewExcelCategorias);
             tabGraficasExcel.Location = new Point(4, 26);
             tabGraficasExcel.Name = "tabGraficasExcel";
-            tabGraficasExcel.Size = new Size(1200, 718);
+            tabGraficasExcel.Size = new Size(1200, 746);
             tabGraficasExcel.TabIndex = 4;
             tabGraficasExcel.Text = "Gráficas Clasificar Excel";
             tabGraficasExcel.UseVisualStyleBackColor = true;
@@ -547,39 +633,40 @@ namespace ClasificadorNoticiasGUI
             plotViewExcelCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewExcelCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
-            // label4
+            // txtMicroAccuracySent
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(280, 669);
-            label4.Name = "label4";
-            label4.Size = new Size(129, 19);
-            label4.TabIndex = 14;
-            label4.Text = "Fiabilidad Categoría";
+            txtMicroAccuracySent.Location = new Point(1001, 658);
+            txtMicroAccuracySent.Name = "txtMicroAccuracySent";
+            txtMicroAccuracySent.ReadOnly = true;
+            txtMicroAccuracySent.Size = new Size(130, 25);
+            txtMicroAccuracySent.TabIndex = 22;
             // 
-            // txtFiabilidadCategoriaExcel
+            // txtLogLossSent
             // 
-            txtFiabilidadCategoriaExcel.Location = new Point(433, 666);
-            txtFiabilidadCategoriaExcel.Name = "txtFiabilidadCategoriaExcel";
-            txtFiabilidadCategoriaExcel.ReadOnly = true;
-            txtFiabilidadCategoriaExcel.Size = new Size(130, 25);
-            txtFiabilidadCategoriaExcel.TabIndex = 15;
+            txtLogLossSent.Location = new Point(1001, 701);
+            txtLogLossSent.Name = "txtLogLossSent";
+            txtLogLossSent.ReadOnly = true;
+            txtLogLossSent.Size = new Size(130, 25);
+            txtLogLossSent.TabIndex = 23;
             // 
-            // label5
+            // label8
             // 
-            label5.AutoSize = true;
-            label5.Location = new Point(280, 703);
-            label5.Name = "label5";
-            label5.Size = new Size(149, 19);
-            label5.TabIndex = 17;
-            label5.Text = "Fiabilidad Sentimientos";
+            label8.AutoSize = true;
+            label8.Location = new Point(810, 664);
+            label8.Name = "label8";
+            label8.Size = new Size(181, 19);
+            label8.TabIndex = 24;
+            label8.Text = "MicroAccuracy Sentimientos";
             // 
-            // txtFiabilidadSentimientosExcel
+            // label9
             // 
-            txtFiabilidadSentimientosExcel.Location = new Point(433, 700);
-            txtFiabilidadSentimientosExcel.Name = "txtFiabilidadSentimientosExcel";
-            txtFiabilidadSentimientosExcel.ReadOnly = true;
-            txtFiabilidadSentimientosExcel.Size = new Size(130, 25);
-            txtFiabilidadSentimientosExcel.TabIndex = 16;
+            label9.AutoSize = true;
+            label9.Location = new Point(816, 707);
+            label9.Name = "label9";
+            label9.Size = new Size(142, 19);
+            label9.TabIndex = 25;
+            label9.Text = "LogLoss Sentimientos";
+            label9.Click += label9_Click;
             // 
             // Form1
             // 
@@ -597,6 +684,7 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.ResumeLayout(false);
             tabClasificar.PerformLayout();
             tabDataset.ResumeLayout(false);
+            tabDataset.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDataset).EndInit();
             tabExcel.ResumeLayout(false);
             tabExcel.PerformLayout();
@@ -655,5 +743,13 @@ namespace ClasificadorNoticiasGUI
         private TextBox txtFiabilidadSentimientosExcel;
         private Label label4;
         private TextBox txtFiabilidadCategoriaExcel;
+        private Label label6;
+        private TextBox txtLogLoss;
+        private Label label7;
+        private TextBox txtMicroAccuracy;
+        private Label label9;
+        private Label label8;
+        private TextBox txtLogLossSent;
+        private TextBox txtMicroAccuracySent;
     }
 }

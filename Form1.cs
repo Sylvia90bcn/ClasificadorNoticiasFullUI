@@ -186,7 +186,7 @@ namespace ClasificadorNoticiasGUI
                     .ToList();
             }
 
-            var modelo = EntrenarModeloCategorias(ml, extrasArt, guardar: true);
+            var modelo = EntrenarModeloCategorias(this, ml, extrasArt, guardar: true);
             MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
@@ -230,7 +230,7 @@ namespace ClasificadorNoticiasGUI
                     .ToList();
             }
 
-            var modelo = EntrenarModeloSentimientos(ml, extrasSen, guardar: true);
+            var modelo = EntrenarModeloSentimientos(this, ml, extrasSen, guardar: true);
             MessageBox.Show("El modelo de sentimientos ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
@@ -238,7 +238,7 @@ namespace ClasificadorNoticiasGUI
 
 
         // Nueva sobrecarga: acepta datos extra (por ejemplo, filas de dgvExcelResultados)
-        static ITransformer EntrenarModeloCategorias(MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
+        static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de categorías...");
 
@@ -295,6 +295,8 @@ namespace ClasificadorNoticiasGUI
             MessageBox.Show($"Métricas categorías:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
                 "Métricas - Categorías", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+            form.txtLogLoss.Text = $"{metrics.LogLoss.ToString("F4")}";
+            form.txtMicroAccuracy.Text = $"{metrics.MicroAccuracy.ToString("P2")}";
             // Ajustar el modelo final usando todos los datos y con MapKeyToValue para predicción/string labels
             var modeloFinal = finalPipeline.Fit(datos);
 
@@ -309,14 +311,14 @@ namespace ClasificadorNoticiasGUI
         }
 
         // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        static ITransformer EntrenarModeloCategorias(MLContext ml, bool guardar = false)
+        static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, bool guardar = false)
         {
             // Llamar a la sobrecarga que acepta extras con null
-            return EntrenarModeloCategorias(ml, extras: null, guardar: guardar);
+            return EntrenarModeloCategorias(form, ml, extras: null, guardar: guardar);
         }
 
         // Nueva sobrecarga para sentimientos
-        static ITransformer EntrenarModeloSentimientos(MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
+        static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de sentimientos...");
 
@@ -367,6 +369,9 @@ namespace ClasificadorNoticiasGUI
             MessageBox.Show($"Métricas sentimientos:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
                 "Métricas - Sentimientos", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+            form.txtLogLossSent.Text = $"{metrics.LogLoss.ToString("F4")}";
+            form.txtMicroAccuracySent.Text = $"{metrics.MicroAccuracy.ToString("P2")}";
+
             var modeloFinal = finalPipeline.Fit(datos);
 
             if (guardar)
@@ -380,9 +385,9 @@ namespace ClasificadorNoticiasGUI
         }
 
         // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        static ITransformer EntrenarModeloSentimientos(MLContext ml, bool guardar = false)
+        static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, bool guardar = false)
         {
-            return EntrenarModeloSentimientos(ml, extras: null, guardar: guardar);
+            return EntrenarModeloSentimientos(form, ml, extras: null, guardar: guardar);
         }
 
 
@@ -1580,6 +1585,21 @@ namespace ClasificadorNoticiasGUI
             if (ts.TotalMinutes < 60)
                 return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
