@@ -1,0 +1,64 @@
+﻿# Clasificador de Noticias - GUI (Windows Forms)
+
+## Resumen
+Aplicación de escritorio (WinForms) para clasificar titulares de noticias en categorías y sentimientos usando modelos ML.NET. Permite clasificar un titular individual, cargar un Excel con titulares para clasificar en lote, actualizar/guardar un dataset local y mostrar gráficas y métricas.
+
+## Requisitos
+- .NET 8 SDK (net8.0-windows)
+- Windows (WinForms)
+
+## Dependencias (NuGet)
+- Microsoft.ML (4.0.2)
+- ClosedXML (0.105.0) - lectura/escritura .xlsx
+- ExcelDataReader (3.8.0) + ExcelDataReader.DataSet - lectura .xls/.xlsx
+- OxyPlot.WindowsForms (2.1.0) - gráficas
+
+## Estructura importante
+- **Modelo/** : aquí van los ZIP de los modelos ML.NET:
+  - modelo_categorias.zip
+  - modelo_sentimientos.zip
+
+- **Datos/** : archivos CSV usados por la aplicación
+  - datos.csv             -> Texto,Categoria  (mínimo para entrenar categorías)
+  - sentimientos.csv      -> Texto,Label      (mínimo para entrenar sentimientos)
+  - dataset_completo.csv  -> Tabla completa con Texto,Categoria,Sentimiento y columnas extra
+
+## Uso
+1. Compilar y ejecutar
+   - Desde terminal: `dotnet build`
+   - Ejecutar: `dotnet run --project ClasificadorNoticiasGUI`
+
+2. Pestañas principales
+   - **Clasificar titular**: introducir un titular en el campo y pulsar "Clasificar". Se muestran categoría, sentimiento y métricas de fiabilidad (probabilidad máxima del modelo). También se puede guardar el resultado en el dataset local.
+   - **Dataset actual**: ver/actualizar el dataset, cargar datos desde Excel al dataset y reiniciar/actualizar modelos.
+   - **Clasificar desde Excel**: seleccionar un archivo Excel (.xlsx o .xls) que contenga una columna de titulares. La aplicación clasificará todas las filas, mostrará resultados en tabla, tiempo de clasificación y métricas resumidas (conteo por categoría y sentimiento). También se pueden exportar los resultados a Excel.
+   - **Gráficas** / **Gráficas Clasificar Excel**: muestran gráficas (barras) de las categorías y sentimientos usando OxyPlot. Las gráficas se actualizan automáticamente al abrir la pestaña o después de una clasificación en Excel.
+
+## Formato de Excel
+- La aplicación detecta automáticamente una columna de titulares con encabezado "Titular" (case-insensitive) o variaciones como "título", "title", "headline".
+- Si la hoja tiene encabezados desplazados (la tabla empieza en una columna u fila distinta), la carga es más robusta: el código usa `RangeUsed()` y también intenta detectar una fila de cabecera dentro de las primeras filas.
+- Asegúrate de que el archivo incluye un encabezado reconocible para la columna con los titulares.
+
+## Métricas y tiempo
+- Clasificación individual (pestaña "Clasificar titular"): muestra "Fiabilidad" para categoría y sentimiento (máxima probabilidad devuelta por el modelo). El valor aparece en porcentaje; color rojo si < 50%.
+- Clasificación por Excel: muestra el tiempo total de clasificación (formateado con unidad: ms/s/min/h) y un resumen con conteos por categoría y sentimiento.
+
+## Entrenamiento / Reentrenamiento
+- Desde la interfaz se pueden reentrenar los modelos usando filas del Excel o el dataset. Los nuevos modelos se guardan en la carpeta Modelo.
+- Antes de reentrenar asegúrate de que los CSV en Datos/ contienen suficientes ejemplos.
+
+## Solución de problemas
+- "No se encontró columna 'Titular'": revisa el mensaje que muestra las columnas detectadas. Si las columnas aparecen con nombres genéricos como "Column1" la aplicación intenta detectar una fila de cabecera dentro de las primeras filas; sin embargo es mejor asegurar que el Excel tenga una fila de encabezado con nombres claros.
+- Modelos ausentes: si falta modelo_categorias.zip o modelo_sentimientos.zip se mostrará un aviso. Puedes colocar los ZIP en la carpeta Modelo para habilitar la clasificación.
+
+## Notas para desarrolladores
+- Código relevante:
+  - Form1.cs / Form1.Designer.cs: lógica UI, carga Excel, clasificación, métricas y gráficos.
+  - Helpers: `LeerExcelComoDataTable`, `LeerExcelTitulares`, `EnsureHeaderRow`, `FormatElapsed`.
+- Estilo: la aplicación usa OxyPlot para las gráficas y ClosedXML/ExcelDataReader para Excel.
+
+## Contacto / Contribuciones
+Este repositorio incluye una interfaz de ejemplo. Para mejoras, abre issues o pull requests en el repositorio origen.
+
+## Licencia
+No se incorpora licencia por defecto en este README. Añade un fichero LICENSE si quieres aplicar una licencia específica.

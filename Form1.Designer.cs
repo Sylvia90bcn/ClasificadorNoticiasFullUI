@@ -26,6 +26,8 @@ namespace ClasificadorNoticiasGUI
         {
             tabControl1 = new TabControl();
             tabClasificar = new TabPage();
+            labelFiabilidadSentimiento = new Label();
+            txtFiabilidadCategoria = new TextBox();
             btnReentrenarSentimientos = new Button();
             btnReentrenarCategorias = new Button();
             btnGuardar = new Button();
@@ -61,6 +63,8 @@ namespace ClasificadorNoticiasGUI
             btnActualizarGraficasExcel = new Button();
             plotViewExcelSentimientos = new OxyPlot.WindowsForms.PlotView();
             plotViewExcelCategorias = new OxyPlot.WindowsForms.PlotView();
+            txtFiabilidadSentimiento = new TextBox();
+            labelFiabilidadSentimientos = new Label();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
@@ -90,6 +94,10 @@ namespace ClasificadorNoticiasGUI
             // 
             // tabClasificar
             // 
+            tabClasificar.Controls.Add(labelFiabilidadSentimientos);
+            tabClasificar.Controls.Add(txtFiabilidadSentimiento);
+            tabClasificar.Controls.Add(labelFiabilidadSentimiento);
+            tabClasificar.Controls.Add(txtFiabilidadCategoria);
             tabClasificar.Controls.Add(btnReentrenarSentimientos);
             tabClasificar.Controls.Add(btnReentrenarCategorias);
             tabClasificar.Controls.Add(btnGuardar);
@@ -108,11 +116,28 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.Text = "Clasificar titular";
             tabClasificar.UseVisualStyleBackColor = true;
             // 
+            // labelFiabilidadSentimiento
+            // 
+            labelFiabilidadSentimiento.AutoSize = true;
+            labelFiabilidadSentimiento.Location = new Point(44, 370);
+            labelFiabilidadSentimiento.Name = "labelFiabilidadSentimiento";
+            labelFiabilidadSentimiento.Size = new Size(129, 19);
+            labelFiabilidadSentimiento.TabIndex = 12;
+            labelFiabilidadSentimiento.Text = "Fiabilidad Categoría";
+            // 
+            // txtFiabilidadCategoria
+            // 
+            txtFiabilidadCategoria.Location = new Point(197, 370);
+            txtFiabilidadCategoria.Name = "txtFiabilidadCategoria";
+            txtFiabilidadCategoria.ReadOnly = true;
+            txtFiabilidadCategoria.Size = new Size(130, 25);
+            txtFiabilidadCategoria.TabIndex = 13;
+            // 
             // btnReentrenarSentimientos
             // 
-            btnReentrenarSentimientos.Location = new Point(28, 492);
+            btnReentrenarSentimientos.Location = new Point(655, 476);
             btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
-            btnReentrenarSentimientos.Size = new Size(217, 48);
+            btnReentrenarSentimientos.Size = new Size(193, 29);
             btnReentrenarSentimientos.TabIndex = 0;
             btnReentrenarSentimientos.Text = "Reentrenar Sentimientos";
             btnReentrenarSentimientos.Click += btnReentrenarSentimientos_Click;
@@ -164,7 +189,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtTitular
             // 
-            txtTitular.Location = new Point(140, 40);
+            txtTitular.Location = new Point(98, 28);
             txtTitular.Multiline = true;
             txtTitular.Name = "txtTitular";
             txtTitular.Size = new Size(720, 60);
@@ -473,6 +498,23 @@ namespace ClasificadorNoticiasGUI
             plotViewExcelCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewExcelCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
+            // txtFiabilidadSentimiento
+            // 
+            txtFiabilidadSentimiento.Location = new Point(197, 415);
+            txtFiabilidadSentimiento.Name = "txtFiabilidadSentimiento";
+            txtFiabilidadSentimiento.ReadOnly = true;
+            txtFiabilidadSentimiento.Size = new Size(130, 25);
+            txtFiabilidadSentimiento.TabIndex = 14;
+            // 
+            // labelFiabilidadSentimientos
+            // 
+            labelFiabilidadSentimientos.AutoSize = true;
+            labelFiabilidadSentimientos.Location = new Point(44, 418);
+            labelFiabilidadSentimientos.Name = "labelFiabilidadSentimientos";
+            labelFiabilidadSentimientos.Size = new Size(149, 19);
+            labelFiabilidadSentimientos.TabIndex = 15;
+            labelFiabilidadSentimientos.Text = "Fiabilidad Sentimientos";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -537,5 +579,9 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.TextBox txtTiempoClasificacion;
         private System.Windows.Forms.Label labelMetricasClasificacion;
         private System.Windows.Forms.TextBox txtMetricasClasificacion;
+        private Label labelFiabilidadSentimiento;
+        private TextBox txtFiabilidadCategoria;
+        private Label labelFiabilidadSentimientos;
+        private TextBox txtFiabilidadSentimiento;
     }
 }

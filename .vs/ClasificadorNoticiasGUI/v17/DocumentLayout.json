@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -15,12 +11,28 @@
       "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\articulo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:articulo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\prediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:prediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\sentimiento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:sentimiento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\sentimientoprediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:sentimientoprediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\entradaclase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:entradaclase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\articulo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:articulo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -29,18 +41,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\resultadoexcel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:resultadoexcel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\sentimientoprediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:sentimientoprediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\sentimiento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:sentimiento.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|c:\\users\\sylvi\\desktop\\paperlarajavi\\clasificadornoticiasgui_full\\prediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{943D5136-C360-99CA-0556-A8ACD12A8B84}|ClasificadorNoticiasGUI.csproj|solutionrelative:prediccion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,17 +50,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Form1.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.cs",
               "RelativeToolTip": "Form1.cs",
-              "ViewState": "AgIAAEMFAAAAAAAAAAAlwFwFAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGcAAAAAAAAAAAAAAH0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-19T18:44:32.447Z",
               "IsPinned": true,
@@ -68,44 +68,45 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 7,
               "Title": "Form1.cs [Dise\u00F1o]",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.cs [Dise\u00F1o]",
               "RelativeToolTip": "Form1.cs [Dise\u00F1o]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-28T20:59:32.697Z",
+              "WhenOpened": "2025-10-29T21:00:18.129Z",
               "EditorCaption": " [Dise\u00F1o]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Form1.Designer.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.Designer.cs",
               "RelativeDocumentMoniker": "Form1.Designer.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.Designer.cs",
               "RelativeToolTip": "Form1.Designer.cs",
-              "ViewState": "AgIAAA4CAAAAAAAAAAAtwBoCAABFAAAAAAAAAA==",
+              "ViewState": "AgIAAG0AAAAAAAAAAAApwH4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-28T20:56:17.042Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "EntradaClase.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\EntradaClase.cs",
               "RelativeDocumentMoniker": "EntradaClase.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\EntradaClase.cs",
               "RelativeToolTip": "EntradaClase.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T19:11:37.738Z"
+              "WhenOpened": "2025-10-19T19:11:37.738Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "Articulo.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Articulo.cs",
               "RelativeDocumentMoniker": "Articulo.cs",
@@ -113,11 +114,12 @@
               "RelativeToolTip": "Articulo.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:14.529Z"
+              "WhenOpened": "2025-10-19T18:44:14.529Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 2,
               "Title": "Prediccion.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Prediccion.cs",
               "RelativeDocumentMoniker": "Prediccion.cs",
@@ -125,11 +127,12 @@
               "RelativeToolTip": "Prediccion.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:12.148Z"
+              "WhenOpened": "2025-10-19T18:44:12.148Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 4,
               "Title": "SentimientoPrediccion.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\SentimientoPrediccion.cs",
               "RelativeDocumentMoniker": "SentimientoPrediccion.cs",
@@ -137,11 +140,12 @@
               "RelativeToolTip": "SentimientoPrediccion.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:11.215Z"
+              "WhenOpened": "2025-10-19T18:44:11.215Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 3,
               "Title": "Sentimiento.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Sentimiento.cs",
               "RelativeDocumentMoniker": "Sentimiento.cs",
@@ -149,11 +153,12 @@
               "RelativeToolTip": "Sentimiento.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:09.921Z"
+              "WhenOpened": "2025-10-19T18:44:09.921Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "ResultadoExcel.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\ResultadoExcel.cs",
               "RelativeDocumentMoniker": "ResultadoExcel.cs",
@@ -165,7 +170,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 8,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",

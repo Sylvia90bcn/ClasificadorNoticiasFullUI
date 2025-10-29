@@ -1,0 +1,1410 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using ClosedXML.Excel;
+using ExcelDataReader;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using OxyPlot;
+using OxyPlot.Series;
+using OxyPlot.Axes;
+using System.Diagnostics;
+
+namespace ClasificadorNoticiasGUI
+{
+    /// <summary>
+    /// Main Windows Forms UI for the news classifier.
+    ///
+    /// This form exposes the following primary features:
+    /// - Clasificar titular: classify a single headline for category and sentiment and show reliability metrics.
+    /// - Dataset actual: view and manage the internal dataset (Texto, Categoria, Sentimiento).
+    /// - Clasificar desde Excel: load an Excel file, classify all rows and display results, time and metrics.
+    /// - Gráficas: view plots generated from the dataset or the last Excel classification.
+    ///
+    /// Important file locations used by the UI:
+    /// - Datos/datos.csv           : minimal CSV storing Texto,Categoria used to train categories.
+    /// - Datos/sentimientos.csv    : minimal CSV storing Texto,Label used to train sentiments.
+    /// - Datos/dataset_completo.csv: union table containing Texto,Categoria,Sentimiento and extra columns.
+    /// - Modelo/*.zip              : model files for categories and sentiments (ML.NET model ZIPs).
+    ///
+    /// Notes about reliability metrics and timing:
+    /// - Single headline classification shows a reliability score (max probability) for both category and sentiment.
+    /// - Excel bulk classification records elapsed time and summary counts which are shown in the UI.
+    /// </summary>
+    public partial class Form1 : Form
+    {
+        static readonly string ModeloCategoriasPath = Path.Combine("Modelo", "modelo_categorias.zip");
+        static readonly string ModeloSentimientosPath = Path.Combine("Modelo", "modelo_sentimientos.zip");
+        static readonly string DatosCategoriasPath = Path.Combine("Datos", "datos.csv");
+        static readonly string DatosSentimientosPath = Path.Combine("Datos", "sentimientos.csv");
+        static readonly string DatosCompletosPath = Path.Combine("Datos", "dataset_completo.csv");
+
+        MLContext ml = new MLContext(seed: 1);
+        ITransformer modeloCat = null, modeloSent = null;
+        private Label lblProgreso;
+
+        public Form1()
+        {
+            InitializeComponent();
+            BackColor = System.Drawing.Color.White;
+            EnsureFolders();
+            CargarModelosSiExisten();
+            CargarDatasetEnGrilla();
+
+            // Inicialización de lblProgreso
+            lblProgreso = new Label
+            {
+                Name = "lblProgreso",
+                Text = "",
+                AutoSize = true,
+                Location = new System.Drawing.Point(20, 420) // Ajusta la posición según tu diseño
+            };
+            Controls.Add(lblProgreso);
+        }
+
+        void EnsureFolders()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(DatosCategoriasPath) ?? "Datos");
+            Directory.CreateDirectory(Path.GetDirectoryName(ModeloCategoriasPath) ?? "Modelo");
+        }
+
+        void CargarModelosSiExisten()
+        {
+            // No entrenamos automáticamente; solo cargamos si el archivo existe, si no -> aviso
+            if (!File.Exists(ModeloCategoriasPath))
+                MessageBox.Show($"Falta el modelo de categorías: {ModeloCategoriasPath}\nPuedes crear o copiar el ZIP en la carpeta Modelo.", "Modelo faltante", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            else
+
+                modeloCat = ml.Model.Load(ModeloCategoriasPath, out var _);
+
+            if (!File.Exists(ModeloSentimientosPath))
+                MessageBox.Show($"Falta el modelo de sentimientos: {ModeloSentimientosPath}\nPuedes crear o copiar el ZIP en la carpeta Modelo.", "Modelo faltante", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+                modeloSent = ml.Model.Load(ModeloSentimientosPath, out var _);
+        }
+        /// <summary>
+        /// Classify the content of txtTitular using the loaded models.
+        /// Updates txtCategoria, txtSentimiento and the read-only reliability fields.
+        /// Reliability is computed as the maximum probability returned by the model's Scores array.
+        /// </summary>
+        private void btnClasificar_Click(object sender, EventArgs e)
+        {
+            var texto = txtTitular.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                MessageBox.Show("Introduce un titular para clasificar.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            if (modeloCat == null || modeloSent == null)
+            {
+                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta 'Modelo'.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Crear motores de predicción
+            var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+            // Ejecutar predicciones
+            var pred = engineCat.Predict(new Articulo { Texto = texto });
+            var predSent = engineSent.Predict(new Sentimiento { Texto = texto });
+
+            // Mostrar resultados en los TextBox
+            txtCategoria.Text = pred.CategoriaPredicha;
+            txtSentimiento.Text = predSent.SentimientoPredicho;
+
+            // Mostrar métricas de fiabilidad
+            // La fiabilidad la calculamos como el score más alto entre todas las categorías posibles
+            var maxScoreCat = pred.Scores.Max();
+            var maxScoreSent = predSent.Scores.Max();
+
+            txtFiabilidadCategoria.Text = $"{maxScoreCat:P1}";
+            txtFiabilidadSentimiento.Text = $"{maxScoreSent:P1}";
+
+            // Si la fiabilidad es baja, mostrar el TextBox en rojo
+            txtFiabilidadCategoria.ForeColor = maxScoreCat < 0.5f ? Color.Red : Color.Green;
+            txtFiabilidadSentimiento.ForeColor = maxScoreSent < 0.5f ? Color.Red : Color.Green;
+        }
+
+        private void btnGuardar_Click(object sender, EventArgs e)
+        {
+            var texto = txtTitular.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(texto)) return;
+            var categoria = txtCategoria.Text?.Trim() ?? "";
+            var sentimiento = txtSentimiento.Text?.Trim() ?? "";
+
+            var ya = GuardarAlDataset(texto, categoria, sentimiento);
+            if (ya) MessageBox.Show("Este titular ya existe en el dataset.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else MessageBox.Show("Titular guardado en dataset.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            CargarDatasetEnGrilla();
+        }
+
+        private void btnReentrenarCategorias_Click(object sender, EventArgs e)
+        {
+            // Soportar tanto DataSource como DataTable o IEnumerable<ResultadoExcel>
+            List<ResultadoExcel> extrasLista = new();
+            if (dgvExcelResultados.DataSource is DataTable dtSrc)
+            {
+                // Convertir filas de DataTable a ResultadoExcel
+                foreach (DataRow r in dtSrc.Rows)
+                {
+                    var tit = r.Table.Columns.Contains("Titular") ? (r["Titular"]?.ToString() ?? "") : "";
+                    var cat = r.Table.Columns.Contains("Categoria") ? (r["Categoria"]?.ToString() ?? "") : "";
+                    var sen = r.Table.Columns.Contains("Sentimiento") ? (r["Sentimiento"]?.ToString() ?? "") : "";
+                    extrasLista.Add(new ResultadoExcel { Titular = tit, Categoria = cat, Sentimiento = sen });
+                }
+            }
+            else
+            {
+                var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
+                if (extras != null) extrasLista.AddRange(extras);
+            }
+
+            IEnumerable<Articulo> extrasArt = null;
+            if (extrasLista.Any())
+            {
+                // Primero guardar en el dataset si no existen
+                foreach (var extra in extrasLista)
+                {
+                    if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Categoria))
+                    {
+                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
+                    }
+                }
+
+                extrasArt = extrasLista
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Categoria))
+                    .Select(r => new Articulo { Texto = r.Titular.Trim(), Categoria = r.Categoria.Trim() })
+                    .ToList();
+            }
+
+            var modelo = EntrenarModeloCategorias(ml, extrasArt, guardar: true);
+            MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
+            CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
+        }
+
+        private void btnReentrenarSentimientos_Click(object sender, EventArgs e)
+        {
+            // Soportar tanto DataTable como IEnumerable<ResultadoExcel>
+            List<ResultadoExcel> extrasLista = new();
+            if (dgvExcelResultados.DataSource is DataTable dtSrc)
+            {
+                foreach (DataRow r in dtSrc.Rows)
+                {
+                    var tit = r.Table.Columns.Contains("Titular") ? (r["Titular"]?.ToString() ?? "") : "";
+                    var cat = r.Table.Columns.Contains("Categoria") ? (r["Categoria"]?.ToString() ?? "") : "";
+                    var sen = r.Table.Columns.Contains("Sentimiento") ? (r["Sentimiento"]?.ToString() ?? "") : "";
+                    extrasLista.Add(new ResultadoExcel { Titular = tit, Categoria = cat, Sentimiento = sen });
+                }
+            }
+            else
+            {
+                var extras = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList();
+                if (extras != null) extrasLista.AddRange(extras);
+            }
+
+            IEnumerable<Sentimiento> extrasSen = null;
+            if (extrasLista.Any())
+            {
+                // Primero guardar en el dataset si no existen
+                foreach (var extra in extrasLista)
+                {
+                    if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Sentimiento))
+                    {
+                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
+                    }
+                }
+
+                extrasSen = extrasLista
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Titular) && !string.IsNullOrWhiteSpace(r.Sentimiento))
+                    .Select(r => new Sentimiento { Texto = r.Titular.Trim(), Label = r.Sentimiento.Trim() })
+                    .ToList();
+            }
+
+            var modelo = EntrenarModeloSentimientos(ml, extrasSen, guardar: true);
+            MessageBox.Show("El modelo de sentimientos ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
+            CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
+        }
+
+
+        // Nueva sobrecarga: acepta datos extra (por ejemplo, filas de dgvExcelResultados)
+        static ITransformer EntrenarModeloCategorias(MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
+        {
+            Console.WriteLine("Entrenando modelo de categorías...");
+
+            // Cargar dataset base desde CSV en memoria
+            var datosList = new List<Articulo>();
+            if (File.Exists(DatosCategoriasPath))
+            {
+                var lines = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+                foreach (var l in lines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var texto = parts[0].Trim();
+                        var categoria = parts[1].Trim();
+                        if (!string.IsNullOrWhiteSpace(texto))
+                            datosList.Add(new Articulo { Texto = texto, Categoria = categoria });
+                    }
+                }
+            }
+
+            // Añadir extras (sin duplicados por Texto)
+            if (extras != null)
+            {
+                foreach (var e in extras)
+                {
+                    if (string.IsNullOrWhiteSpace(e.Texto)) continue;
+                    if (!datosList.Any(x => x.Texto.Equals(e.Texto, StringComparison.OrdinalIgnoreCase)))
+                        datosList.Add(new Articulo { Texto = e.Texto.Trim(), Categoria = e.Categoria?.Trim() ?? "" });
+                }
+            }
+
+            if (datosList.Count == 0)
+                throw new Exception("No hay datos para entrenar categorías.");
+
+            var datos = ml.Data.LoadFromEnumerable(datosList);
+
+            // Pipeline sin MapKeyToValue para evaluar
+            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Articulo.Categoria))
+                .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Articulo.Texto)))
+                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
+
+            // Pipeline final (incluye MapKeyToValue) para guardar / usar predicción
+            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            // Train/Test split para obtener métricas
+            var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
+            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var preds = modelForEval.Transform(split.TestSet);
+
+            var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
+
+            // Mostrar métricas básicas
+            MessageBox.Show($"Métricas categorías:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Categorías", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            // Ajustar el modelo final usando todos los datos y con MapKeyToValue para predicción/string labels
+            var modeloFinal = finalPipeline.Fit(datos);
+
+            if (guardar)
+            {
+                Directory.CreateDirectory("Modelo");
+                ml.Model.Save(modeloFinal, datos.Schema, ModeloCategoriasPath);
+                Console.WriteLine($"✅ Modelo de categorías guardado en {ModeloCategoriasPath}\n");
+            }
+
+            return modeloFinal;
+        }
+
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        static ITransformer EntrenarModeloCategorias(MLContext ml, bool guardar = false)
+        {
+            // Llamar a la sobrecarga que acepta extras con null
+            return EntrenarModeloCategorias(ml, extras: null, guardar: guardar);
+        }
+
+        // Nueva sobrecarga para sentimientos
+        static ITransformer EntrenarModeloSentimientos(MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
+        {
+            Console.WriteLine("Entrenando modelo de sentimientos...");
+
+            var datosList = new List<Sentimiento>();
+            if (File.Exists(DatosSentimientosPath))
+            {
+                var lines = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+                foreach (var l in lines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var texto = parts[0].Trim();
+                        var label = parts[1].Trim();
+                        if (!string.IsNullOrWhiteSpace(texto))
+                            datosList.Add(new Sentimiento { Texto = texto, Label = label });
+                    }
+                }
+            }
+
+            if (extras != null)
+            {
+                foreach (var e in extras)
+                {
+                    if (string.IsNullOrWhiteSpace(e.Texto)) continue;
+                    if (!datosList.Any(x => x.Texto.Equals(e.Texto, StringComparison.OrdinalIgnoreCase)))
+                        datosList.Add(new Sentimiento { Texto = e.Texto.Trim(), Label = e.Label?.Trim() ?? "" });
+                }
+            }
+
+            if (datosList.Count == 0)
+                throw new Exception("No hay datos para entrenar sentimientos.");
+
+            var datos = ml.Data.LoadFromEnumerable(datosList);
+
+            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Sentimiento.Label))
+                .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Sentimiento.Texto)))
+                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
+
+            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
+            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var preds = modelForEval.Transform(split.TestSet);
+
+            var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
+
+            MessageBox.Show($"Métricas sentimientos:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Sentimientos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            var modeloFinal = finalPipeline.Fit(datos);
+
+            if (guardar)
+            {
+                Directory.CreateDirectory("Modelo");
+                ml.Model.Save(modeloFinal, datos.Schema, ModeloSentimientosPath);
+                Console.WriteLine($"✅ Modelo de sentimientos guardado en {ModeloSentimientosPath}\n");
+            }
+
+            return modeloFinal;
+        }
+
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        static ITransformer EntrenarModeloSentimientos(MLContext ml, bool guardar = false)
+        {
+            return EntrenarModeloSentimientos(ml, extras: null, guardar: guardar);
+        }
+
+
+        private void btnActualizarDataset_Click(object sender, EventArgs e)
+        {
+            CargarDatasetEnGrilla();
+        }
+
+        private void btnCargarExcel_ClickOld(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog();
+            ofd.Filter = "Excel Files|*.xlsx;*.xls";
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            var path = ofd.FileName;
+            var filas = LeerExcelTitulares(path);
+
+            if (modeloCat == null || modeloSent == null)
+            {
+                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var engine = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+            var resultados = new List<ResultadoExcel>();
+            foreach (var t in filas)
+            {
+                var p = engine.Predict(new Articulo { Texto = t });
+                var ps = engineSent.Predict(new Sentimiento { Texto = t });
+                resultados.Add(new ResultadoExcel { Titular = t, Categoria = p.CategoriaPredicha, Sentimiento = ps.SentimientoPredicho });
+            }
+
+            dgvExcelResultados.DataSource = resultados;
+        }
+
+        private void btnCargarExcel_Click(object sender, EventArgs e)
+        {
+            // Abrir diálogo para seleccionar archivo
+            using var ofd = new OpenFileDialog();
+            ofd.Filter = "Excel Files|*.xlsx;*.xls";
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            var path = ofd.FileName;
+
+            // Leer tabla completa desde Excel
+            DataTable original;
+            try
+            {
+                original = LeerExcelComoDataTable(path);
+                if (original == null || original.Rows.Count == 0)
+                {
+                    MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Validar que los modelos estén cargados
+            if (modeloCat == null || modeloSent == null)
+            {
+                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Buscar columna de titulares (case-insensitive)
+            string titularCol = null;
+            foreach (DataColumn c in original.Columns)
+            {
+                var name = c.ColumnName.ToLower();
+                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+                { titularCol = c.ColumnName; break; }
+            }
+            // Si no se encontró, intentar buscar de forma más flexible
+            if (titularCol == null)
+            {
+                foreach (DataColumn c in original.Columns)
+                {
+                    var name = c.ColumnName.Trim().ToLowerInvariant();
+                    if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
+                    {
+                        titularCol = c.ColumnName;
+                        break;
+                    }
+                }
+            }
+            
+            if (titularCol == null)
+            {
+                // Mostrar los nombres de las columnas encontradas para diagnóstico
+                var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
+                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}", 
+                              "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Crear motores de predicción
+            var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+            // Preparar DataTable de resultados: Titular, Categoria, Sentimiento, luego todas las columnas originales (excepto Titular duplicada)
+            var resultadosDt = new DataTable();
+            resultadosDt.Columns.Add("Titular");
+            resultadosDt.Columns.Add("Categoria");
+            resultadosDt.Columns.Add("Sentimiento");
+            var extraCols = new List<string>();
+            foreach (DataColumn c in original.Columns)
+            {
+                if (c.ColumnName == titularCol) continue;
+                // Evitar nombres reservados
+                var colName = c.ColumnName;
+                int suffix = 1;
+                while (resultadosDt.Columns.Contains(colName)) { colName = c.ColumnName + "_" + suffix; suffix++; }
+                resultadosDt.Columns.Add(colName);
+                extraCols.Add(c.ColumnName);
+            }
+
+            int total = original.Rows.Count;
+            int i = 1;
+
+            var stopwatch = Stopwatch.StartNew();
+
+            var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (DataRow row in original.Rows)
+            {
+                var titular = row[titularCol]?.ToString()?.Trim();
+                if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
+
+                // Predicción
+                var predCat = engineCat.Predict(new Articulo { Texto = titular });
+                var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
+
+                var newRow = resultadosDt.NewRow();
+                newRow["Titular"] = titular;
+                newRow["Categoria"] = predCat.CategoriaPredicha;
+                newRow["Sentimiento"] = predSent.SentimientoPredicho;
+
+                // Copiar columnas extra en el mismo orden que en original
+                for (int ec = 0; ec < extraCols.Count; ec++)
+                {
+                    var origName = extraCols[ec];
+                    var targetName = resultadosDt.Columns[3 + ec].ColumnName; // offset
+                    newRow[targetName] = row[origName]?.ToString() ?? "";
+                }
+
+                resultadosDt.Rows.Add(newRow);
+
+                // acumular métricas
+                var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
+                var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
+                if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0; catCountsLocal[catKey]++;
+                if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0; senCountsLocal[senKey]++;
+
+                // Mostrar progreso
+                lblProgreso.Text = $"Clasificando {i}/{total}";
+                Application.DoEvents();
+                i++;
+            }
+
+            stopwatch.Stop();
+
+            dgvExcelResultados.DataSource = resultadosDt;
+            dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvExcelResultados.Refresh();
+
+            // Update Excel graphs automatically
+            CargarGraficasDesdeExcelResultados();
+
+            // Mostrar tiempo y métricas resumidas
+            txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
+            var metricsSb = new System.Text.StringBuilder();
+            metricsSb.AppendLine("Categorías:");
+            foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+            metricsSb.AppendLine();
+            metricsSb.AppendLine("Sentimientos:");
+            foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+            txtMetricasClasificacion.Text = metricsSb.ToString();
+
+            lblProgreso.Text = "Clasificación completada ✅";
+        }
+
+        private void btnExportarResultados_Click(object sender, EventArgs e)
+        {
+            if (dgvExcelResultados.DataSource == null) return;
+            using var sfd = new SaveFileDialog();
+            sfd.Filter = "Excel Files|*.xlsx";
+            sfd.FileName = "ResultadosClasificacion.xlsx";
+            if (sfd.ShowDialog() != DialogResult.OK) return;
+
+            if (dgvExcelResultados.DataSource is DataTable dt)
+            {
+                using var wb = new XLWorkbook();
+                var ws = wb.Worksheets.Add("Resultados");
+                // Encabezados
+                for (int c = 0; c < dt.Columns.Count; c++)
+                    ws.Cell(1, c + 1).Value = dt.Columns[c].ColumnName;
+                // Filas
+                for (int r = 0; r < dt.Rows.Count; r++)
+                {
+                    for (int c = 0; c < dt.Columns.Count; c++)
+                        ws.Cell(r + 2, c + 1).Value = dt.Rows[r][c]?.ToString() ?? "";
+                }
+                wb.SaveAs(sfd.FileName);
+                MessageBox.Show($"Exportado: {sfd.FileName}");
+                return;
+            }
+
+            var list = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList() ?? new();
+            using var wb2 = new XLWorkbook();
+            var ws2 = wb2.Worksheets.Add("Resultados");
+            ws2.Cell(1, 1).Value = "Titular";
+            ws2.Cell(1, 2).Value = "Categoria";
+            ws2.Cell(1, 3).Value = "Sentimiento";
+            for (int i = 0; i < list.Count; i++)
+            {
+                ws2.Cell(i + 2, 1).Value = list[i].Titular;
+                ws2.Cell(i + 2, 2).Value = list[i].Categoria;
+                ws2.Cell(i + 2, 3).Value = list[i].Sentimiento;
+            }
+            wb2.SaveAs(sfd.FileName);
+            MessageBox.Show($"Exportado: {sfd.FileName}");
+        }
+
+        // ----------------- Helpers -----------------
+        /// <summary>
+        /// Save a single record into the minimal CSVs used for training. Returns true if the text was already present.
+        /// This helper ensures that duplicated rows (by Texto) are not appended multiple times.
+        /// </summary>
+        bool GuardarAlDataset(string texto, string categoria, string sentimiento)
+        {
+            bool yaExistia = false;
+
+            if (!File.Exists(DatosCategoriasPath))
+            {
+                File.WriteAllText(DatosCategoriasPath, "Texto,Categoria\n");
+            }
+
+            var lineasCategorias = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+            if (!lineasCategorias.Any(l => l.Split(',')[0].Trim().Equals(texto.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                File.AppendAllText(DatosCategoriasPath, EscapeCSV(texto) + "," + EscapeCSV(categoria) + "\n");
+            }
+            else
+            {
+                yaExistia = true;
+            }
+
+            if (!File.Exists(DatosSentimientosPath))
+            {
+                File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
+            }
+
+            var lineasSent = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+            if (!lineasSent.Any(l => l.Split(',')[0].Trim().Equals(texto.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                File.AppendAllText(DatosSentimientosPath, EscapeCSV(texto) + "," + EscapeCSV(sentimiento) + "\n");
+            }
+
+            return yaExistia;
+        }
+
+        static string EscapeCSV(string valor)
+        {
+            if (valor.Contains(',') || valor.Contains('"'))
+            {
+                valor = valor.Replace("\"", "\"\"");
+                return $"\"{valor}\"";
+            }
+            return valor;
+        }
+
+        void CargarDatasetEnGrilla()
+        {
+            // If dataset_completo exists, load it and show all columns
+            if (File.Exists(DatosCompletosPath))
+            {
+                var lines = File.ReadAllLines(DatosCompletosPath);
+                if (lines.Length > 0)
+                {
+                    var headers = SplitCsvLine(lines[0]).ToList();
+                    var dt = new DataTable();
+                    foreach (var h in headers) dt.Columns.Add(h);
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        var parts = SplitCsvLine(lines[i]);
+                        var row = dt.NewRow();
+                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
+                        dt.Rows.Add(row);
+                    }
+                    dgvDataset.DataSource = dt;
+                    return;
+                }
+            }
+
+            // Fallback: existing behavior
+            var lista = new List<(string Texto, string Categoria, string Sentimiento)>();
+
+            if (File.Exists(DatosCategoriasPath))
+            {
+                var catLines = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+                foreach (var l in catLines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                        lista.Add((parts[0], parts[1], ""));
+                }
+            }
+
+            if (File.Exists(DatosSentimientosPath))
+            {
+                var senLines = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+                foreach (var l in senLines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var idx = lista.FindIndex(x => x.Texto.Equals(parts[0], StringComparison.OrdinalIgnoreCase));
+                        if (idx >= 0)
+                            lista[idx] = (lista[idx].Texto, lista[idx].Categoria, parts[1]);
+                        else
+                            lista.Add((parts[0], "", parts[1]));
+                    }
+                }
+            }
+
+            var dt2 = lista.Select(x => new { Texto = x.Texto, Categoria = x.Categoria, Sentimiento = x.Sentimiento }).ToList();
+            dgvDataset.DataSource = dt2;
+        }
+
+        static string[] SplitCsvLine(string line)
+        {
+            // Simple CSV split that handles quotes
+            var values = new List<string>();
+            bool inQuotes = false;
+            var cur = "";
+            for (int i = 0; i < line.Length; i++)
+            {
+                var ch = line[i];
+                if (ch == '"') { inQuotes = !inQuotes; continue; }
+                if (ch == ',' && !inQuotes) { values.Add(cur); cur = ""; continue; }
+                cur += ch;
+            }
+            values.Add(cur);
+            return values.ToArray();
+        }
+
+        static List<string> LeerExcelTitularesOld(string ruta)
+        {
+            var lista = new List<string>();
+            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                using var wb = new XLWorkbook(ruta);
+                var ws = wb.Worksheets.First();
+                var col = ws.Column(1).CellsUsed().Select(c => c.GetString()).ToList();
+                // asumimos cabecera en la primera fila
+                for (int i = 2; i <= ws.RowCount(); i++)
+                {
+                    var val = ws.Cell(i, 1).GetString().Trim();
+                    if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
+                }
+            }
+            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+            {
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
+                using var reader = ExcelReaderFactory.CreateReader(stream);
+                var result = reader.AsDataSet();
+                var table = result.Tables[0];
+                for (int r = 1; r < table.Rows.Count; r++)
+                {
+                    var val = table.Rows[r][0]?.ToString()?.Trim();
+                    if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
+                }
+            }
+            return lista;
+        }
+
+        static List<string> LeerExcelTitulares(string ruta)
+        {
+            var lista = new List<string>();
+            List<string> nombresColumnas = new();
+
+            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                using var wb = new XLWorkbook(ruta);
+                var ws = wb.Worksheets.First(); // podemos permitir seleccionar hoja después si quieres
+                var rango = ws.RangeUsed();
+                if (rango == null) return lista;
+                int totalFilas = rango.RowCount();
+                int totalCols = rango.ColumnCount();
+
+                // Determine actual first row/col of the used range
+                int firstRow = rango.FirstRow().RowNumber();
+                int firstCol = rango.FirstColumn().ColumnNumber();
+
+                // Leer encabezados
+                for (int c = 0; c < totalCols; c++)
+                    nombresColumnas.Add(ws.Cell(firstRow, firstCol + c).GetString().Trim());
+
+                // Buscar columna de titulares
+                int colTitular = nombresColumnas.FindIndex(h =>
+                    new[] { "titular", "título", "title", "headline" }
+                    .Contains(h.ToLower()));
+
+                if (colTitular == -1)
+                    throw new Exception("No se encontró columna 'Titular' en el Excel.");
+
+                // Leer filas
+                for (int r = 1; r < totalFilas; r++)
+                {
+                    var val = ws.Cell(firstRow + r, firstCol + colTitular).GetString().Trim();
+                    if (!string.IsNullOrWhiteSpace(val))
+                        lista.Add(val);
+                }
+            }
+            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+            {
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
+                using var reader = ExcelReaderFactory.CreateReader(stream);
+                var result = reader.AsDataSet();
+                var table = result.Tables[0]; // también se puede permitir seleccionar hoja
+
+                // Leer encabezados
+                for (int c = 0; c < table.Columns.Count; c++)
+                    nombresColumnas.Add(table.Rows[0][c]?.ToString().Trim() ?? "");
+
+                // Buscar columna de titulares
+                int colTitular = nombresColumnas.FindIndex(h =>
+                    new[] { "titular", "título", "title", "headline" }
+                    .Contains(h.ToLower()));
+
+                if (colTitular == -1)
+                    throw new Exception("No se encontró columna 'Titular' en el Excel.");
+
+                // Leer filas
+                for (int r = 1; r < table.Rows.Count; r++)
+                {
+                    var val = table.Rows[r][colTitular]?.ToString().Trim();
+                    if (!string.IsNullOrWhiteSpace(val))
+                        lista.Add(val);
+                }
+            }
+
+            return lista;
+        }
+
+        static DataTable LeerExcelComoDataTable(string ruta)
+        {
+            var dt = new DataTable();
+
+            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                using var wb = new XLWorkbook(ruta);
+                var ws = wb.Worksheets.First();
+                var rango = ws.RangeUsed();
+                if (rango == null) return dt;
+                int totalFilas = rango.RowCount();
+                int totalCols = rango.ColumnCount();
+
+                // Determine actual first row/col of the used range
+                int firstRow = rango.FirstRow().RowNumber();
+                int firstCol = rango.FirstColumn().ColumnNumber();
+
+                // Leer encabezados
+                for (int c = 0; c < totalCols; c++)
+                {
+                    var header = ws.Cell(firstRow, firstCol + c).GetString().Trim();
+                    if (string.IsNullOrWhiteSpace(header)) header = "Column" + (c + 1);
+                    // Asegurar nombres únicos
+                    var colName = header;
+                    int suffix = 1;
+                    while (dt.Columns.Contains(colName)) { colName = header + "_" + suffix; suffix++; }
+                    dt.Columns.Add(colName);
+                }
+
+                // Leer filas
+                for (int r = 1; r < totalFilas; r++)
+                {
+                    var row = dt.NewRow();
+                    for (int c = 0; c < totalCols; c++)
+                        row[c] = ws.Cell(firstRow + r, firstCol + c).GetString().Trim();
+                    dt.Rows.Add(row);
+                }
+            }
+            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+            {
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
+                using var reader = ExcelReaderFactory.CreateReader(stream);
+                var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                {
+                    ConfigureDataTable = _ => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                });
+                dt = result.Tables[0].Copy();
+            }
+
+            return dt;
+        }
+
+        private void btnReiniciarDataset_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("¿Seguro que quieres reiniciar el dataset? Esto eliminará los archivos de datos existentes.", "Confirmar reinicio dataset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (res != DialogResult.Yes) return;
+
+            try
+            {
+                if (File.Exists(DatosCategoriasPath)) File.Delete(DatosCategoriasPath);
+                if (File.Exists(DatosSentimientosPath)) File.Delete(DatosSentimientosPath);
+                if (File.Exists(DatosCompletosPath)) File.Delete(DatosCompletosPath);
+
+                // Re-crear archivos con encabezados vacíos
+                Directory.CreateDirectory(Path.GetDirectoryName(DatosCategoriasPath) ?? "Datos");
+                File.WriteAllText(DatosCategoriasPath, "Texto,Categoria\n");
+                Directory.CreateDirectory(Path.GetDirectoryName(DatosSentimientosPath) ?? "Datos");
+                File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
+
+                // Crear dataset_completo vacío con encabezados básicos
+                Directory.CreateDirectory(Path.GetDirectoryName(DatosCompletosPath) ?? "Datos");
+                File.WriteAllText(DatosCompletosPath, "Texto,Categoria,Sentimiento\n");
+
+                // Clear grid and reload
+                dgvDataset.DataSource = null;
+                CargarDatasetEnGrilla();
+                MessageBox.Show("Dataset reiniciado correctamente.", "Reinicio completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al reiniciar dataset: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnReiniciarModeloCategorias_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("¿Seguro que quieres reiniciar el modelo de categorías? Esto eliminará el archivo del modelo.", "Confirmar reinicio modelo categorías", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (res != DialogResult.Yes) return;
+
+            try
+            {
+                if (File.Exists(ModeloCategoriasPath)) File.Delete(ModeloCategoriasPath);
+                modeloCat = null;
+                MessageBox.Show("Modelo de categorías eliminado. Puedes reentrenarlo desde la interfaz.", "Reinicio completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CargarModelosSiExisten();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al reiniciar modelo de categorías: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnReiniciarModeloSentimientos_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("¿Seguro que quieres reiniciar el modelo de sentimientos? Esto eliminará el archivo del modelo.", "Confirmar reinicio modelo sentimientos", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (res != DialogResult.Yes) return;
+
+            try
+            {
+                if (File.Exists(ModeloSentimientosPath)) File.Delete(ModeloSentimientosPath);
+                modeloSent = null;
+                MessageBox.Show("Modelo de sentimientos eliminado. Puedes reentrenarlo desde la interfaz.", "Reinicio completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CargarModelosSiExisten();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al reiniciar modelo de sentimientos: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnCargarDatasetExcel_Click(object sender, EventArgs e)
+        {
+            using var ofd = new OpenFileDialog();
+            ofd.Filter = "Excel Files|*.xlsx;*.xls";
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            DataTable dt;
+            try
+            {
+                dt = LeerExcelComoDataTable(ofd.FileName);
+                if (dt == null || dt.Rows.Count == 0)
+                {
+                    MessageBox.Show("No se encontraron datos en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Buscar columna de titular (case-insensitive)
+            string titularCol = null;
+            foreach (DataColumn c in dt.Columns)
+            {
+                var name = c.ColumnName.ToLower();
+                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+                { titularCol = c.ColumnName; break; }
+            }
+            // Si no se encontró, intentar buscar de forma más flexible
+            if (titularCol == null)
+            {
+                foreach (DataColumn c in dt.Columns)
+                {
+                    var name = c.ColumnName.Trim().ToLowerInvariant();
+                    if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
+                    {
+                        titularCol = c.ColumnName;
+                        break;
+                    }
+                }
+            }
+            
+            if (titularCol == null)
+            {
+                // Mostrar los nombres de las columnas encontradas para diagnóstico
+                var columnas = string.Join(", ", dt.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
+                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}", 
+                              "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Determine categoria and sentimiento columns (if any)
+            string categoriaCol = null, sentimientoCol = null, titularColAntiguo = null;
+            var extraCols = new List<string>();
+            foreach (DataColumn c in dt.Columns)
+            {
+                var name = c.ColumnName.ToLower();
+                if (new[] { "categoria", "category" }.Contains(name)) categoriaCol = c.ColumnName;
+                else if (new[] { "sentimiento", "sentiment", "label" }.Contains(name)) sentimientoCol = c.ColumnName;
+                else if (c.ColumnName != titularCol)
+                    extraCols.Add(c.ColumnName);
+            }
+
+            // Load or prepare existing dataset_completo
+            DataTable existing = null;
+            if (File.Exists(DatosCompletosPath))
+            {
+                var lines = File.ReadAllLines(DatosCompletosPath);
+                if (lines.Length > 0)
+                {
+                    var headers = SplitCsvLine(lines[0]).ToList();
+                    existing = new DataTable();
+                    foreach (var h in headers) existing.Columns.Add(h);
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        var parts = SplitCsvLine(lines[i]);
+                        var row = existing.NewRow();
+                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
+                        existing.Rows.Add(row);
+                    }
+                }
+            }
+
+            // Build union headers: Texto,Categoria,Sentimiento, then existing extras, then new extras
+            var baseHeaders = new List<string> { "Texto", "Categoria", "Sentimiento" };
+            var union = new List<string>(baseHeaders);
+            if (existing != null)
+            {
+                foreach (DataColumn c in existing.Columns)
+                {
+                    if (!union.Contains(c.ColumnName)) union.Add(c.ColumnName);
+                }
+            }
+            foreach (var ec in extraCols)
+            {
+                if (!union.Contains(ec)) union.Add(ec);
+            }
+
+            // Create new DataTable with union headers and copy existing rows
+            var newDt = new DataTable();
+            foreach (var h in union) newDt.Columns.Add(h);
+            if (existing != null)
+            {
+                foreach (DataRow er in existing.Rows)
+                {
+                    var nr = newDt.NewRow();
+                    foreach (DataColumn c in existing.Columns)
+                    {
+                        nr[c.ColumnName] = er[c.ColumnName];
+                    }
+                    newDt.Rows.Add(nr);
+                }
+            }
+
+            int added = 0;
+            // Process Excel rows
+            foreach (DataRow r in dt.Rows)
+            {
+                var titular = r[titularCol]?.ToString()?.Trim();
+                if (string.IsNullOrWhiteSpace(titular)) continue;
+
+                // Get categoria/sentimiento from excel if present
+                var cat = categoriaCol != null ? (r[categoriaCol]?.ToString()?.Trim() ?? "") : "";
+                var sen = sentimientoCol != null ? (r[sentimientoCol]?.ToString()?.Trim() ?? "") : "";
+
+                // Append to minimal CSVs for training (if not present)
+                if (!File.Exists(DatosCategoriasPath)) File.WriteAllText(DatosCategoriasPath, "Texto,Categoria\n");
+                var lineasCategorias = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+                if (!lineasCategorias.Any(l => SplitCsvLine(l)[0].Trim().Equals(titular, StringComparison.OrdinalIgnoreCase)))
+                {
+                    File.AppendAllText(DatosCategoriasPath, $"{EscapeCSV(titular)},{EscapeCSV(cat)}\n");
+                }
+
+                if (!File.Exists(DatosSentimientosPath)) File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
+                var lineasSent = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+                if (!lineasSent.Any(l => SplitCsvLine(l)[0].Trim().Equals(titular, StringComparison.OrdinalIgnoreCase)))
+                {
+                    File.AppendAllText(DatosSentimientosPath, $"{EscapeCSV(titular)},{EscapeCSV(sen)}\n");
+                }
+                
+                // Add to newDt if Texto not present
+                var existsInNew = newDt.Rows.Cast<DataRow>().Any(rr => rr["Texto"]?.ToString()?.Equals(titular, StringComparison.OrdinalIgnoreCase) == true);
+                if (!existsInNew)
+                {
+                    var nr = newDt.NewRow();
+                    nr["Texto"] = titular;
+                    nr["Categoria"] = cat;
+                    nr["Sentimiento"] = sen;  // Aseguramos que se asigne el sentimiento
+                    foreach (var ec in extraCols)
+                    {
+                        nr[ec] = r[ec]?.ToString() ?? "";
+                    }
+                    newDt.Rows.Add(nr);
+                    added++;
+                }
+            }
+
+            // Save newDt to DatosCompletosPath
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(DatosCompletosPath) ?? "Datos");
+                using var sw = new StreamWriter(DatosCompletosPath, false);
+                // header
+                sw.WriteLine(string.Join(",", newDt.Columns.Cast<DataColumn>().Select(c => EscapeCSV(c.ColumnName))));
+                // rows
+                foreach (DataRow row in newDt.Rows)
+                {
+                    var vals = newDt.Columns.Cast<DataColumn>().Select(c => EscapeCSV(row[c.ColumnName]?.ToString() ?? ""));
+                    sw.WriteLine(string.Join(",", vals));
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"No se pudo guardar dataset completo: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            CargarDatasetEnGrilla();
+            MessageBox.Show($"Importación completada. Filas añadidas al dataset completo: {added}", "Importado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnActualizarGraficas_Click(object sender, EventArgs e)
+        {
+            CargarGraficasDesdeDataset();
+        }
+
+        void CargarGraficasDesdeDataset()
+        {
+            var tabla = new DataTable();
+            if (File.Exists(DatosCompletosPath))
+            {
+                var lines = File.ReadAllLines(DatosCompletosPath);
+                if (lines.Length > 0)
+                {
+                    var headers = SplitCsvLine(lines[0]).ToList();
+                    foreach (var h in headers) tabla.Columns.Add(h);
+                    for (int i = 1; i < lines.Length; i++)
+                    {
+                        var parts = SplitCsvLine(lines[i]);
+                        var row = tabla.NewRow();
+                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
+                        tabla.Rows.Add(row);
+                    }
+                }
+            }
+            else
+            {
+                tabla.Columns.Add("Texto"); tabla.Columns.Add("Categoria"); tabla.Columns.Add("Sentimiento");
+                var lista = new List<(string Texto, string Categoria, string Sentimiento)>();
+                if (File.Exists(DatosCategoriasPath))
+                {
+                    var catLines = File.ReadAllLines(DatosCategoriasPath).Skip(1);
+                    foreach (var l in catLines)
+                    {
+                        var parts = SplitCsvLine(l);
+                        if (parts.Length >= 2)
+                            lista.Add((parts[0], parts[1], ""));
+                    }
+                }
+                if (File.Exists(DatosSentimientosPath))
+                {
+                    var senLines = File.ReadAllLines(DatosSentimientosPath).Skip(1);
+                    foreach (var l in senLines)
+                    {
+                        var parts = SplitCsvLine(l);
+                        if (parts.Length >= 2)
+                        {
+                            var idx = lista.FindIndex(x => x.Texto.Equals(parts[0], StringComparison.OrdinalIgnoreCase));
+                            if (idx >= 0)
+                                lista[idx] = (lista[idx].Texto, lista[idx].Categoria, parts[1]);
+                            else
+                                lista.Add((parts[0], "", parts[1]));
+                        }
+                    }
+                }
+                foreach (var it in lista)
+                {
+                    var r = tabla.NewRow(); r["Texto"] = it.Texto; r["Categoria"] = it.Categoria; r["Sentimiento"] = it.Sentimiento; tabla.Rows.Add(r);
+                }
+            }
+
+            var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (DataRow r in tabla.Rows)
+            {
+                var cat = "";
+                var sen = "";
+                if (tabla.Columns.Contains("Categoria")) cat = r["Categoria"]?.ToString() ?? "";
+                if (tabla.Columns.Contains("Sentimiento")) sen = r["Sentimiento"]?.ToString() ?? "";
+
+                if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
+
+                if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0;
+                catCounts[cat]++;
+                if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0;
+                senCounts[sen]++;
+            }
+
+            // Categorías plot
+            var catOrdered = catCounts.OrderByDescending(k => k.Value).ToList();
+            var categories = catOrdered.Select(k => k.Key).ToList();
+            var catValues = catOrdered.Select(k => k.Value).ToList();
+
+            // Use BarSeries (horizontal bars)
+            var modelCat = new PlotModel { Title = "Titulares por categoría" };
+            var catCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var c in categories) catCategoryAxis.Labels.Add(c);
+            var catValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelCat.Axes.Add(catCategoryAxis);
+            modelCat.Axes.Add(catValueAxis);
+            var catSeries = new OxyPlot.Series.BarSeries { Title = "Categorias", IsStacked = false };
+            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
+            modelCat.Series.Add(catSeries);
+
+            // Sentimientos plot using BarSeries
+            var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
+            var sents = senOrdered.Select(k => k.Key).ToList();
+            var senValues = senOrdered.Select(k => k.Value).ToList();
+
+            var modelSen = new PlotModel { Title = "Titulares por sentimiento" };
+            var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var s in sents) senCategoryAxis.Labels.Add(s);
+            var senValueAxis2 = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelSen.Axes.Add(senCategoryAxis);
+            modelSen.Axes.Add(senValueAxis2);
+            var senSeries = new OxyPlot.Series.BarSeries { Title = "Sentimientos", IsStacked = false };
+            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new OxyPlot.Series.BarItem { Value = senValues[i] });
+            modelSen.Series.Add(senSeries);
+
+            plotViewCategorias.Model = modelCat;
+            plotViewSentimientos.Model = modelSen;
+        }
+
+        private void btnActualizarGraficasExcel_Click(object sender, EventArgs e)
+        {
+            CargarGraficasDesdeExcelResultados();
+        }
+
+        void CargarGraficasDesdeExcelResultados()
+        {
+            // Read data from dgvExcelResultados (DataTable or IEnumerable<ResultadoExcel>)
+            var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+            if (dgvExcelResultados.DataSource is DataTable dt)
+            {
+                // Determine column names (case-insensitive)
+                string colTit = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "titular", "título", "titulo", "title", "headline" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
+                string colCat = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "categoria", "category" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
+                string colSen = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "sentimiento", "sentiment", "label" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    var cat = colCat != null ? (r[colCat]?.ToString() ?? "") : "";
+                    var sen = colSen != null ? (r[colSen]?.ToString() ?? "") : "";
+                    if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                    if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
+                    if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
+                    if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
+                }
+            }
+            else
+            {
+                var list = (dgvExcelResultados.DataSource as IEnumerable<ResultadoExcel>)?.ToList() ?? new List<ResultadoExcel>();
+                foreach (var it in list)
+                {
+                    var cat = it.Categoria ?? "";
+                    var sen = it.Sentimiento ?? "";
+                    if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                    if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
+                    if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
+                    if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
+                }
+            }
+
+            // Build OxyPlot models (horizontal bars)
+            var catOrdered = catCounts.OrderByDescending(k => k.Value).ToList();
+            var categories = catOrdered.Select(k => k.Key).ToList();
+            var catValues = catOrdered.Select(k => k.Value).ToList();
+
+            var modelCat = new PlotModel { Title = "Titulares por categoría (Excel)" };
+            var catCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var c in categories) catCategoryAxis.Labels.Add(c);
+            var catValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelCat.Axes.Add(catCategoryAxis);
+            modelCat.Axes.Add(catValueAxis);
+            var catSeries = new OxyPlot.Series.BarSeries { Title = "Categorias", IsStacked = false };
+            for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
+            modelCat.Series.Add(catSeries);
+
+            var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
+            var sents = senOrdered.Select(k => k.Key).ToList();
+            var senValues = senOrdered.Select(k => k.Value).ToList();
+
+            var modelSen = new PlotModel { Title = "Titulares por sentimiento (Excel)" };
+            var senCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var s in sents) senCategoryAxis.Labels.Add(s);
+            var senValueAxis2 = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelSen.Axes.Add(senCategoryAxis);
+            modelSen.Axes.Add(senValueAxis2);
+            var senSeries = new OxyPlot.Series.BarSeries { Title = "Sentimientos", IsStacked = false };
+            for (int i = 0; i < senValues.Count; i++) senSeries.Items.Add(new OxyPlot.Series.BarItem { Value = senValues[i] });
+            modelSen.Series.Add(senSeries);
+
+            plotViewExcelCategorias.Model = modelCat;
+            plotViewExcelSentimientos.Model = modelSen;
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // If the selected tab is the Graficas Dataset tab, refresh graphs
+            if (tabControl1.SelectedTab == tabGraficas)
+            {
+                CargarGraficasDesdeDataset();
+            }
+            else if (tabControl1.SelectedTab == tabGraficasExcel)
+            {
+                CargarGraficasDesdeExcelResultados();
+            }
+        }
+
+        // If the header row wasn't properly read, try to detect it within the first few rows and rebuild the DataTable
+        static DataTable EnsureHeaderRow(DataTable dt)
+        {
+            if (dt == null || dt.Rows.Count == 0) return dt;
+
+            // Quick heuristic: if columns are named like 'Column1' or empty, try to locate a header row
+            bool hasGenericCols = dt.Columns.Cast<DataColumn>().All(c => c.ColumnName.StartsWith("Column", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(c.ColumnName));
+            if (!hasGenericCols) return dt; // already has meaningful column names
+
+            var possibleHeaders = new[] { "titular", "título", "titulo", "title", "headline", "categoria", "category", "sentimiento", "sentiment", "autor", "autor" };
+
+            // Scan first N rows to find a header row where at least one cell matches known headers
+            int maxRowsToCheck = Math.Min(10, dt.Rows.Count);
+            int headerRowIndex = -1;
+            for (int r = 0; r < maxRowsToCheck; r++)
+            {
+                int matchCount = 0;
+                for (int c = 0; c < dt.Columns.Count; c++)
+                {
+                    var cell = dt.Rows[r][c]?.ToString()?.Trim();
+                    if (string.IsNullOrWhiteSpace(cell)) continue;
+                    var cl = cell.ToLowerInvariant();
+                    if (possibleHeaders.Any(h => cl.Contains(h))) matchCount++;
+                }
+                if (matchCount >= 1)
+                {
+                    headerRowIndex = r;
+                    break;
+                }
+            }
+
+            if (headerRowIndex == -1) return dt; // cannot detect header
+
+            // Build new DataTable using that row as header
+            var newDt = new DataTable();
+            for (int c = 0; c < dt.Columns.Count; c++)
+            {
+                var h = dt.Rows[headerRowIndex][c]?.ToString()?.Trim();
+                if (string.IsNullOrWhiteSpace(h)) h = "Column" + (c + 1);
+                var colName = h;
+                int suffix = 1;
+                while (newDt.Columns.Contains(colName)) { colName = h + "_" + suffix; suffix++; }
+                newDt.Columns.Add(colName);
+            }
+
+            // Copy data rows after headerRowIndex
+            for (int r = headerRowIndex + 1; r < dt.Rows.Count; r++)
+            {
+                var nr = newDt.NewRow();
+                for (int c = 0; c < dt.Columns.Count; c++) nr[c] = dt.Rows[r][c];
+                newDt.Rows.Add(nr);
+            }
+
+            return newDt;
+        }
+
+        static string FormatElapsed(TimeSpan ts)
+        {
+            if (ts.TotalMilliseconds < 1000)
+                return $"{ts.TotalMilliseconds:F0} ms";
+            if (ts.TotalSeconds < 60)
+                return $"{ts.TotalSeconds:F2} s";
+            if (ts.TotalMinutes < 60)
+                return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
+            return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+        }
+    }
+}

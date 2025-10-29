@@ -15,6 +15,25 @@ using System.Diagnostics;
 
 namespace ClasificadorNoticiasGUI
 {
+    /// <summary>
+    /// Main Windows Forms UI for the news classifier.
+    ///
+    /// This form exposes the following primary features:
+    /// - Clasificar titular: classify a single headline for category and sentiment and show reliability metrics.
+    /// - Dataset actual: view and manage the internal dataset (Texto, Categoria, Sentimiento).
+    /// - Clasificar desde Excel: load an Excel file, classify all rows and display results, time and metrics.
+    /// - Gráficas: view plots generated from the dataset or the last Excel classification.
+    ///
+    /// Important file locations used by the UI:
+    /// - Datos/datos.csv           : minimal CSV storing Texto,Categoria used to train categories.
+    /// - Datos/sentimientos.csv    : minimal CSV storing Texto,Label used to train sentiments.
+    /// - Datos/dataset_completo.csv: union table containing Texto,Categoria,Sentimiento and extra columns.
+    /// - Modelo/*.zip              : model files for categories and sentiments (ML.NET model ZIPs).
+    ///
+    /// Notes about reliability metrics and timing:
+    /// - Single headline classification shows a reliability score (max probability) for both category and sentiment.
+    /// - Excel bulk classification records elapsed time and summary counts which are shown in the UI.
+    /// </summary>
     public partial class Form1 : Form
     {
         static readonly string ModeloCategoriasPath = Path.Combine("Modelo", "modelo_categorias.zip");
@@ -67,6 +86,11 @@ namespace ClasificadorNoticiasGUI
             else
                 modeloSent = ml.Model.Load(ModeloSentimientosPath, out var _);
         }
+        /// <summary>
+        /// Classify the content of txtTitular using the loaded models.
+        /// Updates txtCategoria, txtSentimiento and the read-only reliability fields.
+        /// Reliability is computed as the maximum probability returned by the model's Scores array.
+        /// </summary>
         private void btnClasificar_Click(object sender, EventArgs e)
         {
             var texto = txtTitular.Text?.Trim();
@@ -94,7 +118,19 @@ namespace ClasificadorNoticiasGUI
             txtCategoria.Text = pred.CategoriaPredicha;
             txtSentimiento.Text = predSent.SentimientoPredicho;
 
+            // Mostrar métricas de fiabilidad
+            // La fiabilidad la calculamos como el score más alto entre todas las categorías posibles
+            // Calcular la fiabilidad como el score máximo (cuán seguro está el modelo)
+            var maxScoreCat = (pred.Score != null && pred.Score.Length > 0) ? pred.Score.Max() : 0f;
+            var maxScoreSent = (predSent.Score != null && predSent.Score.Length > 0) ? predSent.Score.Max() : 0f;
 
+
+            txtFiabilidadCategoria.Text = $"{maxScoreCat:P1}";
+            txtFiabilidadSentimiento.Text = $"{maxScoreSent:P1}";
+
+            //// Si la fiabilidad es baja, mostrar el TextBox en rojo
+            txtFiabilidadCategoria.ForeColor = maxScoreCat < 0.5f ? Color.Red : Color.Green;
+            txtFiabilidadSentimiento.ForeColor = maxScoreSent < 0.5f ? Color.Red : Color.Green;
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -438,12 +474,12 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
             }
-            
+
             if (titularCol == null)
             {
                 // Mostrar los nombres de las columnas encontradas para diagnóstico
                 var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
-                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}", 
+                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
                               "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -578,6 +614,10 @@ namespace ClasificadorNoticiasGUI
         }
 
         // ----------------- Helpers -----------------
+        /// <summary>
+        /// Save a single record into the minimal CSVs used for training. Returns true if the text was already present.
+        /// This helper ensures that duplicated rows (by Texto) are not appended multiple times.
+        /// </summary>
         bool GuardarAlDataset(string texto, string categoria, string sentimiento)
         {
             bool yaExistia = false;
@@ -961,12 +1001,12 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
             }
-            
+
             if (titularCol == null)
             {
                 // Mostrar los nombres de las columnas encontradas para diagnóstico
                 var columnas = string.Join(", ", dt.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
-                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}", 
+                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
                               "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
@@ -1059,7 +1099,7 @@ namespace ClasificadorNoticiasGUI
                 {
                     File.AppendAllText(DatosSentimientosPath, $"{EscapeCSV(titular)},{EscapeCSV(sen)}\n");
                 }
-                
+
                 // Add to newDt if Texto not present
                 var existsInNew = newDt.Rows.Cast<DataRow>().Any(rr => rr["Texto"]?.ToString()?.Equals(titular, StringComparison.OrdinalIgnoreCase) == true);
                 if (!existsInNew)
@@ -1179,7 +1219,7 @@ namespace ClasificadorNoticiasGUI
                 senCounts[sen]++;
             }
 
-            // Categorias plot
+            // Categorías plot
             var catOrdered = catCounts.OrderByDescending(k => k.Value).ToList();
             var categories = catOrdered.Select(k => k.Key).ToList();
             var catValues = catOrdered.Select(k => k.Value).ToList();
@@ -1368,5 +1408,7 @@ namespace ClasificadorNoticiasGUI
                 return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
         }
+
+     
     }
 }
