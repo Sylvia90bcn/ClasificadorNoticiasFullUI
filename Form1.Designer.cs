@@ -24,6 +24,7 @@ namespace ClasificadorNoticiasGUI
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             tabControl1 = new TabControl();
             tabClasificar = new TabPage();
             labelFiabilidadSentimientos = new Label();
@@ -41,6 +42,10 @@ namespace ClasificadorNoticiasGUI
             label2 = new Label();
             label1 = new Label();
             tabDataset = new TabPage();
+            label9 = new Label();
+            label8 = new Label();
+            txtLogLossSent = new TextBox();
+            txtMicroAccuracySent = new TextBox();
             label6 = new Label();
             txtLogLoss = new TextBox();
             label7 = new Label();
@@ -75,10 +80,6 @@ namespace ClasificadorNoticiasGUI
             btnActualizarGraficasExcel = new Button();
             plotViewExcelSentimientos = new OxyPlot.WindowsForms.PlotView();
             plotViewExcelCategorias = new OxyPlot.WindowsForms.PlotView();
-            txtMicroAccuracySent = new TextBox();
-            txtLogLossSent = new TextBox();
-            label8 = new Label();
-            label9 = new Label();
             tabControl1.SuspendLayout();
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
@@ -279,6 +280,40 @@ namespace ClasificadorNoticiasGUI
             tabDataset.Text = "Dataset actual";
             tabDataset.UseVisualStyleBackColor = true;
             // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(816, 707);
+            label9.Name = "label9";
+            label9.Size = new Size(142, 19);
+            label9.TabIndex = 25;
+            label9.Text = "LogLoss Sentimientos";
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(810, 664);
+            label8.Name = "label8";
+            label8.Size = new Size(181, 19);
+            label8.TabIndex = 24;
+            label8.Text = "MicroAccuracy Sentimientos";
+            // 
+            // txtLogLossSent
+            // 
+            txtLogLossSent.Location = new Point(1001, 701);
+            txtLogLossSent.Name = "txtLogLossSent";
+            txtLogLossSent.ReadOnly = true;
+            txtLogLossSent.Size = new Size(130, 25);
+            txtLogLossSent.TabIndex = 23;
+            // 
+            // txtMicroAccuracySent
+            // 
+            txtMicroAccuracySent.Location = new Point(1001, 658);
+            txtMicroAccuracySent.Name = "txtMicroAccuracySent";
+            txtMicroAccuracySent.ReadOnly = true;
+            txtMicroAccuracySent.Size = new Size(130, 25);
+            txtMicroAccuracySent.TabIndex = 22;
+            // 
             // label6
             // 
             label6.AutoSize = true;
@@ -287,7 +322,6 @@ namespace ClasificadorNoticiasGUI
             label6.Size = new Size(128, 19);
             label6.TabIndex = 21;
             label6.Text = "LogLoss Categorias";
-            label6.Click += label6_Click;
             // 
             // txtLogLoss
             // 
@@ -305,7 +339,6 @@ namespace ClasificadorNoticiasGUI
             label7.Size = new Size(167, 19);
             label7.TabIndex = 18;
             label7.Text = "MicroAccuracy Categorias";
-            label7.Click += label7_Click;
             // 
             // txtMicroAccuracy
             // 
@@ -633,41 +666,6 @@ namespace ClasificadorNoticiasGUI
             plotViewExcelCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewExcelCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
-            // txtMicroAccuracySent
-            // 
-            txtMicroAccuracySent.Location = new Point(1001, 658);
-            txtMicroAccuracySent.Name = "txtMicroAccuracySent";
-            txtMicroAccuracySent.ReadOnly = true;
-            txtMicroAccuracySent.Size = new Size(130, 25);
-            txtMicroAccuracySent.TabIndex = 22;
-            // 
-            // txtLogLossSent
-            // 
-            txtLogLossSent.Location = new Point(1001, 701);
-            txtLogLossSent.Name = "txtLogLossSent";
-            txtLogLossSent.ReadOnly = true;
-            txtLogLossSent.Size = new Size(130, 25);
-            txtLogLossSent.TabIndex = 23;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Location = new Point(810, 664);
-            label8.Name = "label8";
-            label8.Size = new Size(181, 19);
-            label8.TabIndex = 24;
-            label8.Text = "MicroAccuracy Sentimientos";
-            // 
-            // label9
-            // 
-            label9.AutoSize = true;
-            label9.Location = new Point(816, 707);
-            label9.Name = "label9";
-            label9.Size = new Size(142, 19);
-            label9.TabIndex = 25;
-            label9.Text = "LogLoss Sentimientos";
-            label9.Click += label9_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
@@ -676,6 +674,7 @@ namespace ClasificadorNoticiasGUI
             Controls.Add(tabControl1);
             Font = new Font("Segoe UI", 9.75F);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Form1";
             StartPosition = FormStartPosition.CenterScreen;

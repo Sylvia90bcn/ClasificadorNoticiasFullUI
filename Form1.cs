@@ -1587,19 +1587,6 @@ namespace ClasificadorNoticiasGUI
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
         }
 
-        private void label6_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label7_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-
-        }
+    
     }
 }
