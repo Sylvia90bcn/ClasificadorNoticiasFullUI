@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using ClosedXML.Excel;
 using ExcelDataReader;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using OxyPlot;
-using OxyPlot.Series;
 using OxyPlot.Axes;
-using System.Diagnostics;
+using OxyPlot.Series;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -47,6 +48,8 @@ namespace ClasificadorNoticiasGUI
         private Label lblProgreso;
         private string metodoSeleccionadoCategorias = "SdcaMaximumEntropy (por defecto)";
         private string metodoSeleccionadoSentimientos = "SdcaLogisticRegression (por defecto)";
+        public static List<ResultadoModelo> resultadosModelos = new List<ResultadoModelo>();
+
         public Form1()
         {
             InitializeComponent();
@@ -289,10 +292,10 @@ namespace ClasificadorNoticiasGUI
                 entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
                     ml.BinaryClassification.Trainers.AveragedPerceptron());
             //else if (metodo.Contains("FastTree"))
-                //entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
-                //    ml.BinaryClassification.Trainers.FastTree());
-           // else if (metodo.Contains("LightGbm"))
-              //  entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            //entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+            //    ml.BinaryClassification.Trainers.FastTree());
+            // else if (metodo.Contains("LightGbm"))
+            //  entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
             else
                 entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
 
@@ -316,6 +319,17 @@ namespace ClasificadorNoticiasGUI
 
             form.txtLogLoss.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracy.Text = metrics.MicroAccuracy.ToString("P2");
+
+            resultadosModelos.Add(new ResultadoModelo
+            {
+                TipoModelo = "Categorías",
+                Metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+                MicroAccuracy = metrics.MicroAccuracy,
+                MacroAccuracy = metrics.MacroAccuracy,
+                LogLoss = metrics.LogLoss
+            });
+
+            ActualizarTablaComparador(form);
 
             // Entrenar modelo final
             var modeloFinal = finalPipeline.Fit(datos);
@@ -424,6 +438,17 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLossSent.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracySent.Text = metrics.MicroAccuracy.ToString("P2");
 
+            resultadosModelos.Add(new ResultadoModelo
+            {
+                TipoModelo = "Sentimientos",
+                Metodo = form.cmbModeloSentimientos.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+                MicroAccuracy = metrics.MicroAccuracy,
+                MacroAccuracy = metrics.MacroAccuracy,
+                LogLoss = metrics.LogLoss
+            });
+
+            ActualizarTablaComparador(form);
+
             // Entrenar modelo final con todos los datos
             var modeloFinal = pipeline.Fit(datos);
 
@@ -436,6 +461,57 @@ namespace ClasificadorNoticiasGUI
 
             return modeloFinal;
         }
+
+        public static void ActualizarTablaComparador(Form1 form)
+        {
+            // Referencia directa al DataGridView
+            var dgv = form.dgvComparador;
+            if (dgv == null) return;
+
+            // Limpiar filas existentes
+            dgv.Rows.Clear();
+
+            // Validar que haya datos
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+                return;
+
+            // Asegurarse de que las columnas tengan nombres (solo se necesita si no se definieron en el diseñador)
+            dgv.Columns[0].Name = "Tipo";
+            dgv.Columns[1].Name = "Metodo";
+            dgv.Columns[2].Name = "MicroAccuracy";
+            dgv.Columns[3].Name = "MacroAccuracy";
+            dgv.Columns[4].Name = "LogLoss";
+            dgv.Columns[5].Name = "Fecha";
+
+            // Llenar DataGridView con los datos de resultadosModelos
+            foreach (var r in resultadosModelos.OrderByDescending(x => x.Fecha))
+            {
+                dgv.Rows.Add(
+                    r.TipoModelo,
+                    r.Metodo,
+                    $"{r.MicroAccuracy:P2}",
+                    $"{r.MacroAccuracy:P2}",
+                    $"{r.LogLoss:F4}",
+                    r.Fecha.ToString("dd/MM/yyyy HH:mm:ss")
+                );
+            }
+
+            // Resaltar la fila con mayor MicroAccuracy
+            double maxAcc = resultadosModelos.Max(x => x.MicroAccuracy);
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (double.TryParse(row.Cells["MicroAccuracy"].Value.ToString().TrimEnd('%'), out double acc))
+                {
+                    acc /= 100.0;
+                    if (Math.Abs(acc - maxAcc) < 0.0001) // Comparación segura de double
+                    {
+                        row.DefaultCellStyle.BackColor = Color.LightGreen;
+                    }
+                }
+            }
+        }
+
 
         private void btnActualizarDataset_Click(object sender, EventArgs e)
         {
@@ -1275,11 +1351,11 @@ namespace ClasificadorNoticiasGUI
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // If the selected tab is the Graficas Dataset tab, refresh graphs
-            if (tabControl1.SelectedTab == tabGraficas)
+            if (tabPrincipal.SelectedTab == tabGraficas)
             {
                 CargarGraficasDesdeDataset();
             }
-            else if (tabControl1.SelectedTab == tabGraficasExcel)
+            else if (tabPrincipal.SelectedTab == tabGraficasExcel)
             {
                 CargarGraficasDesdeExcelResultados();
             }
@@ -1371,6 +1447,46 @@ namespace ClasificadorNoticiasGUI
             {
                 // Por defecto
                 return mlContext.BinaryClassification.Trainers.SdcaLogisticRegression();
+            }
+        }
+
+        private void ExportarResultadosCSV()
+        {
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+            {
+                MessageBox.Show("No hay resultados para exportar.", "Exportar CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "Archivo CSV (*.csv)|*.csv";
+                sfd.FileName = $"Resultados_Modelos_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        using (var writer = new StreamWriter(sfd.FileName, false, Encoding.UTF8))
+                        {
+                            // Cabecera
+                            writer.WriteLine("TipoModelo,Método,MicroAccuracy,MacroAccuracy,LogLoss,Fecha");
+
+                            // Filas
+                            foreach (var r in resultadosModelos)
+                            {
+                                writer.WriteLine($"{r.TipoModelo},{r.Metodo},{r.MicroAccuracy:F4},{r.MacroAccuracy:F4},{r.LogLoss:F4},{r.Fecha:yyyy-MM-dd HH:mm:ss}");
+                            }
+                        }
+
+                        MessageBox.Show($"✅ Resultados exportados correctamente a:\n{sfd.FileName}",
+                            "Exportación completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al exportar resultados:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
 
@@ -1729,5 +1845,11 @@ namespace ClasificadorNoticiasGUI
         //}
 
         #endregion
+
+        private void btnExportar_Click(object sender, EventArgs e)
+        {
+            ExportarResultadosCSV();
+        }
+
     }
 }
