@@ -25,6 +25,8 @@ namespace ClasificadorNoticiasGUI
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            cmbModeloCategorias = new ComboBox();
+            cmbModeloSentimientos = new ComboBox();
             tabControl1 = new TabControl();
             tabClasificar = new TabPage();
             labelFiabilidadSentimientos = new Label();
@@ -42,6 +44,8 @@ namespace ClasificadorNoticiasGUI
             label2 = new Label();
             label1 = new Label();
             tabDataset = new TabPage();
+            labelModeloCat = new Label();
+            labelModeloSent = new Label();
             label9 = new Label();
             label8 = new Label();
             txtLogLossSent = new TextBox();
@@ -90,6 +94,28 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel.SuspendLayout();
             SuspendLayout();
             // 
+            // cmbModeloCategorias
+            // 
+            cmbModeloCategorias.FormattingEnabled = true;
+            cmbModeloCategorias.Items.AddRange(new object[] { "SdcaMaximumEntropy (por defecto)", "LbfgsMaximumEntropy", "AveragedPerceptron", "FastTree", "LightGbm" });
+            cmbModeloCategorias.Location = new Point(1194, 155);
+            cmbModeloCategorias.Name = "cmbModeloCategorias";
+            cmbModeloCategorias.Size = new Size(121, 25);
+            cmbModeloCategorias.TabIndex = 26;
+            cmbModeloCategorias.Tag = "";
+            cmbModeloCategorias.SelectedIndexChanged += cmbModeloCategorias_SelectedIndexChanged;
+            // 
+            // cmbModeloSentimientos
+            // 
+            cmbModeloSentimientos.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbModeloSentimientos.FormattingEnabled = true;
+            cmbModeloSentimientos.Items.AddRange(new object[] { "SdcaLogisticRegression (por defecto)", "LbfgsLogisticRegression", "AveragedPerceptron", "FastTree", "LightGbm" });
+            cmbModeloSentimientos.Location = new Point(1194, 241);
+            cmbModeloSentimientos.Name = "cmbModeloSentimientos";
+            cmbModeloSentimientos.Size = new Size(121, 25);
+            cmbModeloSentimientos.TabIndex = 27;
+            cmbModeloSentimientos.SelectedIndexChanged += cmbModeloSentimientos_SelectedIndexChanged;
+            // 
             // tabControl1
             // 
             tabControl1.Controls.Add(tabClasificar);
@@ -103,7 +129,7 @@ namespace ClasificadorNoticiasGUI
             tabControl1.Margin = new Padding(10);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1208, 776);
+            tabControl1.Size = new Size(1388, 776);
             tabControl1.TabIndex = 0;
             tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
@@ -126,7 +152,7 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.Location = new Point(4, 26);
             tabClasificar.Name = "tabClasificar";
             tabClasificar.Padding = new Padding(3);
-            tabClasificar.Size = new Size(1200, 746);
+            tabClasificar.Size = new Size(1380, 746);
             tabClasificar.TabIndex = 0;
             tabClasificar.Text = "Clasificar titular";
             tabClasificar.UseVisualStyleBackColor = true;
@@ -256,6 +282,10 @@ namespace ClasificadorNoticiasGUI
             // 
             // tabDataset
             // 
+            tabDataset.Controls.Add(labelModeloCat);
+            tabDataset.Controls.Add(labelModeloSent);
+            tabDataset.Controls.Add(cmbModeloSentimientos);
+            tabDataset.Controls.Add(cmbModeloCategorias);
             tabDataset.Controls.Add(label9);
             tabDataset.Controls.Add(label8);
             tabDataset.Controls.Add(txtLogLossSent);
@@ -275,15 +305,33 @@ namespace ClasificadorNoticiasGUI
             tabDataset.Location = new Point(4, 26);
             tabDataset.Name = "tabDataset";
             tabDataset.Padding = new Padding(3);
-            tabDataset.Size = new Size(1200, 746);
+            tabDataset.Size = new Size(1380, 746);
             tabDataset.TabIndex = 1;
             tabDataset.Text = "Dataset actual";
             tabDataset.UseVisualStyleBackColor = true;
             // 
+            // labelModeloCat
+            // 
+            labelModeloCat.AutoSize = true;
+            labelModeloCat.Location = new Point(1194, 133);
+            labelModeloCat.Name = "labelModeloCat";
+            labelModeloCat.Size = new Size(125, 19);
+            labelModeloCat.TabIndex = 29;
+            labelModeloCat.Text = "Modelo Categorias";
+            // 
+            // labelModeloSent
+            // 
+            labelModeloSent.AutoSize = true;
+            labelModeloSent.Location = new Point(1184, 219);
+            labelModeloSent.Name = "labelModeloSent";
+            labelModeloSent.Size = new Size(139, 19);
+            labelModeloSent.TabIndex = 28;
+            labelModeloSent.Text = "Modelo Sentimientos";
+            // 
             // label9
             // 
             label9.AutoSize = true;
-            label9.Location = new Point(816, 707);
+            label9.Location = new Point(1055, 679);
             label9.Name = "label9";
             label9.Size = new Size(142, 19);
             label9.TabIndex = 25;
@@ -292,7 +340,7 @@ namespace ClasificadorNoticiasGUI
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(810, 664);
+            label8.Location = new Point(1049, 636);
             label8.Name = "label8";
             label8.Size = new Size(181, 19);
             label8.TabIndex = 24;
@@ -300,7 +348,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtLogLossSent
             // 
-            txtLogLossSent.Location = new Point(1001, 701);
+            txtLogLossSent.Location = new Point(1240, 673);
             txtLogLossSent.Name = "txtLogLossSent";
             txtLogLossSent.ReadOnly = true;
             txtLogLossSent.Size = new Size(130, 25);
@@ -308,7 +356,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtMicroAccuracySent
             // 
-            txtMicroAccuracySent.Location = new Point(1001, 658);
+            txtMicroAccuracySent.Location = new Point(1240, 630);
             txtMicroAccuracySent.Name = "txtMicroAccuracySent";
             txtMicroAccuracySent.ReadOnly = true;
             txtMicroAccuracySent.Size = new Size(130, 25);
@@ -317,7 +365,7 @@ namespace ClasificadorNoticiasGUI
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(475, 710);
+            label6.Location = new Point(699, 670);
             label6.Name = "label6";
             label6.Size = new Size(128, 19);
             label6.TabIndex = 21;
@@ -325,7 +373,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtLogLoss
             // 
-            txtLogLoss.Location = new Point(661, 707);
+            txtLogLoss.Location = new Point(885, 667);
             txtLogLoss.Name = "txtLogLoss";
             txtLogLoss.ReadOnly = true;
             txtLogLoss.Size = new Size(130, 25);
@@ -334,7 +382,7 @@ namespace ClasificadorNoticiasGUI
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(475, 676);
+            label7.Location = new Point(699, 636);
             label7.Name = "label7";
             label7.Size = new Size(167, 19);
             label7.TabIndex = 18;
@@ -342,7 +390,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtMicroAccuracy
             // 
-            txtMicroAccuracy.Location = new Point(661, 670);
+            txtMicroAccuracy.Location = new Point(885, 630);
             txtMicroAccuracy.Name = "txtMicroAccuracy";
             txtMicroAccuracy.ReadOnly = true;
             txtMicroAccuracy.Size = new Size(130, 25);
@@ -351,7 +399,7 @@ namespace ClasificadorNoticiasGUI
             // btnReentrenarCategoriasDataset
             // 
             btnReentrenarCategoriasDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarCategoriasDataset.Location = new Point(20, 676);
+            btnReentrenarCategoriasDataset.Location = new Point(20, 669);
             btnReentrenarCategoriasDataset.Name = "btnReentrenarCategoriasDataset";
             btnReentrenarCategoriasDataset.Size = new Size(193, 30);
             btnReentrenarCategoriasDataset.TabIndex = 9;
@@ -371,7 +419,7 @@ namespace ClasificadorNoticiasGUI
             // btnReiniciarModeloSentimientos
             // 
             btnReiniciarModeloSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloSentimientos.Location = new Point(237, 625);
+            btnReiniciarModeloSentimientos.Location = new Point(228, 625);
             btnReiniciarModeloSentimientos.Name = "btnReiniciarModeloSentimientos";
             btnReiniciarModeloSentimientos.Size = new Size(203, 30);
             btnReiniciarModeloSentimientos.TabIndex = 4;
@@ -382,7 +430,7 @@ namespace ClasificadorNoticiasGUI
             // btnReiniciarModeloCategorias
             // 
             btnReiniciarModeloCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReiniciarModeloCategorias.Location = new Point(237, 676);
+            btnReiniciarModeloCategorias.Location = new Point(228, 669);
             btnReiniciarModeloCategorias.Name = "btnReiniciarModeloCategorias";
             btnReiniciarModeloCategorias.Size = new Size(203, 30);
             btnReiniciarModeloCategorias.TabIndex = 3;
@@ -404,7 +452,7 @@ namespace ClasificadorNoticiasGUI
             // btnActualizarDataset
             // 
             btnActualizarDataset.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarDataset.Location = new Point(810, 625);
+            btnActualizarDataset.Location = new Point(475, 699);
             btnActualizarDataset.Name = "btnActualizarDataset";
             btnActualizarDataset.Size = new Size(120, 30);
             btnActualizarDataset.TabIndex = 1;
@@ -415,7 +463,7 @@ namespace ClasificadorNoticiasGUI
             // btnCargarDatasetExcel
             // 
             btnCargarDatasetExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnCargarDatasetExcel.Location = new Point(639, 625);
+            btnCargarDatasetExcel.Location = new Point(475, 663);
             btnCargarDatasetExcel.Name = "btnCargarDatasetExcel";
             btnCargarDatasetExcel.Size = new Size(140, 30);
             btnCargarDatasetExcel.TabIndex = 2;
@@ -447,7 +495,7 @@ namespace ClasificadorNoticiasGUI
             tabExcel.Controls.Add(txtMetricasClasificacion);
             tabExcel.Location = new Point(4, 26);
             tabExcel.Name = "tabExcel";
-            tabExcel.Size = new Size(1200, 746);
+            tabExcel.Size = new Size(1380, 746);
             tabExcel.TabIndex = 2;
             tabExcel.Text = "Clasificar desde Excel";
             tabExcel.UseVisualStyleBackColor = true;
@@ -583,7 +631,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas.Controls.Add(plotViewCategorias);
             tabGraficas.Location = new Point(4, 26);
             tabGraficas.Name = "tabGraficas";
-            tabGraficas.Size = new Size(1200, 746);
+            tabGraficas.Size = new Size(1380, 746);
             tabGraficas.TabIndex = 3;
             tabGraficas.Text = "Gráficas Dataset";
             tabGraficas.UseVisualStyleBackColor = true;
@@ -628,7 +676,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel.Controls.Add(plotViewExcelCategorias);
             tabGraficasExcel.Location = new Point(4, 26);
             tabGraficasExcel.Name = "tabGraficasExcel";
-            tabGraficasExcel.Size = new Size(1200, 746);
+            tabGraficasExcel.Size = new Size(1380, 746);
             tabGraficasExcel.TabIndex = 4;
             tabGraficasExcel.Text = "Gráficas Clasificar Excel";
             tabGraficasExcel.UseVisualStyleBackColor = true;
@@ -670,7 +718,7 @@ namespace ClasificadorNoticiasGUI
             // 
             AutoScaleDimensions = new SizeF(7F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1208, 776);
+            ClientSize = new Size(1388, 776);
             Controls.Add(tabControl1);
             Font = new Font("Segoe UI", 9.75F);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -750,5 +798,11 @@ namespace ClasificadorNoticiasGUI
         private Label label8;
         private TextBox txtLogLossSent;
         private TextBox txtMicroAccuracySent;
+        private Label labelCategoriaCBModelo;
+        private Label labelSentimientoCBModelo;
+        private ComboBox cmbModeloCategorias;
+        private ComboBox cmbModeloSentimientos;
+        private Label labelModeloCat;
+        private Label labelModeloSent;
     }
 }

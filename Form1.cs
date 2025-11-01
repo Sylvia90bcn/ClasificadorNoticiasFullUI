@@ -45,7 +45,8 @@ namespace ClasificadorNoticiasGUI
         MLContext ml = new MLContext(seed: 1);
         ITransformer modeloCat = null, modeloSent = null;
         private Label lblProgreso;
-
+        private string metodoSeleccionadoCategorias = "SdcaMaximumEntropy (por defecto)";
+        private string metodoSeleccionadoSentimientos = "SdcaLogisticRegression (por defecto)";
         public Form1()
         {
             InitializeComponent();
@@ -242,7 +243,11 @@ namespace ClasificadorNoticiasGUI
         {
             Console.WriteLine("Entrenando modelo de categorías...");
 
-            // Cargar dataset base desde CSV en memoria
+            // Obtener método seleccionado desde el ComboBox
+            string metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)";
+            Console.WriteLine($"🧩 Método seleccionado para categorías: {metodo}");
+
+            // Cargar dataset base
             var datosList = new List<Articulo>();
             if (File.Exists(DatosCategoriasPath))
             {
@@ -260,7 +265,7 @@ namespace ClasificadorNoticiasGUI
                 }
             }
 
-            // Añadir extras (sin duplicados por Texto)
+            // Añadir extras sin duplicar
             if (extras != null)
             {
                 foreach (var e in extras)
@@ -276,28 +281,43 @@ namespace ClasificadorNoticiasGUI
 
             var datos = ml.Data.LoadFromEnumerable(datosList);
 
-            // Pipeline sin MapKeyToValue para evaluar
+            // Seleccionar el entrenador dinámicamente
+            IEstimator<ITransformer> entrenador;
+            if (metodo.Contains("LbfgsMaximumEntropy"))
+                entrenador = ml.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features");
+            else if (metodo.Contains("AveragedPerceptron"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.AveragedPerceptron());
+            //else if (metodo.Contains("FastTree"))
+                //entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                //    ml.BinaryClassification.Trainers.FastTree());
+           // else if (metodo.Contains("LightGbm"))
+              //  entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            else
+                entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
+
+            // Pipeline
             var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Articulo.Categoria))
                 .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Articulo.Texto)))
-                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
+                .Append(entrenador);
 
-            // Pipeline final (incluye MapKeyToValue) para guardar / usar predicción
             var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
 
-            // Train/Test split para obtener métricas
+            // Evaluar con división train/test
             var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
             var modelForEval = trainPipeline.Fit(split.TrainSet);
             var preds = modelForEval.Transform(split.TestSet);
 
             var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
 
-            // Mostrar métricas básicas
-            MessageBox.Show($"Métricas categorías:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
+            // Mostrar métricas
+            MessageBox.Show($"Métricas categorías ({metodo}):\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
                 "Métricas - Categorías", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            form.txtLogLoss.Text = $"{metrics.LogLoss.ToString("F4")}";
-            form.txtMicroAccuracy.Text = $"{metrics.MicroAccuracy.ToString("P2")}";
-            // Ajustar el modelo final usando todos los datos y con MapKeyToValue para predicción/string labels
+            form.txtLogLoss.Text = metrics.LogLoss.ToString("F4");
+            form.txtMicroAccuracy.Text = metrics.MicroAccuracy.ToString("P2");
+
+            // Entrenar modelo final
             var modeloFinal = finalPipeline.Fit(datos);
 
             if (guardar)
@@ -310,18 +330,17 @@ namespace ClasificadorNoticiasGUI
             return modeloFinal;
         }
 
-        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, bool guardar = false)
-        {
-            // Llamar a la sobrecarga que acepta extras con null
-            return EntrenarModeloCategorias(form, ml, extras: null, guardar: guardar);
-        }
 
         // Nueva sobrecarga para sentimientos
         static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
         {
-            Console.WriteLine("Entrenando modelo de sentimientos...");
+            Console.WriteLine("Entrenando modelo de sentimientos (multiclase)...");
 
+            // Obtener método seleccionado desde el ComboBox
+            string metodo = form.cmbModeloSentimientos.SelectedItem?.ToString() ?? "SdcaLogisticRegression (por defecto)";
+            Console.WriteLine($"🧩 Método seleccionado para sentimientos: {metodo}");
+
+            // Leer dataset base
             var datosList = new List<Sentimiento>();
             if (File.Exists(DatosSentimientosPath))
             {
@@ -339,6 +358,7 @@ namespace ClasificadorNoticiasGUI
                 }
             }
 
+            // Añadir filas nuevas desde extras (sin duplicados)
             if (extras != null)
             {
                 foreach (var e in extras)
@@ -352,27 +372,60 @@ namespace ClasificadorNoticiasGUI
             if (datosList.Count == 0)
                 throw new Exception("No hay datos para entrenar sentimientos.");
 
+            // Normalizar etiquetas a Positivo / Negativo / Neutral
+            foreach (var s in datosList)
+            {
+                var t = s.Label.ToLower();
+                if (t.Contains("pos")) s.Label = "Positivo";
+                else if (t.Contains("neg")) s.Label = "Negativo";
+                else s.Label = "Neutral";
+            }
+
             var datos = ml.Data.LoadFromEnumerable(datosList);
 
-            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(Sentimiento.Label))
+            // Elegir entrenador multiclase dinámicamente
+            IEstimator<ITransformer> entrenador;
+            if (metodo.Contains("LbfgsLogisticRegression"))
+                entrenador = ml.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features");
+            else if (metodo.Contains("AveragedPerceptron"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.AveragedPerceptron("Label", "Features"));
+            //else if (metodo.Contains("FastTree"))
+            //    entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+            //        ml.BinaryClassification.Trainers.FastTree("Label", "Features"));
+            //else if (metodo.Contains("LightGbm"))
+            //    entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            else
+                entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
+
+            // Pipeline multiclase completo
+            var pipeline = ml.Transforms.Conversion.MapValueToKey("Label")
                 .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(Sentimiento.Texto)))
-                .Append(ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features"));
+                .Append(entrenador)
+                .Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
 
-            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
-
+            // Train/Test split
             var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
-            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var modelForEval = pipeline.Fit(split.TrainSet);
             var preds = modelForEval.Transform(split.TestSet);
 
+            // Evaluar métricas multiclase
             var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
 
-            MessageBox.Show($"Métricas sentimientos:\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
-                "Métricas - Sentimientos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                $"Métricas sentimientos ({metodo}):\n" +
+                $"MicroAccuracy: {metrics.MicroAccuracy:P2}\n" +
+                $"MacroAccuracy: {metrics.MacroAccuracy:P2}\n" +
+                $"LogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Sentimientos",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
 
-            form.txtLogLossSent.Text = $"{metrics.LogLoss.ToString("F4")}";
-            form.txtMicroAccuracySent.Text = $"{metrics.MicroAccuracy.ToString("P2")}";
+            form.txtLogLossSent.Text = metrics.LogLoss.ToString("F4");
+            form.txtMicroAccuracySent.Text = metrics.MicroAccuracy.ToString("P2");
 
-            var modeloFinal = finalPipeline.Fit(datos);
+            // Entrenar modelo final con todos los datos
+            var modeloFinal = pipeline.Fit(datos);
 
             if (guardar)
             {
@@ -384,196 +437,9 @@ namespace ClasificadorNoticiasGUI
             return modeloFinal;
         }
 
-        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, bool guardar = false)
-        {
-            return EntrenarModeloSentimientos(form, ml, extras: null, guardar: guardar);
-        }
-
-
         private void btnActualizarDataset_Click(object sender, EventArgs e)
         {
             CargarDatasetEnGrilla();
-        }
-
-        private void btnCargarExcel_ClickOld(object sender, EventArgs e)
-        {
-            using var ofd = new OpenFileDialog();
-            ofd.Filter = "Excel Files|*.xlsx;*.xls";
-            if (ofd.ShowDialog() != DialogResult.OK) return;
-
-            var path = ofd.FileName;
-            var filas = LeerExcelTitulares(path);
-
-            if (modeloCat == null || modeloSent == null)
-            {
-                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var engine = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
-            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
-
-            var resultados = new List<ResultadoExcel>();
-            foreach (var t in filas)
-            {
-                var p = engine.Predict(new Articulo { Texto = t });
-                var ps = engineSent.Predict(new Sentimiento { Texto = t });
-                resultados.Add(new ResultadoExcel { Titular = t, Categoria = p.CategoriaPredicha, Sentimiento = ps.SentimientoPredicho });
-            }
-
-            dgvExcelResultados.DataSource = resultados;
-        }
-
-        private void OldbtnCargarExcel_Click(object sender, EventArgs e)
-        {
-            // Abrir diálogo para seleccionar archivo
-            using var ofd = new OpenFileDialog();
-            ofd.Filter = "Excel Files|*.xlsx;*.xls";
-            if (ofd.ShowDialog() != DialogResult.OK) return;
-
-            var path = ofd.FileName;
-
-            // Leer tabla completa desde Excel
-            DataTable original;
-            try
-            {
-                original = LeerExcelComoDataTable(path);
-                if (original == null || original.Rows.Count == 0)
-                {
-                    MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            // Validar que los modelos estén cargados
-            if (modeloCat == null || modeloSent == null)
-            {
-                MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Buscar columna de titulares (case-insensitive)
-            string titularCol = null;
-            foreach (DataColumn c in original.Columns)
-            {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
-                { titularCol = c.ColumnName; break; }
-            }
-            // Si no se encontró, intentar buscar de forma más flexible
-            if (titularCol == null)
-            {
-                foreach (DataColumn c in original.Columns)
-                {
-                    var name = c.ColumnName.Trim().ToLowerInvariant();
-                    if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
-                    {
-                        titularCol = c.ColumnName;
-                        break;
-                    }
-                }
-            }
-
-            if (titularCol == null)
-            {
-                // Mostrar los nombres de las columnas encontradas para diagnóstico
-                var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
-                MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
-                              "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            // Crear motores de predicción
-            var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
-            var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
-
-            // Preparar DataTable de resultados: Titular, Categoria, Sentimiento, luego todas las columnas originales (excepto Titular duplicada)
-            var resultadosDt = new DataTable();
-            resultadosDt.Columns.Add("Titular");
-            resultadosDt.Columns.Add("Categoria");
-            resultadosDt.Columns.Add("Sentimiento");
-            var extraCols = new List<string>();
-            foreach (DataColumn c in original.Columns)
-            {
-                if (c.ColumnName == titularCol) continue;
-                // Evitar nombres reservados
-                var colName = c.ColumnName;
-                int suffix = 1;
-                while (resultadosDt.Columns.Contains(colName)) { colName = c.ColumnName + "_" + suffix; suffix++; }
-                resultadosDt.Columns.Add(colName);
-                extraCols.Add(c.ColumnName);
-            }
-
-            int total = original.Rows.Count;
-            int i = 1;
-
-            var stopwatch = Stopwatch.StartNew();
-
-            var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (DataRow row in original.Rows)
-            {
-                var titular = row[titularCol]?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
-
-                // Predicción
-                var predCat = engineCat.Predict(new Articulo { Texto = titular });
-                var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
-
-                var newRow = resultadosDt.NewRow();
-                newRow["Titular"] = titular;
-                newRow["Categoria"] = predCat.CategoriaPredicha;
-                newRow["Sentimiento"] = predSent.SentimientoPredicho;
-
-                // Copiar columnas extra en el mismo orden que en original
-                for (int ec = 0; ec < extraCols.Count; ec++)
-                {
-                    var origName = extraCols[ec];
-                    var targetName = resultadosDt.Columns[3 + ec].ColumnName; // offset
-                    newRow[targetName] = row[origName]?.ToString() ?? "";
-                }
-
-                resultadosDt.Rows.Add(newRow);
-
-                // acumular métricas
-                var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
-                var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
-                if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0; catCountsLocal[catKey]++;
-                if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0; senCountsLocal[senKey]++;
-
-                // Mostrar progreso
-                lblProgreso.Text = $"Clasificando {i}/{total}";
-                Application.DoEvents();
-                i++;
-            }
-
-            stopwatch.Stop();
-
-            dgvExcelResultados.DataSource = resultadosDt;
-            dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvExcelResultados.Refresh();
-
-            // Update Excel graphs automatically
-            CargarGraficasDesdeExcelResultados();
-
-            // Mostrar tiempo y métricas resumidas
-            txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
-            var metricsSb = new System.Text.StringBuilder();
-            metricsSb.AppendLine("Categorías:");
-            foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-            metricsSb.AppendLine();
-            metricsSb.AppendLine("Sentimientos:");
-            foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-            txtMetricasClasificacion.Text = metricsSb.ToString();
-
-            lblProgreso.Text = "Clasificación completada ✅";
         }
 
         private void btnCargarExcel_Click(object sender, EventArgs e)
@@ -912,107 +778,6 @@ namespace ClasificadorNoticiasGUI
             }
             values.Add(cur);
             return values.ToArray();
-        }
-
-        static List<string> LeerExcelTitularesOld(string ruta)
-        {
-            var lista = new List<string>();
-            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                using var wb = new XLWorkbook(ruta);
-                var ws = wb.Worksheets.First();
-                var col = ws.Column(1).CellsUsed().Select(c => c.GetString()).ToList();
-                // asumimos cabecera en la primera fila
-                for (int i = 2; i <= ws.RowCount(); i++)
-                {
-                    var val = ws.Cell(i, 1).GetString().Trim();
-                    if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
-                }
-            }
-            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
-            {
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
-                using var reader = ExcelReaderFactory.CreateReader(stream);
-                var result = reader.AsDataSet();
-                var table = result.Tables[0];
-                for (int r = 1; r < table.Rows.Count; r++)
-                {
-                    var val = table.Rows[r][0]?.ToString()?.Trim();
-                    if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
-                }
-            }
-            return lista;
-        }
-
-        static List<string> LeerExcelTitulares(string ruta)
-        {
-            var lista = new List<string>();
-            List<string> nombresColumnas = new();
-
-            if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                using var wb = new XLWorkbook(ruta);
-                var ws = wb.Worksheets.First(); // podemos permitir seleccionar hoja después si quieres
-                var rango = ws.RangeUsed();
-                if (rango == null) return lista;
-                int totalFilas = rango.RowCount();
-                int totalCols = rango.ColumnCount();
-
-                // Determine actual first row/col of the used range
-                int firstRow = rango.FirstRow().RowNumber();
-                int firstCol = rango.FirstColumn().ColumnNumber();
-
-                // Leer encabezados
-                for (int c = 0; c < totalCols; c++)
-                    nombresColumnas.Add(ws.Cell(firstRow, firstCol + c).GetString().Trim());
-
-                // Buscar columna de titulares
-                int colTitular = nombresColumnas.FindIndex(h =>
-                    new[] { "titular", "título", "title", "headline" }
-                    .Contains(h.ToLower()));
-
-                if (colTitular == -1)
-                    throw new Exception("No se encontró columna 'Titular' en el Excel.");
-
-                // Leer filas
-                for (int r = 1; r < totalFilas; r++)
-                {
-                    var val = ws.Cell(firstRow + r, firstCol + colTitular).GetString().Trim();
-                    if (!string.IsNullOrWhiteSpace(val))
-                        lista.Add(val);
-                }
-            }
-            else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
-            {
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-                using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
-                using var reader = ExcelReaderFactory.CreateReader(stream);
-                var result = reader.AsDataSet();
-                var table = result.Tables[0]; // también se puede permitir seleccionar hoja
-
-                // Leer encabezados
-                for (int c = 0; c < table.Columns.Count; c++)
-                    nombresColumnas.Add(table.Rows[0][c]?.ToString().Trim() ?? "");
-
-                // Buscar columna de titulares
-                int colTitular = nombresColumnas.FindIndex(h =>
-                    new[] { "titular", "título", "title", "headline" }
-                    .Contains(h.ToLower()));
-
-                if (colTitular == -1)
-                    throw new Exception("No se encontró columna 'Titular' en el Excel.");
-
-                // Leer filas
-                for (int r = 1; r < table.Rows.Count; r++)
-                {
-                    var val = table.Rows[r][colTitular]?.ToString().Trim();
-                    if (!string.IsNullOrWhiteSpace(val))
-                        lista.Add(val);
-                }
-            }
-
-            return lista;
         }
 
         static DataTable LeerExcelComoDataTable(string ruta)
@@ -1520,62 +1285,6 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
-        // If the header row wasn't properly read, try to detect it within the first few rows and rebuild the DataTable
-        static DataTable EnsureHeaderRow(DataTable dt)
-        {
-            if (dt == null || dt.Rows.Count == 0) return dt;
-
-            // Quick heuristic: if columns are named like 'Column1' or empty, try to locate a header row
-            bool hasGenericCols = dt.Columns.Cast<DataColumn>().All(c => c.ColumnName.StartsWith("Column", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(c.ColumnName));
-            if (!hasGenericCols) return dt; // already has meaningful column names
-
-            var possibleHeaders = new[] { "titular", "título", "titulo", "title", "headline", "categoria", "category", "sentimiento", "sentiment", "autor", "autor" };
-
-            // Scan first N rows to find a header row where at least one cell matches known headers
-            int maxRowsToCheck = Math.Min(10, dt.Rows.Count);
-            int headerRowIndex = -1;
-            for (int r = 0; r < maxRowsToCheck; r++)
-            {
-                int matchCount = 0;
-                for (int c = 0; c < dt.Columns.Count; c++)
-                {
-                    var cell = dt.Rows[r][c]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(cell)) continue;
-                    var cl = cell.ToLowerInvariant();
-                    if (possibleHeaders.Any(h => cl.Contains(h))) matchCount++;
-                }
-                if (matchCount >= 1)
-                {
-                    headerRowIndex = r;
-                    break;
-                }
-            }
-
-            if (headerRowIndex == -1) return dt; // cannot detect header
-
-            // Build new DataTable using that row as header
-            var newDt = new DataTable();
-            for (int c = 0; c < dt.Columns.Count; c++)
-            {
-                var h = dt.Rows[headerRowIndex][c]?.ToString()?.Trim();
-                if (string.IsNullOrWhiteSpace(h)) h = "Column" + (c + 1);
-                var colName = h;
-                int suffix = 1;
-                while (newDt.Columns.Contains(colName)) { colName = h + "_" + suffix; suffix++; }
-                newDt.Columns.Add(colName);
-            }
-
-            // Copy data rows after headerRowIndex
-            for (int r = headerRowIndex + 1; r < dt.Rows.Count; r++)
-            {
-                var nr = newDt.NewRow();
-                for (int c = 0; c < dt.Columns.Count; c++) nr[c] = dt.Rows[r][c];
-                newDt.Rows.Add(nr);
-            }
-
-            return newDt;
-        }
-
         static string FormatElapsed(TimeSpan ts)
         {
             if (ts.TotalMilliseconds < 1000)
@@ -1587,6 +1296,438 @@ namespace ClasificadorNoticiasGUI
             return $"{(int)ts.TotalHours}h {ts.Minutes}m";
         }
 
-    
+        private void cmbModeloCategorias_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbModeloCategorias.SelectedItem != null)
+            {
+                metodoSeleccionadoCategorias = cmbModeloCategorias.SelectedItem.ToString();
+                Console.WriteLine($"Método de entrenamiento para Categorías seleccionado: {metodoSeleccionadoCategorias}");
+
+                // (Opcional) Mostrarlo en una etiqueta del formulario
+                //lblInfoCategorias.Text = $"Modelo seleccionado: {metodoSeleccionadoCategorias}";
+            }
+        }
+
+        private void cmbModeloSentimientos_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbModeloSentimientos.SelectedItem != null)
+            {
+                metodoSeleccionadoSentimientos = cmbModeloSentimientos.SelectedItem.ToString();
+                Console.WriteLine($"Método de entrenamiento para Sentimientos seleccionado: {metodoSeleccionadoSentimientos}");
+
+                // (Opcional) Mostrarlo en una etiqueta del formulario
+                //lblInfoSentimientos.Text = $"Modelo seleccionado: {metodoSeleccionadoSentimientos}";
+            }
+        }
+
+        private IEstimator<ITransformer> ObtenerEntrenadorCategorias(MLContext mlContext, string metodo)
+        {
+            // Selecciona el algoritmo en función del texto del ComboBox
+            if (metodo.Contains("LbfgsMaximumEntropy"))
+            {
+                return mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy();
+            }
+            else if (metodo.Contains("AveragedPerceptron"))
+            {
+                return mlContext.MulticlassClassification.Trainers.OneVersusAll(
+                    mlContext.BinaryClassification.Trainers.AveragedPerceptron());
+            }
+            //else if (metodo.Contains("FastTree"))
+            //{
+            //    return mlContext.MulticlassClassification.Trainers.OneVersusAll(
+            //        mlContext.BinaryClassification.Trainers.FastTree());
+            //}
+            //else if (metodo.Contains("LightGbm"))
+            //{
+            //    return mlContext.MulticlassClassification.Trainers.LightGbm();
+            //}
+            else
+            {
+                // Por defecto
+                return mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy();
+            }
+        }
+
+        private IEstimator<ITransformer> ObtenerEntrenadorSentimientos(MLContext mlContext, string metodo)
+        {
+            // Selecciona el algoritmo en función del texto del ComboBox
+            if (metodo.Contains("LbfgsLogisticRegression"))
+            {
+                return mlContext.BinaryClassification.Trainers.LbfgsLogisticRegression();
+            }
+            else if (metodo.Contains("AveragedPerceptron"))
+            {
+                return mlContext.BinaryClassification.Trainers.AveragedPerceptron();
+            }
+            //else if (metodo.Contains("FastTree"))
+            //{
+            //    return mlContext.BinaryClassification.Trainers.FastTree();
+            //}
+            //else if (metodo.Contains("LightGbm"))
+            //{
+            //    return mlContext.BinaryClassification.Trainers.LightGbm();
+            //}
+            else
+            {
+                // Por defecto
+                return mlContext.BinaryClassification.Trainers.SdcaLogisticRegression();
+            }
+        }
+
+
+        #region oldcode
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        //static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, bool guardar = false)
+        //{
+        //    return EntrenarModeloSentimientos(form, ml, extras: null, guardar: guardar);
+        //}
+
+        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
+        //static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, bool guardar = false)
+        //{
+        //    // Llamar a la sobrecarga que acepta extras con null
+        //    return EntrenarModeloCategorias(form, ml, extras: null, guardar: guardar);
+        //}
+
+
+        //private void btnCargarExcel_ClickOld(object sender, EventArgs e)
+        //{
+        //    using var ofd = new OpenFileDialog();
+        //    ofd.Filter = "Excel Files|*.xlsx;*.xls";
+        //    if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        //    var path = ofd.FileName;
+        //    var filas = LeerExcelTitulares(path);
+
+        //    if (modeloCat == null || modeloSent == null)
+        //    {
+        //        MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //        return;
+        //    }
+
+        //    var engine = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+        //    var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+        //    var resultados = new List<ResultadoExcel>();
+        //    foreach (var t in filas)
+        //    {
+        //        var p = engine.Predict(new Articulo { Texto = t });
+        //        var ps = engineSent.Predict(new Sentimiento { Texto = t });
+        //        resultados.Add(new ResultadoExcel { Titular = t, Categoria = p.CategoriaPredicha, Sentimiento = ps.SentimientoPredicho });
+        //    }
+
+        //    dgvExcelResultados.DataSource = resultados;
+        //}
+
+        //private void OldbtnCargarExcel_Click(object sender, EventArgs e)
+        //{
+        //    // Abrir diálogo para seleccionar archivo
+        //    using var ofd = new OpenFileDialog();
+        //    ofd.Filter = "Excel Files|*.xlsx;*.xls";
+        //    if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        //    var path = ofd.FileName;
+
+        //    // Leer tabla completa desde Excel
+        //    DataTable original;
+        //    try
+        //    {
+        //        original = LeerExcelComoDataTable(path);
+        //        if (original == null || original.Rows.Count == 0)
+        //        {
+        //            MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //            return;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        //        return;
+        //    }
+
+        //    // Validar que los modelos estén cargados
+        //    if (modeloCat == null || modeloSent == null)
+        //    {
+        //        MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        //        return;
+        //    }
+
+        //    // Buscar columna de titulares (case-insensitive)
+        //    string titularCol = null;
+        //    foreach (DataColumn c in original.Columns)
+        //    {
+        //        var name = c.ColumnName.ToLower();
+        //        if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+        //        { titularCol = c.ColumnName; break; }
+        //    }
+        //    // Si no se encontró, intentar buscar de forma más flexible
+        //    if (titularCol == null)
+        //    {
+        //        foreach (DataColumn c in original.Columns)
+        //        {
+        //            var name = c.ColumnName.Trim().ToLowerInvariant();
+        //            if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
+        //            {
+        //                titularCol = c.ColumnName;
+        //                break;
+        //            }
+        //        }
+        //    }
+
+        //    if (titularCol == null)
+        //    {
+        //        // Mostrar los nombres de las columnas encontradas para diagnóstico
+        //        var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
+        //        MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
+        //                      "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        //        return;
+        //    }
+
+        //    // Crear motores de predicción
+        //    var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
+        //    var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+
+        //    // Preparar DataTable de resultados: Titular, Categoria, Sentimiento, luego todas las columnas originales (excepto Titular duplicada)
+        //    var resultadosDt = new DataTable();
+        //    resultadosDt.Columns.Add("Titular");
+        //    resultadosDt.Columns.Add("Categoria");
+        //    resultadosDt.Columns.Add("Sentimiento");
+        //    var extraCols = new List<string>();
+        //    foreach (DataColumn c in original.Columns)
+        //    {
+        //        if (c.ColumnName == titularCol) continue;
+        //        // Evitar nombres reservados
+        //        var colName = c.ColumnName;
+        //        int suffix = 1;
+        //        while (resultadosDt.Columns.Contains(colName)) { colName = c.ColumnName + "_" + suffix; suffix++; }
+        //        resultadosDt.Columns.Add(colName);
+        //        extraCols.Add(c.ColumnName);
+        //    }
+
+        //    int total = original.Rows.Count;
+        //    int i = 1;
+
+        //    var stopwatch = Stopwatch.StartNew();
+
+        //    var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        //    var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        //    foreach (DataRow row in original.Rows)
+        //    {
+        //        var titular = row[titularCol]?.ToString()?.Trim();
+        //        if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
+
+        //        // Predicción
+        //        var predCat = engineCat.Predict(new Articulo { Texto = titular });
+        //        var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
+
+        //        var newRow = resultadosDt.NewRow();
+        //        newRow["Titular"] = titular;
+        //        newRow["Categoria"] = predCat.CategoriaPredicha;
+        //        newRow["Sentimiento"] = predSent.SentimientoPredicho;
+
+        //        // Copiar columnas extra en el mismo orden que en original
+        //        for (int ec = 0; ec < extraCols.Count; ec++)
+        //        {
+        //            var origName = extraCols[ec];
+        //            var targetName = resultadosDt.Columns[3 + ec].ColumnName; // offset
+        //            newRow[targetName] = row[origName]?.ToString() ?? "";
+        //        }
+
+        //        resultadosDt.Rows.Add(newRow);
+
+        //        // acumular métricas
+        //        var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
+        //        var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
+        //        if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0; catCountsLocal[catKey]++;
+        //        if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0; senCountsLocal[senKey]++;
+
+        //        // Mostrar progreso
+        //        lblProgreso.Text = $"Clasificando {i}/{total}";
+        //        Application.DoEvents();
+        //        i++;
+        //    }
+
+        //    stopwatch.Stop();
+
+        //    dgvExcelResultados.DataSource = resultadosDt;
+        //    dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        //    dgvExcelResultados.Refresh();
+
+        //    // Update Excel graphs automatically
+        //    CargarGraficasDesdeExcelResultados();
+
+        //    // Mostrar tiempo y métricas resumidas
+        //    txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
+        //    var metricsSb = new System.Text.StringBuilder();
+        //    metricsSb.AppendLine("Categorías:");
+        //    foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+        //    metricsSb.AppendLine();
+        //    metricsSb.AppendLine("Sentimientos:");
+        //    foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+        //    txtMetricasClasificacion.Text = metricsSb.ToString();
+
+        //    lblProgreso.Text = "Clasificación completada ✅";
+        //}
+
+        //static List<string> LeerExcelTitularesOld(string ruta)
+        //{
+        //    var lista = new List<string>();
+        //    if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        using var wb = new XLWorkbook(ruta);
+        //        var ws = wb.Worksheets.First();
+        //        var col = ws.Column(1).CellsUsed().Select(c => c.GetString()).ToList();
+        //        // asumimos cabecera en la primera fila
+        //        for (int i = 2; i <= ws.RowCount(); i++)
+        //        {
+        //            var val = ws.Cell(i, 1).GetString().Trim();
+        //            if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
+        //        }
+        //    }
+        //    else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        //        using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
+        //        using var reader = ExcelReaderFactory.CreateReader(stream);
+        //        var result = reader.AsDataSet();
+        //        var table = result.Tables[0];
+        //        for (int r = 1; r < table.Rows.Count; r++)
+        //        {
+        //            var val = table.Rows[r][0]?.ToString()?.Trim();
+        //            if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
+        //        }
+        //    }
+        //    return lista;
+        //}
+
+        //static List<string> LeerExcelTitulares(string ruta)
+        //{
+        //    var lista = new List<string>();
+        //    List<string> nombresColumnas = new();
+
+        //    if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        using var wb = new XLWorkbook(ruta);
+        //        var ws = wb.Worksheets.First(); // podemos permitir seleccionar hoja después si quieres
+        //        var rango = ws.RangeUsed();
+        //        if (rango == null) return lista;
+        //        int totalFilas = rango.RowCount();
+        //        int totalCols = rango.ColumnCount();
+
+        //        // Determine actual first row/col of the used range
+        //        int firstRow = rango.FirstRow().RowNumber();
+        //        int firstCol = rango.FirstColumn().ColumnNumber();
+
+        //        // Leer encabezados
+        //        for (int c = 0; c < totalCols; c++)
+        //            nombresColumnas.Add(ws.Cell(firstRow, firstCol + c).GetString().Trim());
+
+        //        // Buscar columna de titulares
+        //        int colTitular = nombresColumnas.FindIndex(h =>
+        //            new[] { "titular", "título", "title", "headline" }
+        //            .Contains(h.ToLower()));
+
+        //        if (colTitular == -1)
+        //            throw new Exception("No se encontró columna 'Titular' en el Excel.");
+
+        //        // Leer filas
+        //        for (int r = 1; r < totalFilas; r++)
+        //        {
+        //            var val = ws.Cell(firstRow + r, firstCol + colTitular).GetString().Trim();
+        //            if (!string.IsNullOrWhiteSpace(val))
+        //                lista.Add(val);
+        //        }
+        //    }
+        //    else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        //        using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
+        //        using var reader = ExcelReaderFactory.CreateReader(stream);
+        //        var result = reader.AsDataSet();
+        //        var table = result.Tables[0]; // también se puede permitir seleccionar hoja
+
+        //        // Leer encabezados
+        //        for (int c = 0; c < table.Columns.Count; c++)
+        //            nombresColumnas.Add(table.Rows[0][c]?.ToString().Trim() ?? "");
+
+        //        // Buscar columna de titulares
+        //        int colTitular = nombresColumnas.FindIndex(h =>
+        //            new[] { "titular", "título", "title", "headline" }
+        //            .Contains(h.ToLower()));
+
+        //        if (colTitular == -1)
+        //            throw new Exception("No se encontró columna 'Titular' en el Excel.");
+
+        //        // Leer filas
+        //        for (int r = 1; r < table.Rows.Count; r++)
+        //        {
+        //            var val = table.Rows[r][colTitular]?.ToString().Trim();
+        //            if (!string.IsNullOrWhiteSpace(val))
+        //                lista.Add(val);
+        //        }
+        //    }
+
+        //    return lista;
+        //}
+
+
+        // If the header row wasn't properly read, try to detect it within the first few rows and rebuild the DataTable
+        //static DataTable EnsureHeaderRow(DataTable dt)
+        //{
+        //    if (dt == null || dt.Rows.Count == 0) return dt;
+
+        //    // Quick heuristic: if columns are named like 'Column1' or empty, try to locate a header row
+        //    bool hasGenericCols = dt.Columns.Cast<DataColumn>().All(c => c.ColumnName.StartsWith("Column", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(c.ColumnName));
+        //    if (!hasGenericCols) return dt; // already has meaningful column names
+
+        //    var possibleHeaders = new[] { "titular", "título", "titulo", "title", "headline", "categoria", "category", "sentimiento", "sentiment", "autor", "autor" };
+
+        //    // Scan first N rows to find a header row where at least one cell matches known headers
+        //    int maxRowsToCheck = Math.Min(10, dt.Rows.Count);
+        //    int headerRowIndex = -1;
+        //    for (int r = 0; r < maxRowsToCheck; r++)
+        //    {
+        //        int matchCount = 0;
+        //        for (int c = 0; c < dt.Columns.Count; c++)
+        //        {
+        //            var cell = dt.Rows[r][c]?.ToString()?.Trim();
+        //            if (string.IsNullOrWhiteSpace(cell)) continue;
+        //            var cl = cell.ToLowerInvariant();
+        //            if (possibleHeaders.Any(h => cl.Contains(h))) matchCount++;
+        //        }
+        //        if (matchCount >= 1)
+        //        {
+        //            headerRowIndex = r;
+        //            break;
+        //        }
+        //    }
+
+        //    if (headerRowIndex == -1) return dt; // cannot detect header
+
+        //    // Build new DataTable using that row as header
+        //    var newDt = new DataTable();
+        //    for (int c = 0; c < dt.Columns.Count; c++)
+        //    {
+        //        var h = dt.Rows[headerRowIndex][c]?.ToString()?.Trim();
+        //        if (string.IsNullOrWhiteSpace(h)) h = "Column" + (c + 1);
+        //        var colName = h;
+        //        int suffix = 1;
+        //        while (newDt.Columns.Contains(colName)) { colName = h + "_" + suffix; suffix++; }
+        //        newDt.Columns.Add(colName);
+        //    }
+
+        //    // Copy data rows after headerRowIndex
+        //    for (int r = headerRowIndex + 1; r < dt.Rows.Count; r++)
+        //    {
+        //        var nr = newDt.NewRow();
+        //        for (int c = 0; c < dt.Columns.Count; c++) nr[c] = dt.Rows[r][c];
+        //        newDt.Rows.Add(nr);
+        //    }
+
+        //    return newDt;
+        //}
+
+        #endregion
     }
 }
