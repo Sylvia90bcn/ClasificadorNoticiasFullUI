@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ClasificadorNoticiasGUI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f1d00982dd4fde91c8fb6aeedf81d22208523af")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1dc1f60f18fa4fd781a384a50d195a83308e9fcf")]
 [assembly: System.Reflection.AssemblyProductAttribute("ClasificadorNoticiasGUI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ClasificadorNoticiasGUI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

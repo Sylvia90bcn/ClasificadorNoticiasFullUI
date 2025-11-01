@@ -1,18 +1,11 @@
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using ClosedXML.Excel;
 using ExcelDataReader;
 using Microsoft.ML;
-using Microsoft.ML.Data;
 using OxyPlot;
 using OxyPlot.Axes;
-using OxyPlot.Series;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -291,11 +284,11 @@ namespace ClasificadorNoticiasGUI
             else if (metodo.Contains("AveragedPerceptron"))
                 entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
                     ml.BinaryClassification.Trainers.AveragedPerceptron());
-            //else if (metodo.Contains("FastTree"))
-            //entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
-            //    ml.BinaryClassification.Trainers.FastTree());
-            // else if (metodo.Contains("LightGbm"))
-            //  entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            else if (metodo.Contains("FastTree"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.FastTree());
+            else if (metodo.Contains("LightGbm"))
+                entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
             else
                 entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
 
@@ -404,11 +397,11 @@ namespace ClasificadorNoticiasGUI
             else if (metodo.Contains("AveragedPerceptron"))
                 entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
                     ml.BinaryClassification.Trainers.AveragedPerceptron("Label", "Features"));
-            //else if (metodo.Contains("FastTree"))
-            //    entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
-            //        ml.BinaryClassification.Trainers.FastTree("Label", "Features"));
-            //else if (metodo.Contains("LightGbm"))
-            //    entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            else if (metodo.Contains("FastTree"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.FastTree("Label", "Features"));
+            else if (metodo.Contains("LightGbm"))
+                entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
             else
                 entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
 

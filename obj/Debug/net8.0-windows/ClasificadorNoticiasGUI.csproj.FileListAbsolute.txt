@@ -52,3 +52,15 @@ C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\obj\Debug\net8
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\obj\Debug\net8.0-windows\ClasificadorNoticiasGUI.pdb
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\obj\Debug\net8.0-windows\ClasificadorNoticiasGUI.genruntimeconfig.cache
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\obj\Debug\net8.0-windows\ref\ClasificadorNoticiasGUI.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\Microsoft.ML.FastTree.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\Microsoft.ML.LightGbm.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\linux-x64\native\lib_lightgbm.so
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\osx-x64\native\lib_lightgbm.dylib
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x64\native\lib_lightgbm.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x64\native\lightgbm.exe
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\linux-x64\native\libFastTreeNative.so
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\linux-x64\native\libFastTreeNative.so.dbg
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\osx-x64\native\libFastTreeNative.dylib
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\osx-x64\native\libFastTreeNative.dylib.dwarf
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x64\native\FastTreeNative.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x86\native\FastTreeNative.dll

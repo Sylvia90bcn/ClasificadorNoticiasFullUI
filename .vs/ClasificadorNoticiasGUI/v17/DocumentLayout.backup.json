@@ -72,7 +72,7 @@
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Form1.cs",
               "RelativeToolTip": "Form1.cs",
-              "ViewState": "AgIAAOQBAAAAAAAAAADwvwQCAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABIBAAAAAAAAAAAAACIBAABgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-19T18:44:32.447Z",
               "IsPinned": true,
@@ -162,9 +162,10 @@
               "RelativeDocumentMoniker": "Articulo.cs",
               "ToolTip": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\Articulo.cs",
               "RelativeToolTip": "Articulo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:14.529Z"
+              "WhenOpened": "2025-10-19T18:44:14.529Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -176,7 +177,8 @@
               "RelativeToolTip": "Prediccion.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:12.148Z"
+              "WhenOpened": "2025-10-19T18:44:12.148Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -188,7 +190,8 @@
               "RelativeToolTip": "SentimientoPrediccion.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:11.215Z"
+              "WhenOpened": "2025-10-19T18:44:11.215Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -200,7 +203,8 @@
               "RelativeToolTip": "Sentimiento.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:09.921Z"
+              "WhenOpened": "2025-10-19T18:44:09.921Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -212,7 +216,8 @@
               "RelativeToolTip": "ResultadoExcel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:08.197Z"
+              "WhenOpened": "2025-10-19T18:44:08.197Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -224,7 +229,8 @@
               "RelativeToolTip": "Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-19T18:44:07.134Z"
+              "WhenOpened": "2025-10-19T18:44:07.134Z",
+              "EditorCaption": ""
             }
           ]
         }

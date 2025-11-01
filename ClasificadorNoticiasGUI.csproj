@@ -16,6 +16,7 @@
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
+    <PackageReference Include="Microsoft.ML.LightGbm" Version="4.0.2" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.0" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nphAgTBVc8o=",
+  "dgSpecHash": "ZsrEXyOaTE4=",
   "success": true,
   "projectFilePath": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\ClasificadorNoticiasGUI.csproj",
   "expectedPackageFiles": [
@@ -11,9 +11,12 @@
     "C:\\Users\\sylvi\\.nuget\\packages\\exceldatareader\\3.8.0\\exceldatareader.3.8.0.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\exceldatareader.dataset\\3.8.0\\exceldatareader.dataset.3.8.0.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\excelnumberformat\\1.1.0\\excelnumberformat.1.1.0.nupkg.sha512",
+    "C:\\Users\\sylvi\\.nuget\\packages\\lightgbm\\3.3.5\\lightgbm.3.3.5.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\microsoft.ml\\4.0.2\\microsoft.ml.4.0.2.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\microsoft.ml.cpumath\\4.0.2\\microsoft.ml.cpumath.4.0.2.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\microsoft.ml.dataview\\4.0.2\\microsoft.ml.dataview.4.0.2.nupkg.sha512",
+    "C:\\Users\\sylvi\\.nuget\\packages\\microsoft.ml.fasttree\\4.0.2\\microsoft.ml.fasttree.4.0.2.nupkg.sha512",
+    "C:\\Users\\sylvi\\.nuget\\packages\\microsoft.ml.lightgbm\\4.0.2\\microsoft.ml.lightgbm.4.0.2.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\oxyplot.core\\2.1.0\\oxyplot.core.2.1.0.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\oxyplot.windowsforms\\2.1.0\\oxyplot.windowsforms.2.1.0.nupkg.sha512",
