@@ -24,7 +24,7 @@ namespace ClasificadorNoticiasGUI
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             cmbModeloCategorias = new ComboBox();
             cmbModeloSentimientos = new ComboBox();
@@ -63,6 +63,10 @@ namespace ClasificadorNoticiasGUI
             btnActualizarDataset = new Button();
             btnCargarDatasetExcel = new Button();
             dgvDataset = new DataGridView();
+            tabGraficas = new TabPage();
+            btnActualizarGraficas = new Button();
+            plotViewSentimientos = new OxyPlot.WindowsForms.PlotView();
+            plotViewCategorias = new OxyPlot.WindowsForms.PlotView();
             tabComparador = new TabPage();
             dgvComparador = new DataGridView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
@@ -72,10 +76,8 @@ namespace ClasificadorNoticiasGUI
             dataGridViewTextBoxColumn5 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn6 = new DataGridViewTextBoxColumn();
             btnExportar = new Button();
-            tabGraficas = new TabPage();
-            btnActualizarGraficas = new Button();
-            plotViewSentimientos = new OxyPlot.WindowsForms.PlotView();
-            plotViewCategorias = new OxyPlot.WindowsForms.PlotView();
+            tabVisualizacion = new TabPage();
+            plotViewMetricas = new OxyPlot.WindowsForms.PlotView();
             tabExcel = new TabPage();
             label5 = new Label();
             txtFiabilidadSentimientosExcel = new TextBox();
@@ -98,9 +100,10 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.SuspendLayout();
             tabDataset.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDataset).BeginInit();
+            tabGraficas.SuspendLayout();
             tabComparador.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvComparador).BeginInit();
-            tabGraficas.SuspendLayout();
+            tabVisualizacion.SuspendLayout();
             tabExcel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).BeginInit();
             tabGraficasExcel.SuspendLayout();
@@ -132,8 +135,9 @@ namespace ClasificadorNoticiasGUI
             // 
             tabPrincipal.Controls.Add(tabClasificar);
             tabPrincipal.Controls.Add(tabDataset);
-            tabPrincipal.Controls.Add(tabComparador);
             tabPrincipal.Controls.Add(tabGraficas);
+            tabPrincipal.Controls.Add(tabComparador);
+            tabPrincipal.Controls.Add(tabVisualizacion);
             tabPrincipal.Controls.Add(tabExcel);
             tabPrincipal.Controls.Add(tabGraficasExcel);
             tabPrincipal.Dock = DockStyle.Fill;
@@ -490,29 +494,51 @@ namespace ClasificadorNoticiasGUI
             dgvDataset.Name = "dgvDataset";
             dgvDataset.Size = new Size(1178, 608);
             dgvDataset.TabIndex = 5;
-        
             // 
-            // dgvComparador
+            // tabGraficas
             // 
-            dgvComparador.AllowUserToAddRows = false;
-            dgvComparador.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dgvComparador.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            dgvComparador.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvComparador.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
-            dgvComparador.Dock = DockStyle.Fill;
-            dgvComparador.Location = new Point(3, 3);
-            dgvComparador.Name = "dgvComparador";
-            dgvComparador.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvComparador.Size = new Size(1374, 700);
-
-
+            tabGraficas.Controls.Add(btnActualizarGraficas);
+            tabGraficas.Controls.Add(plotViewSentimientos);
+            tabGraficas.Controls.Add(plotViewCategorias);
+            tabGraficas.Location = new Point(4, 26);
+            tabGraficas.Name = "tabGraficas";
+            tabGraficas.Size = new Size(1380, 746);
+            tabGraficas.TabIndex = 3;
+            tabGraficas.Text = "Gráficas Dataset";
+            tabGraficas.UseVisualStyleBackColor = true;
+            // 
+            // btnActualizarGraficas
+            // 
+            btnActualizarGraficas.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnActualizarGraficas.Location = new Point(1048, 668);
+            btnActualizarGraficas.Name = "btnActualizarGraficas";
+            btnActualizarGraficas.Size = new Size(120, 30);
+            btnActualizarGraficas.TabIndex = 2;
+            btnActualizarGraficas.Text = "Actualizar";
+            btnActualizarGraficas.UseVisualStyleBackColor = true;
+            btnActualizarGraficas.Click += btnActualizarGraficas_Click;
+            // 
+            // plotViewSentimientos
+            // 
+            plotViewSentimientos.Location = new Point(10, 270);
+            plotViewSentimientos.Name = "plotViewSentimientos";
+            plotViewSentimientos.PanCursor = Cursors.Hand;
+            plotViewSentimientos.Size = new Size(872, 250);
+            plotViewSentimientos.TabIndex = 1;
+            plotViewSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
+            // 
+            // plotViewCategorias
+            // 
+            plotViewCategorias.Location = new Point(10, 10);
+            plotViewCategorias.Name = "plotViewCategorias";
+            plotViewCategorias.PanCursor = Cursors.Hand;
+            plotViewCategorias.Size = new Size(872, 250);
+            plotViewCategorias.TabIndex = 0;
+            plotViewCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
             // tabComparador
             // 
@@ -525,6 +551,27 @@ namespace ClasificadorNoticiasGUI
             tabComparador.TabIndex = 5;
             tabComparador.Text = "Comparador de Modelos";
             tabComparador.UseVisualStyleBackColor = true;
+            // 
+            // dgvComparador
+            // 
+            dgvComparador.AllowUserToAddRows = false;
+            dgvComparador.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvComparador.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            dgvComparador.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvComparador.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
+            dgvComparador.Dock = DockStyle.Fill;
+            dgvComparador.Location = new Point(3, 3);
+            dgvComparador.Name = "dgvComparador";
+            dgvComparador.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvComparador.Size = new Size(1374, 700);
+            dgvComparador.TabIndex = 0;
             // 
             // dataGridViewTextBoxColumn1
             // 
@@ -571,50 +618,28 @@ namespace ClasificadorNoticiasGUI
             btnExportar.UseVisualStyleBackColor = false;
             btnExportar.Click += btnExportar_Click;
             // 
-            // tabGraficas
+            // tabVisualizacion
             // 
-            tabGraficas.Controls.Add(btnActualizarGraficas);
-            tabGraficas.Controls.Add(plotViewSentimientos);
-            tabGraficas.Controls.Add(plotViewCategorias);
-            tabGraficas.Location = new Point(4, 26);
-            tabGraficas.Name = "tabGraficas";
-            tabGraficas.Size = new Size(1380, 746);
-            tabGraficas.TabIndex = 3;
-            tabGraficas.Text = "Gráficas Dataset";
-            tabGraficas.UseVisualStyleBackColor = true;
+            tabVisualizacion.Controls.Add(plotViewMetricas);
+            tabVisualizacion.Location = new Point(4, 26);
+            tabVisualizacion.Name = "tabVisualizacion";
+            tabVisualizacion.Padding = new Padding(3);
+            tabVisualizacion.Size = new Size(1380, 746);
+            tabVisualizacion.TabIndex = 6;
+            tabVisualizacion.Text = "Visualización de Métricas";
+            tabVisualizacion.UseVisualStyleBackColor = true;
             // 
-            // btnActualizarGraficas
+            // plotViewMetricas
             // 
-            btnActualizarGraficas.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarGraficas.Location = new Point(1048, 668);
-            btnActualizarGraficas.Name = "btnActualizarGraficas";
-            btnActualizarGraficas.Size = new Size(120, 30);
-            btnActualizarGraficas.TabIndex = 2;
-            btnActualizarGraficas.Text = "Actualizar";
-            btnActualizarGraficas.UseVisualStyleBackColor = true;
-            btnActualizarGraficas.Click += btnActualizarGraficas_Click;
-            // 
-            // plotViewSentimientos
-            // 
-            plotViewSentimientos.Location = new Point(10, 270);
-            plotViewSentimientos.Name = "plotViewSentimientos";
-            plotViewSentimientos.PanCursor = Cursors.Hand;
-            plotViewSentimientos.Size = new Size(872, 250);
-            plotViewSentimientos.TabIndex = 1;
-            plotViewSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
-            plotViewSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
-            plotViewSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
-            // 
-            // plotViewCategorias
-            // 
-            plotViewCategorias.Location = new Point(10, 10);
-            plotViewCategorias.Name = "plotViewCategorias";
-            plotViewCategorias.PanCursor = Cursors.Hand;
-            plotViewCategorias.Size = new Size(872, 250);
-            plotViewCategorias.TabIndex = 0;
-            plotViewCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
-            plotViewCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
-            plotViewCategorias.ZoomVerticalCursor = Cursors.SizeNS;
+            plotViewMetricas.Location = new Point(6, 6);
+            plotViewMetricas.Name = "plotViewMetricas";
+            plotViewMetricas.PanCursor = Cursors.Hand;
+            plotViewMetricas.Size = new Size(1217, 423);
+            plotViewMetricas.TabIndex = 0;
+            plotViewMetricas.Text = "plotView1";
+            plotViewMetricas.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewMetricas.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewMetricas.ZoomVerticalCursor = Cursors.SizeNS;
             // 
             // tabExcel
             // 
@@ -826,9 +851,10 @@ namespace ClasificadorNoticiasGUI
             tabDataset.ResumeLayout(false);
             tabDataset.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvDataset).EndInit();
+            tabGraficas.ResumeLayout(false);
             tabComparador.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvComparador).EndInit();
-            tabGraficas.ResumeLayout(false);
+            tabVisualizacion.ResumeLayout(false);
             tabExcel.ResumeLayout(false);
             tabExcel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvExcelResultados).EndInit();
@@ -908,5 +934,7 @@ namespace ClasificadorNoticiasGUI
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn5;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private Button btnExportar;
+        private TabPage tabVisualizacion;
+        private OxyPlot.WindowsForms.PlotView plotViewMetricas;
     }
 }

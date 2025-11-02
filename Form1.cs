@@ -2,10 +2,13 @@ using System.Data;
 using System.Diagnostics;
 using System.Text;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelDataReader;
 using Microsoft.ML;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Series;
+using OxyPlot.Wpf;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -30,18 +33,18 @@ namespace ClasificadorNoticiasGUI
     /// </summary>
     public partial class Form1 : Form
     {
-        static readonly string ModeloCategoriasPath = Path.Combine("Modelo", "modelo_categorias.zip");
-        static readonly string ModeloSentimientosPath = Path.Combine("Modelo", "modelo_sentimientos.zip");
-        static readonly string DatosCategoriasPath = Path.Combine("Datos", "datos.csv");
-        static readonly string DatosSentimientosPath = Path.Combine("Datos", "sentimientos.csv");
-        static readonly string DatosCompletosPath = Path.Combine("Datos", "dataset_completo.csv");
+        public readonly string ModeloCategoriasPath = Path.Combine("Modelo", "modelo_categorias.zip");
+        public readonly string ModeloSentimientosPath = Path.Combine("Modelo", "modelo_sentimientos.zip");
+        public readonly string DatosCategoriasPath = Path.Combine("Datos", "datos.csv");
+        public readonly string DatosSentimientosPath = Path.Combine("Datos", "sentimientos.csv");
+        public readonly string DatosCompletosPath = Path.Combine("Datos", "dataset_completo.csv");
 
         MLContext ml = new MLContext(seed: 1);
         ITransformer modeloCat = null, modeloSent = null;
         private Label lblProgreso;
         private string metodoSeleccionadoCategorias = "SdcaMaximumEntropy (por defecto)";
         private string metodoSeleccionadoSentimientos = "SdcaLogisticRegression (por defecto)";
-        public static List<ResultadoModelo> resultadosModelos = new List<ResultadoModelo>();
+        public List<ResultadoModelo> resultadosModelos = new List<ResultadoModelo>();
 
         public Form1()
         {
@@ -126,8 +129,8 @@ namespace ClasificadorNoticiasGUI
             txtFiabilidadSentimiento.Text = $"{maxScoreSent:P1}";
 
             //// Si la fiabilidad es baja, mostrar el TextBox en rojo
-            txtFiabilidadCategoria.ForeColor = maxScoreCat < 0.5f ? Color.Red : Color.Green;
-            txtFiabilidadSentimiento.ForeColor = maxScoreSent < 0.5f ? Color.Red : Color.Green;
+            txtFiabilidadCategoria.ForeColor = maxScoreCat < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
+            txtFiabilidadSentimiento.ForeColor = maxScoreSent < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -235,7 +238,7 @@ namespace ClasificadorNoticiasGUI
 
 
         // Nueva sobrecarga: acepta datos extra (por ejemplo, filas de dgvExcelResultados)
-        static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
+        public ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, IEnumerable<Articulo> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de categorías...");
 
@@ -323,6 +326,8 @@ namespace ClasificadorNoticiasGUI
             });
 
             ActualizarTablaComparador(form);
+            MostrarGraficoMetricas();
+
 
             // Entrenar modelo final
             var modeloFinal = finalPipeline.Fit(datos);
@@ -339,7 +344,7 @@ namespace ClasificadorNoticiasGUI
 
 
         // Nueva sobrecarga para sentimientos
-        static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
+        public ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, IEnumerable<Sentimiento> extras, bool guardar = false)
         {
             Console.WriteLine("Entrenando modelo de sentimientos (multiclase)...");
 
@@ -441,6 +446,7 @@ namespace ClasificadorNoticiasGUI
             });
 
             ActualizarTablaComparador(form);
+            MostrarGraficoMetricas();
 
             // Entrenar modelo final con todos los datos
             var modeloFinal = pipeline.Fit(datos);
@@ -455,7 +461,7 @@ namespace ClasificadorNoticiasGUI
             return modeloFinal;
         }
 
-        public static void ActualizarTablaComparador(Form1 form)
+        public void ActualizarTablaComparador(Form1 form)
         {
             // Referencia directa al DataGridView
             var dgv = form.dgvComparador;
@@ -499,7 +505,7 @@ namespace ClasificadorNoticiasGUI
                     acc /= 100.0;
                     if (Math.Abs(acc - maxAcc) < 0.0001) // Comparación segura de double
                     {
-                        row.DefaultCellStyle.BackColor = Color.LightGreen;
+                        row.DefaultCellStyle.BackColor = System.Drawing.Color.LightGreen;
                     }
                 }
             }
@@ -644,8 +650,8 @@ namespace ClasificadorNoticiasGUI
                 // 🔹 Mostrar la última fiabilidad calculada en los TextBox
                 txtFiabilidadCategoriaExcel.Text = $"{maxScoreCat:P1}";
                 txtFiabilidadSentimientosExcel.Text = $"{maxScoreSent:P1}";
-                txtFiabilidadCategoriaExcel.ForeColor = maxScoreCat < 0.5f ? Color.Red : Color.Green;
-                txtFiabilidadSentimientosExcel.ForeColor = maxScoreSent < 0.5f ? Color.Red : Color.Green;
+                txtFiabilidadCategoriaExcel.ForeColor = maxScoreCat < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
+                txtFiabilidadSentimientosExcel.ForeColor = maxScoreSent < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
 
                 // Contadores
                 var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
@@ -764,7 +770,7 @@ namespace ClasificadorNoticiasGUI
             return yaExistia;
         }
 
-        static string EscapeCSV(string valor)
+        public string EscapeCSV(string valor)
         {
             if (valor.Contains(',') || valor.Contains('"'))
             {
@@ -832,7 +838,7 @@ namespace ClasificadorNoticiasGUI
             dgvDataset.DataSource = dt2;
         }
 
-        static string[] SplitCsvLine(string line)
+        public string[] SplitCsvLine(string line)
         {
             // Simple CSV split that handles quotes
             var values = new List<string>();
@@ -849,7 +855,7 @@ namespace ClasificadorNoticiasGUI
             return values.ToArray();
         }
 
-        static DataTable LeerExcelComoDataTable(string ruta)
+        public DataTable LeerExcelComoDataTable(string ruta)
         {
             var dt = new DataTable();
 
@@ -1354,7 +1360,7 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
-        static string FormatElapsed(TimeSpan ts)
+        public string FormatElapsed(TimeSpan ts)
         {
             if (ts.TotalMilliseconds < 1000)
                 return $"{ts.TotalMilliseconds:F0} ms";
@@ -1481,6 +1487,40 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
             }
+        }
+
+        private void btnExportar_Click(object sender, EventArgs e)
+        {
+            ExportarResultadosCSV();
+        }
+
+
+        private void MostrarGraficoMetricas()
+        {
+            var modelo = new PlotModel { Title = "Comparación de Modelos" };
+
+            var categoriaEjeY = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeX = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            var serieAccuracy = new BarSeries { Title = "Accuracy", FillColor = OxyColors.SeaGreen };
+            var serieMacroAccuracy = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue };
+            var serieLogLoss = new BarSeries { Title = "LogLoss (invertido)", FillColor = OxyColors.IndianRed };
+
+            foreach (var r in resultadosModelos)
+            {
+                categoriaEjeY.Labels.Add(r.Metodo);
+                serieAccuracy.Items.Add(new BarItem { Value = r.MicroAccuracy });
+                serieMacroAccuracy.Items.Add(new BarItem { Value = r.MacroAccuracy });
+                serieLogLoss.Items.Add(new BarItem { Value = 1 - r.LogLoss });
+            }
+
+            modelo.Series.Add(serieAccuracy);
+            modelo.Series.Add(serieMacroAccuracy);
+            modelo.Series.Add(serieLogLoss);
+            modelo.Axes.Add(categoriaEjeY);
+            modelo.Axes.Add(ejeX);
+
+            plotViewMetricas.Model = modelo;
         }
 
 
@@ -1839,10 +1879,6 @@ namespace ClasificadorNoticiasGUI
 
         #endregion
 
-        private void btnExportar_Click(object sender, EventArgs e)
-        {
-            ExportarResultadosCSV();
-        }
 
     }
 }

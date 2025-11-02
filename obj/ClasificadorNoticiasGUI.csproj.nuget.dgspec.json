@@ -74,6 +74,10 @@
             "OxyPlot.WindowsForms": {
               "target": "Package",
               "version": "[2.1.0, )"
+            },
+            "OxyPlot.Wpf": {
+              "target": "Package",
+              "version": "[2.2.0, )"
             }
           },
           "imports": [

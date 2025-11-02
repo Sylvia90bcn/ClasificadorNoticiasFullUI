@@ -18,4 +18,7 @@
     <Import Project="$(NuGetPackageRoot)microsoft.ml\4.0.2\build\netstandard2.0\Microsoft.ML.props" Condition="Exists('$(NuGetPackageRoot)microsoft.ml\4.0.2\build\netstandard2.0\Microsoft.ML.props')" />
     <Import Project="$(NuGetPackageRoot)lightgbm\3.3.5\build\LightGBM.props" Condition="Exists('$(NuGetPackageRoot)lightgbm\3.3.5\build\LightGBM.props')" />
   </ImportGroup>
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgOxyPlot_Wpf Condition=" '$(PkgOxyPlot_Wpf)' == '' ">C:\Users\sylvi\.nuget\packages\oxyplot.wpf\2.2.0</PkgOxyPlot_Wpf>
+  </PropertyGroup>
 </Project>

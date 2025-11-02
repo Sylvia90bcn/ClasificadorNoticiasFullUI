@@ -64,3 +64,5 @@ C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\osx-x64\native\libFastTreeNative.dylib.dwarf
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x64\native\FastTreeNative.dll
 C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\runtimes\win-x86\native\FastTreeNative.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\OxyPlot.Wpf.dll
+C:\Users\sylvi\Desktop\PAPERLARAJAVI\ClasificadorNoticiasGUI_full\bin\Debug\net8.0-windows\OxyPlot.Wpf.Shared.dll
