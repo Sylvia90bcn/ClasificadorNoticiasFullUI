@@ -316,17 +316,31 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLoss.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracy.Text = metrics.MicroAccuracy.ToString("P2");
 
+            //resultadosModelos.Add(new ResultadoModelo
+            //{
+            //    TipoModelo = "Categorías",
+            //    Metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+            //    MicroAccuracy = metrics.MicroAccuracy,
+            //    MacroAccuracy = metrics.MacroAccuracy,
+            //    LogLoss = metrics.LogLoss,
+            //    TopKAccuracy = (List<double>)metrics.TopKAccuracyForAllK,
+            //    ConfusyMatrix = metrics.ConfusionMatrix
+            //});
+
             resultadosModelos.Add(new ResultadoModelo
             {
                 TipoModelo = "Categorías",
-                Metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+                Metodo = metodo,
+                //Accuracy = metrics.Accuracy,
                 MicroAccuracy = metrics.MicroAccuracy,
                 MacroAccuracy = metrics.MacroAccuracy,
-                LogLoss = metrics.LogLoss
+                LogLoss = metrics.LogLoss,
+                TopKAccuracy = new List<double> { metrics.TopKAccuracy }, // ML.NET devuelve solo Top1 y Top5
+                ConfusyMatrix = metrics.ConfusionMatrix,
+                Fecha = DateTime.Now
             });
-
             ActualizarTablaComparador(form);
-            MostrarGraficoMetricas();
+            MostrarGraficoMetricasSeparadas();
 
 
             // Entrenar modelo final
@@ -436,17 +450,43 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLossSent.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracySent.Text = metrics.MicroAccuracy.ToString("P2");
 
+            //resultadosModelos.Add(new ResultadoModelo
+            //{
+            //    TipoModelo = "Sentimientos",
+            //    Metodo = form.cmbModeloSentimientos.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+            //    MicroAccuracy = metrics.MicroAccuracy,
+            //    MacroAccuracy = metrics.MacroAccuracy,
+            //    Precision = metrics.TopKPredictionCount,
+            //    //F1Score = metrics.score,
+            //    //AUC = metrics.
+            //    //Recall = metrics.recall,
+            //});
+
+            // Calcular F1Score promedio macro
+            double f1 = metrics.ConfusionMatrix.PerClassPrecision
+                           .Select((p, i) => 2 * p * metrics.ConfusionMatrix.PerClassRecall[i] / (p + metrics.ConfusionMatrix.PerClassRecall[i] + 1e-10))
+                           .Average();
+
+            // AUC promedio: en multiclass se puede aproximar usando OneVsAll por clase si se quiere
+            double aucPromedio = 0; // opcional, ML.NET no devuelve directamente multiclass AUC
+
             resultadosModelos.Add(new ResultadoModelo
             {
                 TipoModelo = "Sentimientos",
-                Metodo = form.cmbModeloSentimientos.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
+                Metodo = metodo,
+                //Accuracy = metrics.Accuracy,
                 MicroAccuracy = metrics.MicroAccuracy,
                 MacroAccuracy = metrics.MacroAccuracy,
-                LogLoss = metrics.LogLoss
+                F1Score = f1,
+                //Precision = metrics.MacroPrecision,
+                //Recall = metrics.MacroRecall,
+                AUC = aucPromedio,
+                ConfusyMatrix = metrics.ConfusionMatrix,
+                Fecha = DateTime.Now
             });
 
             ActualizarTablaComparador(form);
-            MostrarGraficoMetricas();
+            MostrarGraficoMetricasSeparadas();
 
             // Entrenar modelo final con todos los datos
             var modeloFinal = pipeline.Fit(datos);
@@ -511,6 +551,239 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
+
+        private void oldMostrarGraficoMetricas()
+        {
+            var modelo = new PlotModel { Title = "Comparación de Modelos" };
+            var ejeY = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeX = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            // Series de métricas categorías
+            var serieAccuracy = new BarSeries { Title = "Accuracy", FillColor = OxyColors.SeaGreen };
+            var serieMicro = new BarSeries { Title = "MicroAccuracy", FillColor = OxyColors.CadetBlue };
+            var serieMacro = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue };
+            var serieLogLoss = new BarSeries { Title = "LogLoss (invertido)", FillColor = OxyColors.IndianRed };
+            var serieTopK = new BarSeries { Title = "TopKAccuracy", FillColor = OxyColors.Orange };
+
+            // Series métricas sentimientos
+            var serieSentAccuracy = new BarSeries { Title = "Accuracy Sentimientos", FillColor = OxyColors.SeaGreen };
+            var serieSentMicro = new BarSeries { Title = "MicroAccuracy Sentimientos", FillColor = OxyColors.CadetBlue };
+            var serieSentMacro = new BarSeries { Title = "MacroAccuracy Sentimientos", FillColor = OxyColors.SteelBlue };
+            var serieF1 = new BarSeries { Title = "F1Score", FillColor = OxyColors.DarkCyan };
+            var seriePrecision = new BarSeries { Title = "Precision", FillColor = OxyColors.MediumPurple };
+            var serieRecall = new BarSeries { Title = "Recall", FillColor = OxyColors.Goldenrod };
+            var serieAUC = new BarSeries { Title = "AUC", FillColor = OxyColors.Coral };
+
+            foreach (var r in resultadosModelos)
+            {
+                ejeY.Labels.Add(r.Metodo);
+
+                if (r.TipoModelo == "Categorías")
+                {
+                    serieAccuracy.Items.Add(new BarItem { Value = r.Accuracy });
+                    serieMicro.Items.Add(new BarItem { Value = r.MicroAccuracy });
+                    serieMacro.Items.Add(new BarItem { Value = r.MacroAccuracy });
+                    serieLogLoss.Items.Add(new BarItem { Value = 1 - r.LogLoss });
+                    serieTopK.Items.Add(new BarItem { Value = r.TopKAccuracy?.FirstOrDefault() ?? 0 });
+                }
+                else if (r.TipoModelo == "Sentimientos")
+                {
+                    serieSentAccuracy.Items.Add(new BarItem { Value = r.Accuracy });
+                    serieSentMicro.Items.Add(new BarItem { Value = r.MicroAccuracy });
+                    serieSentMacro.Items.Add(new BarItem { Value = r.MacroAccuracy });
+                    serieF1.Items.Add(new BarItem { Value = r.F1Score });
+                    seriePrecision.Items.Add(new BarItem { Value = r.Precision });
+                    serieRecall.Items.Add(new BarItem { Value = r.Recall });
+                    serieAUC.Items.Add(new BarItem { Value = r.AUC });
+                }
+            }
+
+            modelo.Series.Add(serieAccuracy);
+            modelo.Series.Add(serieMicro);
+            modelo.Series.Add(serieMacro);
+            modelo.Series.Add(serieLogLoss);
+            modelo.Series.Add(serieTopK);
+
+            modelo.Series.Add(serieSentAccuracy);
+            modelo.Series.Add(serieSentMicro);
+            modelo.Series.Add(serieSentMacro);
+            modelo.Series.Add(serieF1);
+            modelo.Series.Add(seriePrecision);
+            modelo.Series.Add(serieRecall);
+            modelo.Series.Add(serieAUC);
+
+            modelo.Axes.Add(ejeY);
+            modelo.Axes.Add(ejeX);
+
+            plotViewCategoria.Model = modelo;
+        }
+
+        private void MostrarGraficoMetricasSeparadas()
+        {
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+                return;
+
+            // ---------- MODELOS DE CATEGORIAS ----------
+            var modelosCategorias = resultadosModelos
+                .Where(x => x.TipoModelo == "Categorías")
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+
+            var modeloCat = new PlotModel { Title = "Modelos de Categorización" };
+            var ejeYCat = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeXCat = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            // Series
+            var serieMicroCat = new BarSeries { Title = "MicroAccuracy", FillColor = OxyColors.CadetBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieMacroCat = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieLogLossCat = new BarSeries { Title = "1 - LogLoss", FillColor = OxyColors.IndianRed, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:F3}", BarWidth = 0.15 };
+            var serieTopKCat = new BarSeries { Title = "TopKAccuracy", FillColor = OxyColors.Orange, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+
+            for (int i = 0; i < modelosCategorias.Count; i++)
+            {
+                var r = modelosCategorias[i];
+                ejeYCat.Labels.Add(r.Metodo ?? $"Modelo {i + 1}");
+                serieMicroCat.Items.Add(new BarItem(r.MicroAccuracy));
+                serieMacroCat.Items.Add(new BarItem(r.MacroAccuracy));
+                serieLogLossCat.Items.Add(new BarItem(1 - r.LogLoss));
+                serieTopKCat.Items.Add(new BarItem(r.TopKAccuracy?.FirstOrDefault() ?? 0));
+            }
+
+            modeloCat.Series.Add(serieMicroCat);
+            modeloCat.Series.Add(serieMacroCat);
+            modeloCat.Series.Add(serieLogLossCat);
+            modeloCat.Series.Add(serieTopKCat);
+            modeloCat.Axes.Add(ejeYCat);
+            modeloCat.Axes.Add(ejeXCat);
+
+            plotViewCategoria.Model = modeloCat;
+
+            // ---------- MODELOS DE SENTIMIENTOS ----------
+            var modelosSentimientos = resultadosModelos
+                .Where(x => x.TipoModelo == "Sentimientos")
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+
+            var modeloSent = new PlotModel { Title = "Modelos de Sentimientos" };
+            var ejeYSent = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeXSent = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            // Series
+            var serieMicroSent = new BarSeries { Title = "MicroAccuracy", FillColor = OxyColors.CadetBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieMacroSent = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieF1Sent = new BarSeries { Title = "F1Score", FillColor = OxyColors.MediumPurple, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var seriePrecisionSent = new BarSeries { Title = "Precision", FillColor = OxyColors.MediumSeaGreen, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieRecallSent = new BarSeries { Title = "Recall", FillColor = OxyColors.Goldenrod, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+            var serieAUCSent = new BarSeries { Title = "AUC", FillColor = OxyColors.Coral, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.15 };
+
+            for (int i = 0; i < modelosSentimientos.Count; i++)
+            {
+                var r = modelosSentimientos[i];
+                ejeYSent.Labels.Add(r.Metodo ?? $"Modelo {i + 1}");
+                serieMicroSent.Items.Add(new BarItem(r.MicroAccuracy));
+                serieMacroSent.Items.Add(new BarItem(r.MacroAccuracy));
+                serieF1Sent.Items.Add(new BarItem(r.F1Score > 0 ? r.F1Score : 0));
+                seriePrecisionSent.Items.Add(new BarItem(r.Precision > 0 ? r.Precision : 0));
+                serieRecallSent.Items.Add(new BarItem(r.Recall > 0 ? r.Recall : 0));
+                serieAUCSent.Items.Add(new BarItem(r.AUC > 0 ? r.AUC : 0));
+            }
+
+            modeloSent.Series.Add(serieMicroSent);
+            modeloSent.Series.Add(serieMacroSent);
+            modeloSent.Series.Add(serieF1Sent);
+            modeloSent.Series.Add(seriePrecisionSent);
+            modeloSent.Series.Add(serieRecallSent);
+            modeloSent.Series.Add(serieAUCSent);
+            modeloSent.Axes.Add(ejeYSent);
+            modeloSent.Axes.Add(ejeXSent);
+
+            plotViewSentimientos.Model = modeloSent;
+        }
+
+        private void old2MostrarGraficoMetricas()
+        {
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+                return;
+
+            // Separar por tipo
+            var modelosCategorias = resultadosModelos
+                .Where(x => x.TipoModelo == "Categorías")
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+
+            var modelosSentimientos = resultadosModelos
+                .Where(x => x.TipoModelo == "Sentimientos")
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+
+            // ---------- GRAFICO CATEGORIAS ----------
+            var modeloCat = new PlotModel { Title = "Modelos de Categorización" };
+
+            var ejeYCat = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeXCat = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            var serieMicroCat = new BarSeries { Title = "MicroAccuracy", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieMacroCat = new BarSeries { Title = "MacroAccuracy", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieLogLossCat = new BarSeries { Title = "1 - LogLoss", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:F3}", BarWidth = 0.18 };
+
+            // Añadir etiquetas y valores; asegurarse que todas las series tienen el mismo número de items
+            for (int i = 0; i < modelosCategorias.Count; i++)
+            {
+                var r = modelosCategorias[i];
+                ejeYCat.Labels.Add(r.Metodo ?? $"Modelo {i + 1}");
+
+                // Añadir valores (si falta la métrica, usar 0 para mantener alineación)
+                serieMicroCat.Items.Add(new BarItem(r.MicroAccuracy));
+                serieMacroCat.Items.Add(new BarItem(r.MacroAccuracy));
+                serieLogLossCat.Items.Add(new BarItem(1 - r.LogLoss));
+            }
+
+            // Si no hay modelos, evitar añadir series vacías al plot (opcional)
+            if (modelosCategorias.Count > 0)
+            {
+                modeloCat.Series.Add(serieMicroCat);
+                modeloCat.Series.Add(serieMacroCat);
+                modeloCat.Series.Add(serieLogLossCat);
+                modeloCat.Axes.Add(ejeYCat);
+                modeloCat.Axes.Add(ejeXCat);
+            }
+
+            plotViewCategoria.Model = modeloCat;
+
+            // ---------- GRAFICO SENTIMIENTOS ----------
+            var modeloSent = new PlotModel { Title = "Modelos de Análisis de Sentimientos" };
+
+            var ejeYSent = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeXSent = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            var serieMicroSent = new BarSeries { Title = "MicroAccuracy", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieMacroSent = new BarSeries { Title = "MacroAccuracy", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieF1Sent = new BarSeries { Title = "F1Score", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieAUCSent = new BarSeries { Title = "AUC", LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+
+            for (int i = 0; i < modelosSentimientos.Count; i++)
+            {
+                var r = modelosSentimientos[i];
+                ejeYSent.Labels.Add(r.Metodo ?? $"Modelo {i + 1}");
+
+                serieMicroSent.Items.Add(new BarItem(r.MicroAccuracy));
+                serieMacroSent.Items.Add(new BarItem(r.MacroAccuracy));
+                serieF1Sent.Items.Add(new BarItem(r.F1Score > 0 ? r.F1Score : 0));
+                serieAUCSent.Items.Add(new BarItem(r.AUC > 0 ? r.AUC : 0));
+            }
+
+            if (modelosSentimientos.Count > 0)
+            {
+                modeloSent.Series.Add(serieMicroSent);
+                modeloSent.Series.Add(serieMacroSent);
+                modeloSent.Series.Add(serieF1Sent);
+                modeloSent.Series.Add(serieAUCSent);
+                modeloSent.Axes.Add(ejeYSent);
+                modeloSent.Axes.Add(ejeXSent);
+            }
+
+            plotViewSentimientos.Model = modeloSent;
+        }
 
         private void btnActualizarDataset_Click(object sender, EventArgs e)
         {
@@ -1395,60 +1668,6 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
-        private IEstimator<ITransformer> ObtenerEntrenadorCategorias(MLContext mlContext, string metodo)
-        {
-            // Selecciona el algoritmo en función del texto del ComboBox
-            if (metodo.Contains("LbfgsMaximumEntropy"))
-            {
-                return mlContext.MulticlassClassification.Trainers.LbfgsMaximumEntropy();
-            }
-            else if (metodo.Contains("AveragedPerceptron"))
-            {
-                return mlContext.MulticlassClassification.Trainers.OneVersusAll(
-                    mlContext.BinaryClassification.Trainers.AveragedPerceptron());
-            }
-            //else if (metodo.Contains("FastTree"))
-            //{
-            //    return mlContext.MulticlassClassification.Trainers.OneVersusAll(
-            //        mlContext.BinaryClassification.Trainers.FastTree());
-            //}
-            //else if (metodo.Contains("LightGbm"))
-            //{
-            //    return mlContext.MulticlassClassification.Trainers.LightGbm();
-            //}
-            else
-            {
-                // Por defecto
-                return mlContext.MulticlassClassification.Trainers.SdcaMaximumEntropy();
-            }
-        }
-
-        private IEstimator<ITransformer> ObtenerEntrenadorSentimientos(MLContext mlContext, string metodo)
-        {
-            // Selecciona el algoritmo en función del texto del ComboBox
-            if (metodo.Contains("LbfgsLogisticRegression"))
-            {
-                return mlContext.BinaryClassification.Trainers.LbfgsLogisticRegression();
-            }
-            else if (metodo.Contains("AveragedPerceptron"))
-            {
-                return mlContext.BinaryClassification.Trainers.AveragedPerceptron();
-            }
-            //else if (metodo.Contains("FastTree"))
-            //{
-            //    return mlContext.BinaryClassification.Trainers.FastTree();
-            //}
-            //else if (metodo.Contains("LightGbm"))
-            //{
-            //    return mlContext.BinaryClassification.Trainers.LightGbm();
-            //}
-            else
-            {
-                // Por defecto
-                return mlContext.BinaryClassification.Trainers.SdcaLogisticRegression();
-            }
-        }
-
         private void ExportarResultadosCSV()
         {
             if (resultadosModelos == null || resultadosModelos.Count == 0)
@@ -1489,396 +1708,12 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
+
         private void btnExportar_Click(object sender, EventArgs e)
         {
             ExportarResultadosCSV();
         }
 
-
-        private void MostrarGraficoMetricas()
-        {
-            var modelo = new PlotModel { Title = "Comparación de Modelos" };
-
-            var categoriaEjeY = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
-            var ejeX = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
-
-            var serieAccuracy = new BarSeries { Title = "Accuracy", FillColor = OxyColors.SeaGreen };
-            var serieMacroAccuracy = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue };
-            var serieLogLoss = new BarSeries { Title = "LogLoss (invertido)", FillColor = OxyColors.IndianRed };
-
-            foreach (var r in resultadosModelos)
-            {
-                categoriaEjeY.Labels.Add(r.Metodo);
-                serieAccuracy.Items.Add(new BarItem { Value = r.MicroAccuracy });
-                serieMacroAccuracy.Items.Add(new BarItem { Value = r.MacroAccuracy });
-                serieLogLoss.Items.Add(new BarItem { Value = 1 - r.LogLoss });
-            }
-
-            modelo.Series.Add(serieAccuracy);
-            modelo.Series.Add(serieMacroAccuracy);
-            modelo.Series.Add(serieLogLoss);
-            modelo.Axes.Add(categoriaEjeY);
-            modelo.Axes.Add(ejeX);
-
-            plotViewMetricas.Model = modelo;
-        }
-
-
-        #region oldcode
-        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        //static ITransformer EntrenarModeloSentimientos(Form1 form, MLContext ml, bool guardar = false)
-        //{
-        //    return EntrenarModeloSentimientos(form, ml, extras: null, guardar: guardar);
-        //}
-
-        // Wrapper existente: mantiene compatibilidad con llamadas anteriores
-        //static ITransformer EntrenarModeloCategorias(Form1 form, MLContext ml, bool guardar = false)
-        //{
-        //    // Llamar a la sobrecarga que acepta extras con null
-        //    return EntrenarModeloCategorias(form, ml, extras: null, guardar: guardar);
-        //}
-
-
-        //private void btnCargarExcel_ClickOld(object sender, EventArgs e)
-        //{
-        //    using var ofd = new OpenFileDialog();
-        //    ofd.Filter = "Excel Files|*.xlsx;*.xls";
-        //    if (ofd.ShowDialog() != DialogResult.OK) return;
-
-        //    var path = ofd.FileName;
-        //    var filas = LeerExcelTitulares(path);
-
-        //    if (modeloCat == null || modeloSent == null)
-        //    {
-        //        MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //        return;
-        //    }
-
-        //    var engine = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
-        //    var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
-
-        //    var resultados = new List<ResultadoExcel>();
-        //    foreach (var t in filas)
-        //    {
-        //        var p = engine.Predict(new Articulo { Texto = t });
-        //        var ps = engineSent.Predict(new Sentimiento { Texto = t });
-        //        resultados.Add(new ResultadoExcel { Titular = t, Categoria = p.CategoriaPredicha, Sentimiento = ps.SentimientoPredicho });
-        //    }
-
-        //    dgvExcelResultados.DataSource = resultados;
-        //}
-
-        //private void OldbtnCargarExcel_Click(object sender, EventArgs e)
-        //{
-        //    // Abrir diálogo para seleccionar archivo
-        //    using var ofd = new OpenFileDialog();
-        //    ofd.Filter = "Excel Files|*.xlsx;*.xls";
-        //    if (ofd.ShowDialog() != DialogResult.OK) return;
-
-        //    var path = ofd.FileName;
-
-        //    // Leer tabla completa desde Excel
-        //    DataTable original;
-        //    try
-        //    {
-        //        original = LeerExcelComoDataTable(path);
-        //        if (original == null || original.Rows.Count == 0)
-        //        {
-        //            MessageBox.Show("No se encontraron titulares en el Excel.", "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //            return;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        MessageBox.Show($"Error al leer Excel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //        return;
-        //    }
-
-        //    // Validar que los modelos estén cargados
-        //    if (modeloCat == null || modeloSent == null)
-        //    {
-        //        MessageBox.Show("No hay modelos cargados. Coloca los ZIPs en la carpeta Modelo.", "Modelos ausentes", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        //        return;
-        //    }
-
-        //    // Buscar columna de titulares (case-insensitive)
-        //    string titularCol = null;
-        //    foreach (DataColumn c in original.Columns)
-        //    {
-        //        var name = c.ColumnName.ToLower();
-        //        if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
-        //        { titularCol = c.ColumnName; break; }
-        //    }
-        //    // Si no se encontró, intentar buscar de forma más flexible
-        //    if (titularCol == null)
-        //    {
-        //        foreach (DataColumn c in original.Columns)
-        //        {
-        //            var name = c.ColumnName.Trim().ToLowerInvariant();
-        //            if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
-        //            {
-        //                titularCol = c.ColumnName;
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    if (titularCol == null)
-        //    {
-        //        // Mostrar los nombres de las columnas encontradas para diagnóstico
-        //        var columnas = string.Join(", ", original.Columns.Cast<DataColumn>().Select(c => $"'{c.ColumnName}'"));
-        //        MessageBox.Show($"No se encontró columna 'Titular' en el Excel.\nColumnas encontradas: {columnas}",
-        //                      "Atención", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        //        return;
-        //    }
-
-        //    // Crear motores de predicción
-        //    var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
-        //    var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
-
-        //    // Preparar DataTable de resultados: Titular, Categoria, Sentimiento, luego todas las columnas originales (excepto Titular duplicada)
-        //    var resultadosDt = new DataTable();
-        //    resultadosDt.Columns.Add("Titular");
-        //    resultadosDt.Columns.Add("Categoria");
-        //    resultadosDt.Columns.Add("Sentimiento");
-        //    var extraCols = new List<string>();
-        //    foreach (DataColumn c in original.Columns)
-        //    {
-        //        if (c.ColumnName == titularCol) continue;
-        //        // Evitar nombres reservados
-        //        var colName = c.ColumnName;
-        //        int suffix = 1;
-        //        while (resultadosDt.Columns.Contains(colName)) { colName = c.ColumnName + "_" + suffix; suffix++; }
-        //        resultadosDt.Columns.Add(colName);
-        //        extraCols.Add(c.ColumnName);
-        //    }
-
-        //    int total = original.Rows.Count;
-        //    int i = 1;
-
-        //    var stopwatch = Stopwatch.StartNew();
-
-        //    var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        //    var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        //    foreach (DataRow row in original.Rows)
-        //    {
-        //        var titular = row[titularCol]?.ToString()?.Trim();
-        //        if (string.IsNullOrWhiteSpace(titular)) { i++; continue; }
-
-        //        // Predicción
-        //        var predCat = engineCat.Predict(new Articulo { Texto = titular });
-        //        var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
-
-        //        var newRow = resultadosDt.NewRow();
-        //        newRow["Titular"] = titular;
-        //        newRow["Categoria"] = predCat.CategoriaPredicha;
-        //        newRow["Sentimiento"] = predSent.SentimientoPredicho;
-
-        //        // Copiar columnas extra en el mismo orden que en original
-        //        for (int ec = 0; ec < extraCols.Count; ec++)
-        //        {
-        //            var origName = extraCols[ec];
-        //            var targetName = resultadosDt.Columns[3 + ec].ColumnName; // offset
-        //            newRow[targetName] = row[origName]?.ToString() ?? "";
-        //        }
-
-        //        resultadosDt.Rows.Add(newRow);
-
-        //        // acumular métricas
-        //        var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
-        //        var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
-        //        if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0; catCountsLocal[catKey]++;
-        //        if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0; senCountsLocal[senKey]++;
-
-        //        // Mostrar progreso
-        //        lblProgreso.Text = $"Clasificando {i}/{total}";
-        //        Application.DoEvents();
-        //        i++;
-        //    }
-
-        //    stopwatch.Stop();
-
-        //    dgvExcelResultados.DataSource = resultadosDt;
-        //    dgvExcelResultados.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        //    dgvExcelResultados.Refresh();
-
-        //    // Update Excel graphs automatically
-        //    CargarGraficasDesdeExcelResultados();
-
-        //    // Mostrar tiempo y métricas resumidas
-        //    txtTiempoClasificacion.Text = FormatElapsed(stopwatch.Elapsed);
-        //    var metricsSb = new System.Text.StringBuilder();
-        //    metricsSb.AppendLine("Categorías:");
-        //    foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-        //    metricsSb.AppendLine();
-        //    metricsSb.AppendLine("Sentimientos:");
-        //    foreach (var kv in senCountsLocal.OrderByDescending(k => k.Value)) metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
-        //    txtMetricasClasificacion.Text = metricsSb.ToString();
-
-        //    lblProgreso.Text = "Clasificación completada ✅";
-        //}
-
-        //static List<string> LeerExcelTitularesOld(string ruta)
-        //{
-        //    var lista = new List<string>();
-        //    if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        using var wb = new XLWorkbook(ruta);
-        //        var ws = wb.Worksheets.First();
-        //        var col = ws.Column(1).CellsUsed().Select(c => c.GetString()).ToList();
-        //        // asumimos cabecera en la primera fila
-        //        for (int i = 2; i <= ws.RowCount(); i++)
-        //        {
-        //            var val = ws.Cell(i, 1).GetString().Trim();
-        //            if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
-        //        }
-        //    }
-        //    else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        //        using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
-        //        using var reader = ExcelReaderFactory.CreateReader(stream);
-        //        var result = reader.AsDataSet();
-        //        var table = result.Tables[0];
-        //        for (int r = 1; r < table.Rows.Count; r++)
-        //        {
-        //            var val = table.Rows[r][0]?.ToString()?.Trim();
-        //            if (!string.IsNullOrWhiteSpace(val)) lista.Add(val);
-        //        }
-        //    }
-        //    return lista;
-        //}
-
-        //static List<string> LeerExcelTitulares(string ruta)
-        //{
-        //    var lista = new List<string>();
-        //    List<string> nombresColumnas = new();
-
-        //    if (ruta.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        using var wb = new XLWorkbook(ruta);
-        //        var ws = wb.Worksheets.First(); // podemos permitir seleccionar hoja después si quieres
-        //        var rango = ws.RangeUsed();
-        //        if (rango == null) return lista;
-        //        int totalFilas = rango.RowCount();
-        //        int totalCols = rango.ColumnCount();
-
-        //        // Determine actual first row/col of the used range
-        //        int firstRow = rango.FirstRow().RowNumber();
-        //        int firstCol = rango.FirstColumn().ColumnNumber();
-
-        //        // Leer encabezados
-        //        for (int c = 0; c < totalCols; c++)
-        //            nombresColumnas.Add(ws.Cell(firstRow, firstCol + c).GetString().Trim());
-
-        //        // Buscar columna de titulares
-        //        int colTitular = nombresColumnas.FindIndex(h =>
-        //            new[] { "titular", "título", "title", "headline" }
-        //            .Contains(h.ToLower()));
-
-        //        if (colTitular == -1)
-        //            throw new Exception("No se encontró columna 'Titular' en el Excel.");
-
-        //        // Leer filas
-        //        for (int r = 1; r < totalFilas; r++)
-        //        {
-        //            var val = ws.Cell(firstRow + r, firstCol + colTitular).GetString().Trim();
-        //            if (!string.IsNullOrWhiteSpace(val))
-        //                lista.Add(val);
-        //        }
-        //    }
-        //    else if (ruta.EndsWith(".xls", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-        //        using var stream = File.Open(ruta, FileMode.Open, FileAccess.Read);
-        //        using var reader = ExcelReaderFactory.CreateReader(stream);
-        //        var result = reader.AsDataSet();
-        //        var table = result.Tables[0]; // también se puede permitir seleccionar hoja
-
-        //        // Leer encabezados
-        //        for (int c = 0; c < table.Columns.Count; c++)
-        //            nombresColumnas.Add(table.Rows[0][c]?.ToString().Trim() ?? "");
-
-        //        // Buscar columna de titulares
-        //        int colTitular = nombresColumnas.FindIndex(h =>
-        //            new[] { "titular", "título", "title", "headline" }
-        //            .Contains(h.ToLower()));
-
-        //        if (colTitular == -1)
-        //            throw new Exception("No se encontró columna 'Titular' en el Excel.");
-
-        //        // Leer filas
-        //        for (int r = 1; r < table.Rows.Count; r++)
-        //        {
-        //            var val = table.Rows[r][colTitular]?.ToString().Trim();
-        //            if (!string.IsNullOrWhiteSpace(val))
-        //                lista.Add(val);
-        //        }
-        //    }
-
-        //    return lista;
-        //}
-
-
-        // If the header row wasn't properly read, try to detect it within the first few rows and rebuild the DataTable
-        //static DataTable EnsureHeaderRow(DataTable dt)
-        //{
-        //    if (dt == null || dt.Rows.Count == 0) return dt;
-
-        //    // Quick heuristic: if columns are named like 'Column1' or empty, try to locate a header row
-        //    bool hasGenericCols = dt.Columns.Cast<DataColumn>().All(c => c.ColumnName.StartsWith("Column", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(c.ColumnName));
-        //    if (!hasGenericCols) return dt; // already has meaningful column names
-
-        //    var possibleHeaders = new[] { "titular", "título", "titulo", "title", "headline", "categoria", "category", "sentimiento", "sentiment", "autor", "autor" };
-
-        //    // Scan first N rows to find a header row where at least one cell matches known headers
-        //    int maxRowsToCheck = Math.Min(10, dt.Rows.Count);
-        //    int headerRowIndex = -1;
-        //    for (int r = 0; r < maxRowsToCheck; r++)
-        //    {
-        //        int matchCount = 0;
-        //        for (int c = 0; c < dt.Columns.Count; c++)
-        //        {
-        //            var cell = dt.Rows[r][c]?.ToString()?.Trim();
-        //            if (string.IsNullOrWhiteSpace(cell)) continue;
-        //            var cl = cell.ToLowerInvariant();
-        //            if (possibleHeaders.Any(h => cl.Contains(h))) matchCount++;
-        //        }
-        //        if (matchCount >= 1)
-        //        {
-        //            headerRowIndex = r;
-        //            break;
-        //        }
-        //    }
-
-        //    if (headerRowIndex == -1) return dt; // cannot detect header
-
-        //    // Build new DataTable using that row as header
-        //    var newDt = new DataTable();
-        //    for (int c = 0; c < dt.Columns.Count; c++)
-        //    {
-        //        var h = dt.Rows[headerRowIndex][c]?.ToString()?.Trim();
-        //        if (string.IsNullOrWhiteSpace(h)) h = "Column" + (c + 1);
-        //        var colName = h;
-        //        int suffix = 1;
-        //        while (newDt.Columns.Contains(colName)) { colName = h + "_" + suffix; suffix++; }
-        //        newDt.Columns.Add(colName);
-        //    }
-
-        //    // Copy data rows after headerRowIndex
-        //    for (int r = headerRowIndex + 1; r < dt.Rows.Count; r++)
-        //    {
-        //        var nr = newDt.NewRow();
-        //        for (int c = 0; c < dt.Columns.Count; c++) nr[c] = dt.Rows[r][c];
-        //        newDt.Rows.Add(nr);
-        //    }
-
-        //    return newDt;
-        //}
-
-        #endregion
-
-
+       
     }
 }
