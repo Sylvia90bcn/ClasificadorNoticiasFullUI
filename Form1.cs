@@ -615,7 +615,7 @@ namespace ClasificadorNoticiasGUI
             modelo.Axes.Add(ejeY);
             modelo.Axes.Add(ejeX);
 
-            plotViewCategoria.Model = modelo;
+            plotViewMetCategorias.Model = modelo;
         }
 
         private void MostrarGraficoMetricasSeparadas()
@@ -656,7 +656,7 @@ namespace ClasificadorNoticiasGUI
             modeloCat.Axes.Add(ejeYCat);
             modeloCat.Axes.Add(ejeXCat);
 
-            plotViewCategoria.Model = modeloCat;
+            plotViewMetCategorias.Model = modeloCat;
 
             // ---------- MODELOS DE SENTIMIENTOS ----------
             var modelosSentimientos = resultadosModelos
@@ -697,7 +697,7 @@ namespace ClasificadorNoticiasGUI
             modeloSent.Axes.Add(ejeYSent);
             modeloSent.Axes.Add(ejeXSent);
 
-            plotViewSentimientos.Model = modeloSent;
+            plotViewMetSentimientos.Model = modeloSent;
         }
 
         private void old2MostrarGraficoMetricas()
@@ -748,7 +748,7 @@ namespace ClasificadorNoticiasGUI
                 modeloCat.Axes.Add(ejeXCat);
             }
 
-            plotViewCategoria.Model = modeloCat;
+            plotViewMetCategorias.Model = modeloCat;
 
             // ---------- GRAFICO SENTIMIENTOS ----------
             var modeloSent = new PlotModel { Title = "Modelos de Análisis de Sentimientos" };

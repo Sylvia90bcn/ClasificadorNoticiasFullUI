@@ -24,7 +24,7 @@ namespace ClasificadorNoticiasGUI
 
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             cmbModeloCategorias = new ComboBox();
             cmbModeloSentimientos = new ComboBox();
@@ -79,8 +79,8 @@ namespace ClasificadorNoticiasGUI
             tabVisualizacion = new TabPage();
             label11 = new Label();
             label10 = new Label();
-            plotViewSentimietos = new OxyPlot.WindowsForms.PlotView();
-            plotViewCategoria = new OxyPlot.WindowsForms.PlotView();
+            plotViewMetSentimientos = new OxyPlot.WindowsForms.PlotView();
+            plotViewMetCategorias = new OxyPlot.WindowsForms.PlotView();
             tabExcel = new TabPage();
             label5 = new Label();
             txtFiabilidadSentimientosExcel = new TextBox();
@@ -559,14 +559,14 @@ namespace ClasificadorNoticiasGUI
             // 
             dgvComparador.AllowUserToAddRows = false;
             dgvComparador.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = SystemColors.Control;
-            dataGridViewCellStyle1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dgvComparador.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dgvComparador.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             dgvComparador.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvComparador.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6 });
             dgvComparador.Dock = DockStyle.Fill;
@@ -625,8 +625,8 @@ namespace ClasificadorNoticiasGUI
             // 
             tabVisualizacion.Controls.Add(label11);
             tabVisualizacion.Controls.Add(label10);
-            tabVisualizacion.Controls.Add(plotViewSentimietos);
-            tabVisualizacion.Controls.Add(plotViewCategoria);
+            tabVisualizacion.Controls.Add(plotViewMetSentimientos);
+            tabVisualizacion.Controls.Add(plotViewMetCategorias);
             tabVisualizacion.Location = new Point(4, 26);
             tabVisualizacion.Name = "tabVisualizacion";
             tabVisualizacion.Padding = new Padding(3);
@@ -653,29 +653,29 @@ namespace ClasificadorNoticiasGUI
             label10.TabIndex = 2;
             label10.Text = "Modelos Categorias";
             // 
-            // plotViewSentimietos
+            // plotViewMetSentimientos
             // 
-            plotViewSentimietos.Location = new Point(8, 422);
-            plotViewSentimietos.Name = "plotViewSentimietos";
-            plotViewSentimietos.PanCursor = Cursors.Hand;
-            plotViewSentimietos.Size = new Size(1371, 334);
-            plotViewSentimietos.TabIndex = 1;
-            plotViewSentimietos.Text = "plotView1";
-            plotViewSentimietos.ZoomHorizontalCursor = Cursors.SizeWE;
-            plotViewSentimietos.ZoomRectangleCursor = Cursors.SizeNWSE;
-            plotViewSentimietos.ZoomVerticalCursor = Cursors.SizeNS;
+            plotViewMetSentimientos.Location = new Point(8, 422);
+            plotViewMetSentimientos.Name = "plotViewMetSentimientos";
+            plotViewMetSentimientos.PanCursor = Cursors.Hand;
+            plotViewMetSentimientos.Size = new Size(1371, 334);
+            plotViewMetSentimientos.TabIndex = 1;
+            plotViewMetSentimientos.Text = "plotView1";
+            plotViewMetSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewMetSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewMetSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
             // 
-            // plotViewCategoria
+            // plotViewMetCategorias
             // 
-            plotViewCategoria.Location = new Point(8, 47);
-            plotViewCategoria.Name = "plotViewCategoria";
-            plotViewCategoria.PanCursor = Cursors.Hand;
-            plotViewCategoria.Size = new Size(1371, 334);
-            plotViewCategoria.TabIndex = 0;
-            plotViewCategoria.Text = "plotView1";
-            plotViewCategoria.ZoomHorizontalCursor = Cursors.SizeWE;
-            plotViewCategoria.ZoomRectangleCursor = Cursors.SizeNWSE;
-            plotViewCategoria.ZoomVerticalCursor = Cursors.SizeNS;
+            plotViewMetCategorias.Location = new Point(8, 47);
+            plotViewMetCategorias.Name = "plotViewMetCategorias";
+            plotViewMetCategorias.PanCursor = Cursors.Hand;
+            plotViewMetCategorias.Size = new Size(1371, 334);
+            plotViewMetCategorias.TabIndex = 0;
+            plotViewMetCategorias.Text = "plotView1";
+            plotViewMetCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewMetCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewMetCategorias.ZoomVerticalCursor = Cursors.SizeNS;
             // 
             // tabExcel
             // 
@@ -972,8 +972,8 @@ namespace ClasificadorNoticiasGUI
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn6;
         private Button btnExportar;
         private TabPage tabVisualizacion;
-        private OxyPlot.WindowsForms.PlotView plotViewCategoria;
-        private OxyPlot.WindowsForms.PlotView plotViewSentimietos;
+        private OxyPlot.WindowsForms.PlotView plotViewMetCategorias;
+        private OxyPlot.WindowsForms.PlotView plotViewMetSentimientos;
         private Label label11;
         private Label label10;
     }
