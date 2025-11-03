@@ -450,18 +450,6 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLossSent.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracySent.Text = metrics.MicroAccuracy.ToString("P2");
 
-            //resultadosModelos.Add(new ResultadoModelo
-            //{
-            //    TipoModelo = "Sentimientos",
-            //    Metodo = form.cmbModeloSentimientos.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
-            //    MicroAccuracy = metrics.MicroAccuracy,
-            //    MacroAccuracy = metrics.MacroAccuracy,
-            //    Precision = metrics.TopKPredictionCount,
-            //    //F1Score = metrics.score,
-            //    //AUC = metrics.
-            //    //Recall = metrics.recall,
-            //});
-
             // Calcular F1Score promedio macro
             double f1 = metrics.ConfusionMatrix.PerClassPrecision
                            .Select((p, i) => 2 * p * metrics.ConfusionMatrix.PerClassRecall[i] / (p + metrics.ConfusionMatrix.PerClassRecall[i] + 1e-10))
@@ -515,23 +503,36 @@ namespace ClasificadorNoticiasGUI
                 return;
 
             // Asegurarse de que las columnas tengan nombres (solo se necesita si no se definieron en el diseñador)
-            dgv.Columns[0].Name = "Tipo";
-            dgv.Columns[1].Name = "Metodo";
-            dgv.Columns[2].Name = "MicroAccuracy";
-            dgv.Columns[3].Name = "MacroAccuracy";
-            dgv.Columns[4].Name = "LogLoss";
-            dgv.Columns[5].Name = "Fecha";
+
+            dgv.Columns[0].Name = "Fecha";
+            dgv.Columns[1].Name = "Tipo";
+            dgv.Columns[2].Name = "Metodo";
+            dgv.Columns[3].Name = "MicroAccuracy";
+            dgv.Columns[4].Name = "MacroAccuracy";
+            dgv.Columns[5].Name = "LogLoss";
+          //  dgv.Columns[6].Name = "F1Score ";
+            ////dgv.Columns[6].Name = "Precision";
+            //dgv.Columns[7].Name = "Recall";
+           // dgv.Columns[8].Name = "AUC";
+           // dgv.Columns[9].Name = "TopKAccuracy";
+           // dgv.Columns[10].Name = "ConfusyMatrix ";
 
             // Llenar DataGridView con los datos de resultadosModelos
             foreach (var r in resultadosModelos.OrderByDescending(x => x.Fecha))
             {
                 dgv.Rows.Add(
+                    r.Fecha.ToString("dd/MM/yyyy HH:mm:ss"),
                     r.TipoModelo,
                     r.Metodo,
                     $"{r.MicroAccuracy:P2}",
                     $"{r.MacroAccuracy:P2}",
                     $"{r.LogLoss:F4}",
-                    r.Fecha.ToString("dd/MM/yyyy HH:mm:ss")
+                    $"{r.F1Score}"
+                   // $"{r.Precision}",
+                  //  $"{r.Recall}",
+                   // $"{r.AUC}",
+                   // $"{r.TopKAccuracy}",
+                    //$"{r.ConfusyMatrix}",
                 );
             }
 
@@ -551,72 +552,6 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
-
-        private void oldMostrarGraficoMetricas()
-        {
-            var modelo = new PlotModel { Title = "Comparación de Modelos" };
-            var ejeY = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
-            var ejeX = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
-
-            // Series de métricas categorías
-            var serieAccuracy = new BarSeries { Title = "Accuracy", FillColor = OxyColors.SeaGreen };
-            var serieMicro = new BarSeries { Title = "MicroAccuracy", FillColor = OxyColors.CadetBlue };
-            var serieMacro = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue };
-            var serieLogLoss = new BarSeries { Title = "LogLoss (invertido)", FillColor = OxyColors.IndianRed };
-            var serieTopK = new BarSeries { Title = "TopKAccuracy", FillColor = OxyColors.Orange };
-
-            // Series métricas sentimientos
-            var serieSentAccuracy = new BarSeries { Title = "Accuracy Sentimientos", FillColor = OxyColors.SeaGreen };
-            var serieSentMicro = new BarSeries { Title = "MicroAccuracy Sentimientos", FillColor = OxyColors.CadetBlue };
-            var serieSentMacro = new BarSeries { Title = "MacroAccuracy Sentimientos", FillColor = OxyColors.SteelBlue };
-            var serieF1 = new BarSeries { Title = "F1Score", FillColor = OxyColors.DarkCyan };
-            var seriePrecision = new BarSeries { Title = "Precision", FillColor = OxyColors.MediumPurple };
-            var serieRecall = new BarSeries { Title = "Recall", FillColor = OxyColors.Goldenrod };
-            var serieAUC = new BarSeries { Title = "AUC", FillColor = OxyColors.Coral };
-
-            foreach (var r in resultadosModelos)
-            {
-                ejeY.Labels.Add(r.Metodo);
-
-                if (r.TipoModelo == "Categorías")
-                {
-                    serieAccuracy.Items.Add(new BarItem { Value = r.Accuracy });
-                    serieMicro.Items.Add(new BarItem { Value = r.MicroAccuracy });
-                    serieMacro.Items.Add(new BarItem { Value = r.MacroAccuracy });
-                    serieLogLoss.Items.Add(new BarItem { Value = 1 - r.LogLoss });
-                    serieTopK.Items.Add(new BarItem { Value = r.TopKAccuracy?.FirstOrDefault() ?? 0 });
-                }
-                else if (r.TipoModelo == "Sentimientos")
-                {
-                    serieSentAccuracy.Items.Add(new BarItem { Value = r.Accuracy });
-                    serieSentMicro.Items.Add(new BarItem { Value = r.MicroAccuracy });
-                    serieSentMacro.Items.Add(new BarItem { Value = r.MacroAccuracy });
-                    serieF1.Items.Add(new BarItem { Value = r.F1Score });
-                    seriePrecision.Items.Add(new BarItem { Value = r.Precision });
-                    serieRecall.Items.Add(new BarItem { Value = r.Recall });
-                    serieAUC.Items.Add(new BarItem { Value = r.AUC });
-                }
-            }
-
-            modelo.Series.Add(serieAccuracy);
-            modelo.Series.Add(serieMicro);
-            modelo.Series.Add(serieMacro);
-            modelo.Series.Add(serieLogLoss);
-            modelo.Series.Add(serieTopK);
-
-            modelo.Series.Add(serieSentAccuracy);
-            modelo.Series.Add(serieSentMicro);
-            modelo.Series.Add(serieSentMacro);
-            modelo.Series.Add(serieF1);
-            modelo.Series.Add(seriePrecision);
-            modelo.Series.Add(serieRecall);
-            modelo.Series.Add(serieAUC);
-
-            modelo.Axes.Add(ejeY);
-            modelo.Axes.Add(ejeX);
-
-            plotViewMetCategorias.Model = modelo;
-        }
 
         private void MostrarGraficoMetricasSeparadas()
         {
