@@ -316,17 +316,7 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLoss.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracy.Text = metrics.MicroAccuracy.ToString("P2");
 
-            //resultadosModelos.Add(new ResultadoModelo
-            //{
-            //    TipoModelo = "Categorías",
-            //    Metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)",
-            //    MicroAccuracy = metrics.MicroAccuracy,
-            //    MacroAccuracy = metrics.MacroAccuracy,
-            //    LogLoss = metrics.LogLoss,
-            //    TopKAccuracy = (List<double>)metrics.TopKAccuracyForAllK,
-            //    ConfusyMatrix = metrics.ConfusionMatrix
-            //});
-
+      
             resultadosModelos.Add(new ResultadoModelo
             {
                 TipoModelo = "Categorías",
