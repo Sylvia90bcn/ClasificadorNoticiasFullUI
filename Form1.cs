@@ -456,7 +456,10 @@ namespace ClasificadorNoticiasGUI
                            .Average();
 
             // AUC promedio: en multiclass se puede aproximar usando OneVsAll por clase si se quiere
-            double aucPromedio = 0; // opcional, ML.NET no devuelve directamente multiclass AUC
+            double aucMulticlase = CalcularAUC_Multiclase(ml, preds);
+
+            double macroPrecision = metrics.ConfusionMatrix.PerClassPrecision.Average();
+            double macroRecall = metrics.ConfusionMatrix.PerClassRecall.Average();
 
             resultadosModelos.Add(new ResultadoModelo
             {
@@ -466,9 +469,9 @@ namespace ClasificadorNoticiasGUI
                 MicroAccuracy = metrics.MicroAccuracy,
                 MacroAccuracy = metrics.MacroAccuracy,
                 F1Score = f1,
-                //Precision = metrics.MacroPrecision,
-                //Recall = metrics.MacroRecall,
-                AUC = aucPromedio,
+                Precision = macroPrecision,
+                Recall = macroRecall,
+                AUC = aucMulticlase,
                 ConfusyMatrix = metrics.ConfusionMatrix,
                 Fecha = DateTime.Now
             });
@@ -527,12 +530,12 @@ namespace ClasificadorNoticiasGUI
                     $"{r.MicroAccuracy:P2}",
                     $"{r.MacroAccuracy:P2}",
                     $"{r.LogLoss:F4}",
-                    $"{r.F1Score}"
-                   // $"{r.Precision}",
-                  //  $"{r.Recall}",
-                   // $"{r.AUC}",
-                   // $"{r.TopKAccuracy}",
-                    //$"{r.ConfusyMatrix}",
+                    $"{r.F1Score}",
+                    $"{r.Precision}",
+                    $"{r.Recall}",
+                    $"{r.AUC}",
+                    $"{r.TopKAccuracy}",
+                    $"{r.ConfusyMatrix}"
                 );
             }
 
@@ -1641,6 +1644,59 @@ namespace ClasificadorNoticiasGUI
                     }
                 }
             }
+        }
+        public static double CalcularAUC(List<float> scores, List<int> labels)
+        {
+            if (scores.Count != labels.Count || scores.Count == 0)
+                return 0;
+
+            var pares = scores.Zip(labels, (s, l) => new { Score = s, Label = l })
+                              .OrderBy(x => x.Score)
+                              .ToList();
+
+            int n1 = labels.Count(l => l == 1); // positivos
+            int n0 = labels.Count(l => l == 0); // negativos
+            if (n1 == 0 || n0 == 0) return 0;
+
+            double sumaRangosPositivos = 0;
+
+            for (int i = 0; i < pares.Count; i++)
+            {
+                if (pares[i].Label == 1)
+                    sumaRangosPositivos += (i + 1); // rango (1-based)
+            }
+
+            double auc = (sumaRangosPositivos - (n1 * (n1 + 1) / 2.0)) / (n1 * n0);
+
+            return auc;
+        }
+
+        public static double CalcularAUC_Multiclase(MLContext ml, IDataView predictions, string labelCol = "Label", string scoreCol = "Score")
+        {
+            // Obtener datos en listas
+            var enumerable = ml.Data.CreateEnumerable<PrediccionAux>(predictions, reuseRowObject: false).ToList();
+            if (enumerable.Count == 0) return 0;
+
+            int numClases = enumerable[0].Score.Length;
+
+            double sumaAUC = 0;
+
+            for (int clase = 0; clase < numClases; clase++)
+            {
+                // Etiquetas 1 = pertenece a clase, 0 = no pertenece
+                var labels = enumerable.Select(e => e.Label == clase ? 1 : 0).ToList();
+                var scores = enumerable.Select(e => e.Score[clase]).ToList();
+
+                sumaAUC += CalcularAUC(scores, labels);
+            }
+
+            return sumaAUC / numClases; // Macro AUC
+        }
+
+        public class PrediccionAux
+        {
+            public uint Label { get; set; }
+            public float[] Score { get; set; }
         }
 
 
