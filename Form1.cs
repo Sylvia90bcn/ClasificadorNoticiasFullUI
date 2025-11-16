@@ -5,11 +5,15 @@ using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelDataReader;
 using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Trainers;
 using MiProyecto;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
+using System.Globalization;
+using System.Linq;
 
 namespace ClasificadorNoticiasGUI
 {
@@ -358,6 +362,27 @@ namespace ClasificadorNoticiasGUI
             form.txtLogLoss.Text = metrics.LogLoss.ToString("F4");
             form.txtMicroAccuracy.Text = metrics.MicroAccuracy.ToString("P2");
 
+            // Calcular TopKAccuracy (Top-5) por clase
+            var predScores = ml.Data.CreateEnumerable<Predicciones>(preds, reuseRowObject: false).ToList();
+
+            int top1Correct = 0;
+            int top5Correct = 0;
+
+            foreach (var p in predScores)
+            {
+                var top5 = p.Scores
+                            .Select((score, idx) => new { Score = score, Index = idx })
+                            .OrderByDescending(x => x.Score)
+                            .Take(5)
+                            .Select(x => x.Index);
+
+                if (p.LabelIndex == top5.First()) top1Correct++;
+                if (top5.Contains((int)p.LabelIndex)) top5Correct++;
+
+            }
+
+            double top1Acc = (double)top1Correct / predScores.Count;
+            double top5Acc = (double)top5Correct / predScores.Count;
 
             resultadosModelos.Add(new ResultadoModelo
             {
@@ -367,7 +392,7 @@ namespace ClasificadorNoticiasGUI
                 MicroAccuracy = metrics.MicroAccuracy,
                 MacroAccuracy = metrics.MacroAccuracy,
                 LogLoss = metrics.LogLoss,
-                TopKAccuracy = new List<double> { metrics.TopKAccuracy }, // ML.NET devuelve solo Top1 y Top5
+                TopKAccuracy = new List<double> { top1Acc, top5Acc }, // Top1 y Top5
                 ConfusyMatrix = metrics.ConfusionMatrix,
                 Fecha = DateTime.Now
             });
@@ -552,6 +577,7 @@ namespace ClasificadorNoticiasGUI
             dgv.Columns[9].Name = "AUC";
             dgv.Columns[10].Name = "TopKAccuracy";
             dgv.Columns[11].Name = "ConfusyMatrix ";
+
 
             // Llenar DataGridView con los datos de resultadosModelos
             foreach (var r in resultadosModelos.OrderByDescending(x => x.Fecha))
@@ -1639,7 +1665,17 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
-        private void ExportarResultadosCSV()
+        //private string CsvEscape(string s)
+        //{
+        //    if (string.IsNullOrEmpty(s)) return "";
+        //    if (s.Contains("\""))
+        //        s = s.Replace("\"", "\"\""); // escapar comillas
+        //    if (s.Contains(",") || s.Contains(";") || s.Contains("\n"))
+        //        s = $"\"{s}\""; // encerrar en comillas si hay separadores o saltos de línea
+        //    return s;
+        //}
+
+        private void old2ExportarResultadosCSV()
         {
             if (resultadosModelos == null || resultadosModelos.Count == 0)
             {
@@ -1668,14 +1704,14 @@ namespace ClasificadorNoticiasGUI
                                 : "";
 
                             writer.WriteLine(
-                                $"{r.TipoModelo}," +
-                                $"{r.Metodo}," +
+                                $"{CsvEscape(r.TipoModelo)}," +
+                                $"{CsvEscape(r.Metodo)}," +
                                 $"{r.MicroAccuracy:F4}," +
                                 $"{r.MacroAccuracy:F4}," +
                                 $"{r.LogLoss:F4}," +
                                 $"{r.F1Score:F4}," +
                                 $"{r.Fecha:yyyy-MM-dd HH:mm:ss}," +
-                                $"{topkStr}"
+                                $"{CsvEscape(topkStr)}"
                             );
                         }
                     }
@@ -1688,9 +1724,8 @@ namespace ClasificadorNoticiasGUI
 
                         foreach (var r in resultadosModelos.Where(x => x.ConfusyMatrix != null))
                         {
-                            // Convertir cada fila de la matriz en "valor1;valor2;..." y luego unir filas con "|"
                             string matrixStr = string.Join("|", r.ConfusyMatrix.Counts.Select(fila => string.Join(";", fila)));
-                            writerM.WriteLine($"{r.Metodo},{r.TipoModelo},{matrixStr}");
+                            writerM.WriteLine($"{CsvEscape(r.Metodo)},{CsvEscape(r.TipoModelo)},{CsvEscape(matrixStr)}");
                         }
                     }
 
@@ -1706,8 +1741,228 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
+        private void ExportarResultadosCSV()
+        {
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+            {
+                MessageBox.Show("No hay resultados para exportar.", "Exportar CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
 
-        private void oldExportarResultadosCSV()
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "Archivo CSV (*.csv)|*.csv";
+                sfd.FileName = $"Resultados_Modelos_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    // --- CSV principal con métricas simples ---
+                    using (var writer = new StreamWriter(sfd.FileName, false, Encoding.UTF8))
+                    {
+                        writer.WriteLine("TipoModelo,Método,MicroAccuracy,MacroAccuracy,LogLoss,F1Score,Fecha,Top1,Top5");
+
+                        foreach (var r in resultadosModelos)
+                        {
+                            string top1Str = "";
+                            string top5Str = "";
+
+                            // Solo Categorías tienen TopKAccuracy
+                            if (r.TipoModelo == "Categorías" && r.TopKAccuracy != null && r.TopKAccuracy.Count >= 2)
+                            {
+                                top1Str = r.TopKAccuracy[0].ToString("F4");
+                                top5Str = r.TopKAccuracy[1].ToString("F4");
+                            }
+
+                            writer.WriteLine(
+                                $"{CsvEscape(r.TipoModelo)}," +
+                                $"{CsvEscape(r.Metodo)}," +
+                                $"{r.MicroAccuracy:F4}," +
+                                $"{r.MacroAccuracy:F4}," +
+                                $"{r.LogLoss:F4}," +
+                                $"{r.F1Score:F4}," +
+                                $"{r.Fecha:yyyy-MM-dd HH:mm:ss}," +
+                                $"{top1Str}," +
+                                $"{top5Str}"
+                            );
+                        }
+                    }
+
+                    // --- CSV para matrices de confusión ---
+                    string matrizPath = Path.Combine(Path.GetDirectoryName(sfd.FileName), "matrices_confusion.csv");
+                    using (var writerM = new StreamWriter(matrizPath, false, Encoding.UTF8))
+                    {
+                        writerM.WriteLine("Modelo,TipoModelo,MatrizConfusion");
+
+                        foreach (var r in resultadosModelos.Where(x => x.ConfusyMatrix != null))
+                        {
+                            // Convertir cada fila de la matriz en "valor1;valor2;..." y luego unir filas con "|"
+                            string matrixStr = string.Join("|", r.ConfusyMatrix.Counts.Select(fila => string.Join(";", fila)));
+                            writerM.WriteLine($"{CsvEscape(r.Metodo)},{CsvEscape(r.TipoModelo)},{CsvEscape(matrixStr)}");
+                        }
+                    }
+
+                    MessageBox.Show(
+                        $"✅ Resultados exportados correctamente:\n{sfd.FileName}\n{matrizPath}",
+                        "Exportación completada", MessageBoxButtons.OK, MessageBoxIcon.Information
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al exportar resultados:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // Función auxiliar para escapar comillas y separadores en CSV
+
+
+
+        private void ExportarResultadosCSV_Bonito()
+        {
+            if (resultadosModelos == null || resultadosModelos.Count == 0)
+            {
+                MessageBox.Show("No hay resultados para exportar.", "Exportar CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "Archivo CSV (*.csv)|*.csv";
+                sfd.FileName = $"Resultados_Modelos_{DateTime.Now:yyyyMMdd_HHmm}_Bonito.csv";
+
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    // --- CSV principal ---
+                    using (var writer = new StreamWriter(sfd.FileName, false, Encoding.UTF8))
+                    {
+                        // Determinar máximo número de TopK para columnas
+                        int maxTopK = resultadosModelos.Max(r => r.TopKAccuracy?.Count ?? 0);
+                        var topKHeaders = Enumerable.Range(1, maxTopK).Select(i => $"TopK{i}");
+                        writer.WriteLine("TipoModelo,Método,MicroAccuracy,MacroAccuracy,LogLoss,F1Score,Fecha," + string.Join(",", topKHeaders));
+
+                        foreach (var r in resultadosModelos)
+                        {
+                            var topKValues = r.TopKAccuracy != null
+                                ? r.TopKAccuracy.Select(v => v.ToString("F4", CultureInfo.InvariantCulture)).ToList()
+                                : new List<string>();
+
+                            // rellenar columnas vacías si faltan
+                            while (topKValues.Count < maxTopK)
+                                topKValues.Add("");
+
+                            writer.WriteLine(
+                                $"{CsvEscape(r.TipoModelo)}," +
+                                $"{CsvEscape(r.Metodo)}," +
+                                $"{r.MicroAccuracy.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.MacroAccuracy.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.LogLoss.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.F1Score.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.Fecha:yyyy-MM-dd HH:mm:ss}," +
+                                string.Join(",", topKValues.Select(v => CsvEscape(v)))
+                            );
+                        }
+                    }
+
+                    // --- CSV matriz de confusión tabular ---
+                    string matrizPath = Path.Combine(Path.GetDirectoryName(sfd.FileName), "matrices_confusion_tabular.csv");
+                    using (var writerM = new StreamWriter(matrizPath, false, Encoding.UTF8))
+                    {
+                        foreach (var r in resultadosModelos.Where(x => x.ConfusyMatrix != null))
+                        {
+                            writerM.WriteLine($"Modelo:,{CsvEscape(r.Metodo)},Tipo:,{CsvEscape(r.TipoModelo)}");
+                            writerM.WriteLine(string.Join(",", Enumerable.Range(0, r.ConfusyMatrix.NumberOfClasses).Select(i => $"Clase{i}")));
+
+                            foreach (var fila in r.ConfusyMatrix.Counts)
+                            {
+                                writerM.WriteLine(string.Join(",", fila.Select(v => v.ToString(CultureInfo.InvariantCulture))));
+                            }
+
+                            writerM.WriteLine(); // línea vacía entre matrices
+                        }
+                    }
+
+                    MessageBox.Show(
+                        $"✅ Resultados exportados correctamente:\n{sfd.FileName}\n{matrizPath}",
+                        "Exportación completada", MessageBoxButtons.OK, MessageBoxIcon.Information
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al exportar resultados:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        // Escapar texto con comillas si contiene caracteres especiales
+        private string CsvEscape(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            if (s.Contains("\""))
+                s = s.Replace("\"", "\"\""); // escapar comillas
+            if (s.Contains(",") || s.Contains(";") || s.Contains("\n"))
+                s = $"\"{s}\""; // encerrar en comillas
+            return s;
+        }
+
+
+        private void ExportarResultadosCSV_ExcelFriendly()
+            {
+                if (resultadosModelos == null || resultadosModelos.Count == 0) return;
+
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "CSV (*.csv)|*.csv";
+                    sfd.FileName = $"Resultados_Modelos_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+                    if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                    int maxTopK = resultadosModelos.Max(r => r.TopKAccuracy?.Count ?? 0);
+                    var topKHeaders = Enumerable.Range(1, maxTopK).Select(i => $"TopK{i}");
+
+                    using (var writer = new StreamWriter(sfd.FileName, false, Encoding.UTF8))
+                    {
+                        // Cabecera
+                        writer.WriteLine("TipoModelo,Método,MicroAccuracy,MacroAccuracy,LogLoss,F1Score,Fecha," +
+                                         string.Join(",", topKHeaders));
+
+                        foreach (var r in resultadosModelos)
+                        {
+                            var topKValues = r.TopKAccuracy != null
+                                ? r.TopKAccuracy.Select(v => v.ToString("F4", CultureInfo.InvariantCulture)).ToList()
+                                : new List<string>();
+
+                            while (topKValues.Count < maxTopK)
+                                topKValues.Add("");
+
+                            writer.WriteLine(
+                                $"{CsvEscape(r.TipoModelo)}," +
+                                $"{CsvEscape(r.Metodo)}," +
+                                $"{r.MicroAccuracy.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.MacroAccuracy.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.LogLoss.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.F1Score.ToString("F4", CultureInfo.InvariantCulture)}," +
+                                $"{r.Fecha:yyyy-MM-dd HH:mm:ss}," +
+                                string.Join(",", topKValues.Select(v => CsvEscape(v)))
+                            );
+                        }
+                    }
+                }
+            }
+
+    private string CsvEscape2(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        if (s.Contains("\"")) s = s.Replace("\"", "\"\"");
+        if (s.Contains(",") || s.Contains(";") || s.Contains("\n"))
+            s = $"\"{s}\"";
+        return s;
+    }
+
+
+    private void oldExportarResultadosCSV()
         {
             if (resultadosModelos == null || resultadosModelos.Count == 0)
             {
