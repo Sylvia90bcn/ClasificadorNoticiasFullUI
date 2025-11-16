@@ -510,12 +510,12 @@ namespace ClasificadorNoticiasGUI
             dgv.Columns[3].Name = "MicroAccuracy";
             dgv.Columns[4].Name = "MacroAccuracy";
             dgv.Columns[5].Name = "LogLoss";
-          //  dgv.Columns[6].Name = "F1Score ";
-            ////dgv.Columns[6].Name = "Precision";
-            //dgv.Columns[7].Name = "Recall";
-           // dgv.Columns[8].Name = "AUC";
-           // dgv.Columns[9].Name = "TopKAccuracy";
-           // dgv.Columns[10].Name = "ConfusyMatrix ";
+            dgv.Columns[6].Name = "F1Score ";
+            dgv.Columns[7].Name = "Precision";
+            dgv.Columns[8].Name = "Recall";
+            dgv.Columns[9].Name = "AUC";
+            dgv.Columns[10].Name = "TopKAccuracy";
+            dgv.Columns[11].Name = "ConfusyMatrix ";
 
             // Llenar DataGridView con los datos de resultadosModelos
             foreach (var r in resultadosModelos.OrderByDescending(x => x.Fecha))
