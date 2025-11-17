@@ -14,6 +14,8 @@ using OxyPlot.Series;
 using OxyPlot.Wpf;
 using System.Globalization;
 using System.Linq;
+using ClosedXML.Excel;
+
 
 namespace ClasificadorNoticiasGUI
 {
@@ -1794,6 +1796,142 @@ namespace ClasificadorNoticiasGUI
             return containsSpecial ? $"\"{s}\"" : s;
         }
 
+        // --------------------------------------------
+        // MÉTODO DE EXPORTACIÓN A EXCEL FINAL
+        // --------------------------------------------
+        private void ExportarResultadosExcel()
+            {
+                if (resultadosModelos == null || resultadosModelos.Count == 0)
+                {
+                    MessageBox.Show("No hay resultados para exportar.", "Exportar Excel",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "Excel Files|*.xlsx";
+                    sfd.FileName = $"Resultados_Modelos_{DateTime.Now:yyyyMMdd_HHmm}.xlsx";
+
+                    if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                    try
+                    {
+                        using var wb = new XLWorkbook();
+
+                        // ===============================
+                        // HOJA 1: MÉTRICAS
+                        // ===============================
+                        var wsMetrics = wb.Worksheets.Add("Métricas");
+                        string[] headers = { "TipoModelo", "Método", "MicroAccuracy", "MacroAccuracy", "LogLoss", "F1Score", "Fecha", "Top1", "Top5" };
+                        for (int c = 0; c < headers.Length; c++)
+                            wsMetrics.Cell(1, c + 1).Value = headers[c];
+
+                        for (int i = 0; i < resultadosModelos.Count; i++)
+                        {
+                            var r = resultadosModelos[i];
+                            string top1Str = "", top5Str = "";
+                            if (r.TipoModelo == "Categorías" && r.TopKAccuracy != null && r.TopKAccuracy.Count >= 2)
+                            {
+                                top1Str = r.TopKAccuracy[0].ToString("F4", CultureInfo.InvariantCulture);
+                                top5Str = r.TopKAccuracy[1].ToString("F4", CultureInfo.InvariantCulture);
+                            }
+
+                            wsMetrics.Cell(i + 2, 1).Value = r.TipoModelo;
+                            wsMetrics.Cell(i + 2, 2).Value = r.Metodo;
+                            wsMetrics.Cell(i + 2, 3).Value = r.MicroAccuracy;
+                            wsMetrics.Cell(i + 2, 4).Value = r.MacroAccuracy;
+                            wsMetrics.Cell(i + 2, 5).Value = r.LogLoss;
+                            wsMetrics.Cell(i + 2, 6).Value = r.F1Score;
+                            wsMetrics.Cell(i + 2, 7).Value = r.Fecha;
+                            wsMetrics.Cell(i + 2, 8).Value = top1Str;
+                            wsMetrics.Cell(i + 2, 9).Value = top5Str;
+                        }
+
+                        wsMetrics.Columns().AdjustToContents();
+                        wsMetrics.SheetView.FreezeRows(1);
+                        wsMetrics.RangeUsed().SetAutoFilter();
+
+                        // ===============================
+                        // HOJA 2: MATRICES DE CONFUSIÓN CON SEPARACIÓN Y HEATMAP
+                        // ===============================
+                        var wsMatrix = wb.Worksheets.Add("MatricesConfusion");
+                        int currentRow = 1;
+
+                        foreach (var r in resultadosModelos)
+                        {
+                            if (r.ConfusyMatrix?.Counts == null) continue;
+
+                            int numCols = r.ConfusyMatrix.Counts[0].Count;
+
+                            // Título de la matriz
+                            wsMatrix.Cell(currentRow, 1).Value = $"Modelo: {r.Metodo} | Tipo: {r.TipoModelo}";
+                            wsMatrix.Cell(currentRow, 1).Style.Font.Bold = true;
+                            wsMatrix.Range(currentRow, 1, currentRow, numCols + 2).Merge();
+                            wsMatrix.Range(currentRow, 1, currentRow, numCols + 2).Style.Fill.BackgroundColor = XLColor.LightBlue;
+                            currentRow++;
+
+                            // Encabezado de la matriz (F0, F1, ...)
+                            wsMatrix.Cell(currentRow, 1).Value = "Modelo";
+                            wsMatrix.Cell(currentRow, 2).Value = "TipoModelo";
+                            for (int c = 0; c < numCols; c++)
+                                wsMatrix.Cell(currentRow, c + 3).Value = $"F{c}";
+                            wsMatrix.Range(currentRow, 1, currentRow, numCols + 2).Style.Font.Bold = true;
+                            currentRow++;
+
+                            // Escribir la matriz
+                            for (int filaIndex = 0; filaIndex < r.ConfusyMatrix.Counts.Count; filaIndex++)
+                            {
+                                var fila = r.ConfusyMatrix.Counts[filaIndex];
+                                wsMatrix.Cell(currentRow, 1).Value = r.Metodo;
+                                wsMatrix.Cell(currentRow, 2).Value = r.TipoModelo;
+
+                                for (int c = 0; c < fila.Count; c++)
+                                {
+                                    var cell = wsMatrix.Cell(currentRow, c + 3);
+                                    cell.Value = fila[c];
+                                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    cell.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                                    // Resaltar diagonal principal en verde claro
+                                    if (filaIndex == c)
+                                        cell.Style.Fill.BackgroundColor = XLColor.LightGreen;
+                                }
+                                currentRow++;
+                            }
+
+                            // Fila en blanco para separar matrices
+                            currentRow++;
+                        }
+
+                        wsMatrix.Columns().AdjustToContents();
+                        wsMatrix.SheetView.FreezeRows(1);
+
+                        // Heatmap general para todos los valores (excepto la diagonal verde)
+                        var rangeValues = wsMatrix.RangeUsed();
+                        foreach (var row in rangeValues.RowsUsed())
+                        {
+                            foreach (var cell in row.CellsUsed(c => c.Address.ColumnNumber >= 3))
+                            {
+                                if (cell.Style.Fill.BackgroundColor != XLColor.LightGreen) // no sobreescribir diagonal
+                                    cell.AddConditionalFormat().ColorScale().LowestValue(XLColor.White).HighestValue(XLColor.DarkRed);
+                            }
+                        }
+
+                        // Guardar archivo
+                        wb.SaveAs(sfd.FileName);
+
+                        MessageBox.Show($"✅ Excel exportado correctamente con matrices separadas, heatmap y diagonal resaltada:\n{sfd.FileName}",
+                            "Exportación completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error al exportar Excel:\n{ex.Message}", "Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+
 
 
 
@@ -1855,7 +1993,7 @@ namespace ClasificadorNoticiasGUI
 
         private void btnExportar_Click(object sender, EventArgs e)
         {
-            ExportarResultadosCSV();
+            ExportarResultadosExcel();
         }
 
         private void dgvComparador_CellContentClick(object sender, DataGridViewCellEventArgs e)
