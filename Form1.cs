@@ -1667,7 +1667,6 @@ namespace ClasificadorNoticiasGUI
 
 
 
-
         // --------------------------------------------
         // MÉTODO PRINCIPAL DE EXPORTACIÓN A CSV
         // --------------------------------------------
@@ -1724,32 +1723,38 @@ namespace ClasificadorNoticiasGUI
                         }
 
                         // ==========================================
-                        //     CSV SECUNDARIO (MATRICES CONFUSIÓN)
+                        //     CSV MATRICES DE CONFUSIÓN EXPANDIDA
                         // ==========================================
 
                         string dir = Path.GetDirectoryName(sfd.FileName) ??
                                      Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-                        string matrizPath = Path.Combine(dir, "matrices_confusion.csv");
+                        string matrizPath = Path.Combine(dir, "matrices_confusion_expandida.csv");
 
                         using (var writerM = new StreamWriter(matrizPath, false, Encoding.UTF8))
                         {
-                            writerM.WriteLine("Modelo;TipoModelo;MatrizConfusion");
+                            // Encabezado dinámico según columnas de la primera matriz
+                            int maxCols = resultadosModelos
+                                .Where(r => r.ConfusyMatrix?.Counts != null && r.ConfusyMatrix.Counts.Count > 0)
+                                .Select(r => r.ConfusyMatrix.Counts[0].Count)
+                                .DefaultIfEmpty(0)
+                                .Max();
 
+                            var header = "Modelo;TipoModelo";
+                            for (int c = 0; c < maxCols; c++)
+                                header += $";F{c}";
+                            writerM.WriteLine(header);
+
+                            // Escribir filas de cada matriz
                             foreach (var r in resultadosModelos)
                             {
                                 if (r.ConfusyMatrix?.Counts == null) continue;
 
-                                // Fila: v1;v2;v3 | v4;v5;v6 ...
-                                string matrixStr = string.Join("|",
-                                    r.ConfusyMatrix.Counts.Select(fila =>
-                                        string.Join(";", fila)));
-
-                                writerM.WriteLine(
-                                    $"{CsvEscape(r.Metodo)};" +
-                                    $"{CsvEscape(r.TipoModelo)};" +
-                                    $"{CsvEscape(matrixStr)}"
-                                );
+                                foreach (var fila in r.ConfusyMatrix.Counts)
+                                {
+                                    var rowValues = fila.Select(v => v.ToString());
+                                    writerM.WriteLine($"{CsvEscape(r.Metodo)};{CsvEscape(r.TipoModelo)};{string.Join(";", rowValues)}");
+                                }
                             }
                         }
 
@@ -1786,9 +1791,9 @@ namespace ClasificadorNoticiasGUI
             // Escapar comillas
             s = s.Replace("\"", "\"\"");
 
-
             return containsSpecial ? $"\"{s}\"" : s;
         }
+
 
 
 
