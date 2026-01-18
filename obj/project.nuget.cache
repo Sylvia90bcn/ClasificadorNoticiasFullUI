@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mQpYWLf0u5s=",
+  "dgSpecHash": "fuPQBFCPsoo=",
   "success": true,
-  "projectFilePath": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full\\ClasificadorNoticiasGUI.csproj",
+  "projectFilePath": "C:\\Users\\sylvi\\Desktop\\PAPERLARAJAVI\\ClasificadorNoticiasGUI_full_subcategoria_UIfix2\\ClasificadorNoticiasGUI_full\\ClasificadorNoticiasGUI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\sylvi\\.nuget\\packages\\closedxml\\0.105.0\\closedxml.0.105.0.nupkg.sha512",
     "C:\\Users\\sylvi\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",

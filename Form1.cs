@@ -48,12 +48,14 @@ namespace ClasificadorNoticiasGUI
     {
         public readonly string ModeloCategoriasPath = System.IO.Path.Combine("Modelo", "modelo_categorias.zip");
         public readonly string ModeloSentimientosPath = System.IO.Path.Combine("Modelo", "modelo_sentimientos.zip");
+        public readonly string ModeloSubcategoriasPath = System.IO.Path.Combine("Modelo", "modelo_subcategorias.zip");
         public readonly string DatosCategoriasPath = System.IO.Path.Combine("Datos", "datos.csv");
         public readonly string DatosSentimientosPath = System.IO.Path.Combine("Datos", "sentimientos.csv");
+        public readonly string DatosSubcategoriasPath = System.IO.Path.Combine("Datos", "subcategorias.csv");
         public readonly string DatosCompletosPath = System.IO.Path.Combine("Datos", "dataset_completo.csv");
 
         MLContext ml = new MLContext(seed: 1);
-        ITransformer modeloCat = null, modeloSent = null;
+        ITransformer modeloCat = null, modeloSent = null, modeloSub = null;
         private Label lblProgreso;
         private string metodoSeleccionadoCategorias = "SdcaMaximumEntropy (por defecto)";
         private string metodoSeleccionadoSentimientos = "SdcaLogisticRegression (por defecto)";
@@ -77,6 +79,30 @@ namespace ClasificadorNoticiasGUI
                 Location = new System.Drawing.Point(20, 420) // Ajusta la posición según tu diseño
             };
             Controls.Add(lblProgreso);
+        }
+
+        // ----------------- Excel header normalization -----------------
+        /// <summary>
+        /// Normalizes a column header for robust matching (accents, spaces, punctuation, casing).
+        /// Examples: "Categoría" -> "categoria", "SubCategoria" -> "subcategoria".
+        /// </summary>
+        static string NormalizeHeader(string? header)
+        {
+            if (string.IsNullOrWhiteSpace(header)) return string.Empty;
+            var s = header.Trim().ToLowerInvariant();
+            // Remove diacritics
+            s = s.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder(s.Length);
+            foreach (var ch in s)
+            {
+                var uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                    sb.Append(ch);
+            }
+            s = sb.ToString().Normalize(NormalizationForm.FormC);
+            // Remove common separators
+            s = s.Replace(" ", "").Replace("_", "").Replace("-", "").Replace("/", "");
+            return s;
         }
 
         private void ReemplazarColumnasPorBotones()
@@ -139,6 +165,11 @@ namespace ClasificadorNoticiasGUI
                 MessageBox.Show($"Falta el modelo de sentimientos: {ModeloSentimientosPath}\nPuedes crear o copiar el ZIP en la carpeta Modelo.", "Modelo faltante", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             else
                 modeloSent = ml.Model.Load(ModeloSentimientosPath, out var _);
+
+            if (!File.Exists(ModeloSubcategoriasPath))
+                MessageBox.Show($"Falta el modelo de subcategorías: {ModeloSubcategoriasPath}\nPuedes crear o copiar el ZIP en la carpeta Modelo.", "Modelo faltante", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else
+                modeloSub = ml.Model.Load(ModeloSubcategoriasPath, out var _);
         }
         /// <summary>
         /// Classify the content of txtTitular using the loaded models.
@@ -163,28 +194,37 @@ namespace ClasificadorNoticiasGUI
             // Crear motores de predicción
             var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
             var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+            var engineSub = (modeloSub != null) ? ml.Model.CreatePredictionEngine<SubcategoriaArticulo, SubcategoriaPrediccion>(modeloSub) : null;
 
             // Ejecutar predicciones
             var pred = engineCat.Predict(new Articulo { Texto = texto });
             var predSent = engineSent.Predict(new Sentimiento { Texto = texto });
+            var predSub = engineSub?.Predict(new SubcategoriaArticulo { Texto = texto });
 
             // Mostrar resultados en los TextBox
             txtCategoria.Text = pred.CategoriaPredicha;
             txtSentimiento.Text = predSent.SentimientoPredicho;
+            if (predSub != null)
+                txtSubcategoria.Text = predSub.SubcategoriaPredicha;
 
             // Mostrar métricas de fiabilidad
             // La fiabilidad la calculamos como el score más alto entre todas las categorías posibles
             // Calcular la fiabilidad como el score máximo (cuán seguro está el modelo)
             var maxScoreCat = (pred.Score != null && pred.Score.Length > 0) ? pred.Score.Max() : 0f;
             var maxScoreSent = (predSent.Score != null && predSent.Score.Length > 0) ? predSent.Score.Max() : 0f;
+            var maxScoreSub = (predSub?.Score != null && predSub.Score.Length > 0) ? predSub.Score.Max() : 0f;
 
 
             txtFiabilidadCategoria.Text = $"{maxScoreCat:P1}";
             txtFiabilidadSentimiento.Text = $"{maxScoreSent:P1}";
+            if (predSub != null)
+                txtFiabilidadSubcategoria.Text = $"{maxScoreSub:P1}";
 
             //// Si la fiabilidad es baja, mostrar el TextBox en rojo
             txtFiabilidadCategoria.ForeColor = maxScoreCat < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
             txtFiabilidadSentimiento.ForeColor = maxScoreSent < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
+            if (predSub != null)
+                txtFiabilidadSubcategoria.ForeColor = maxScoreSub < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -192,9 +232,10 @@ namespace ClasificadorNoticiasGUI
             var texto = txtTitular.Text?.Trim();
             if (string.IsNullOrWhiteSpace(texto)) return;
             var categoria = txtCategoria.Text?.Trim() ?? "";
+            var subcategoria = txtSubcategoria.Text?.Trim() ?? "";
             var sentimiento = txtSentimiento.Text?.Trim() ?? "";
 
-            var ya = GuardarAlDataset(texto, categoria, sentimiento);
+            var ya = GuardarAlDataset(texto, categoria, subcategoria, sentimiento);
             if (ya) MessageBox.Show("Este titular ya existe en el dataset.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
             else MessageBox.Show("Titular guardado en dataset.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -230,7 +271,7 @@ namespace ClasificadorNoticiasGUI
                 {
                     if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Categoria))
                     {
-                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
+                        GuardarAlDataset(extra.Titular, extra.Categoria, "", extra.Sentimiento);
                     }
                 }
 
@@ -244,6 +285,33 @@ namespace ClasificadorNoticiasGUI
             MessageBox.Show("El modelo de categorías ha sido reentrenado exitosamente y los nuevos titulares han sido añadidos al dataset.", "Reentrenamiento Completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
             CargarDatasetEnGrilla(); // Actualizar la grilla con los nuevos datos
             CargarModelosSiExisten(); // Recargar el modelo después del reentrenamiento
+        }
+
+        private void btnReentrenarSubcategorias_Click(object sender, EventArgs e)
+        {
+            // Reutilizamos resultados del Excel si existen como datos extra
+            List<ResultadoExcel> extrasLista = new();
+            if (dgvExcelResultados.DataSource is DataTable dtSrc)
+            {
+                foreach (DataRow r in dtSrc.Rows)
+                {
+                    var tit = r.Table.Columns.Contains("Titular") ? (r["Titular"]?.ToString() ?? "") : "";
+                    var sub = r.Table.Columns.Contains("Subcategoria") ? (r["Subcategoria"]?.ToString() ?? "") : "";
+                    extrasLista.Add(new ResultadoExcel { Titular = tit, Subcategoria = sub });
+                }
+            }
+
+            IEnumerable<SubcategoriaArticulo> extrasSub = null;
+            if (extrasLista.Any())
+            {
+                extrasSub = extrasLista
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Titular))
+                    .Select(x => new SubcategoriaArticulo { Texto = x.Titular, Subcategoria = x.Subcategoria ?? "" });
+            }
+
+            var modelo = EntrenarModeloSubcategorias(this, ml, extrasSub, guardar: true);
+            modeloSub = modelo;
+            MessageBox.Show("Modelo de subcategorías reentrenado y guardado.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnReentrenarSentimientos_Click(object sender, EventArgs e)
@@ -274,7 +342,7 @@ namespace ClasificadorNoticiasGUI
                 {
                     if (!string.IsNullOrWhiteSpace(extra.Titular) && !string.IsNullOrWhiteSpace(extra.Sentimiento))
                     {
-                        GuardarAlDataset(extra.Titular, extra.Categoria, extra.Sentimiento);
+                        GuardarAlDataset(extra.Titular, extra.Categoria, "", extra.Sentimiento);
                     }
                 }
 
@@ -363,6 +431,10 @@ namespace ClasificadorNoticiasGUI
 
             var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
 
+            // Reflejar métricas en la pestaña "Dataset actual"
+            if (form.txtMicroAccuracySub != null) form.txtMicroAccuracySub.Text = metrics.MicroAccuracy.ToString("P2");
+            if (form.txtLogLossSub != null) form.txtLogLossSub.Text = metrics.LogLoss.ToString("F4");
+
             // Mostrar métricas
             MessageBox.Show($"Métricas categorías ({metodo}):\nMicroAccuracy: {metrics.MicroAccuracy:P2}\nLogLoss: {metrics.LogLoss:F4}",
                 "Métricas - Categorías", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -416,6 +488,105 @@ namespace ClasificadorNoticiasGUI
                 Directory.CreateDirectory("Modelo");
                 ml.Model.Save(modeloFinal, datos.Schema, ModeloCategoriasPath);
                 Console.WriteLine($"✅ Modelo de categorías guardado en {ModeloCategoriasPath}\n");
+            }
+
+            return modeloFinal;
+        }
+
+        public ITransformer EntrenarModeloSubcategorias(Form1 form, MLContext ml, IEnumerable<SubcategoriaArticulo> extras, bool guardar = false)
+        {
+            Console.WriteLine("Entrenando modelo de subcategorías...");
+
+            // Reutilizamos el mismo selector de métodos que categorías
+            string metodo = form.cmbModeloCategorias.SelectedItem?.ToString() ?? "SdcaMaximumEntropy (por defecto)";
+
+            // Leer dataset base
+            var datosList = new List<SubcategoriaArticulo>();
+            if (File.Exists(DatosSubcategoriasPath))
+            {
+                var lines = File.ReadAllLines(DatosSubcategoriasPath).Skip(1);
+                foreach (var l in lines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var texto = parts[0].Trim();
+                        var sub = parts[1].Trim();
+                        if (!string.IsNullOrWhiteSpace(texto))
+                            datosList.Add(new SubcategoriaArticulo { Texto = texto, Subcategoria = sub });
+                    }
+                }
+            }
+
+            // Añadir extras sin duplicar
+            if (extras != null)
+            {
+                foreach (var e in extras)
+                {
+                    if (string.IsNullOrWhiteSpace(e.Texto)) continue;
+                    if (!datosList.Any(x => x.Texto.Equals(e.Texto, StringComparison.OrdinalIgnoreCase)))
+                        datosList.Add(new SubcategoriaArticulo { Texto = e.Texto.Trim(), Subcategoria = e.Subcategoria?.Trim() ?? "" });
+                }
+            }
+
+            if (datosList.Count == 0)
+                throw new Exception("No hay datos para entrenar subcategorías.");
+
+            var datos = ml.Data.LoadFromEnumerable(datosList);
+
+            // Seleccionar entrenador dinámicamente (idéntico a categorías)
+            IEstimator<ITransformer> entrenador;
+            if (metodo.Contains("LbfgsMaximumEntropy"))
+                entrenador = ml.MulticlassClassification.Trainers.LbfgsMaximumEntropy("Label", "Features");
+            else if (metodo.Contains("AveragedPerceptron"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.AveragedPerceptron());
+            else if (metodo.Contains("FastTree"))
+                entrenador = ml.MulticlassClassification.Trainers.OneVersusAll(
+                    ml.BinaryClassification.Trainers.FastTree());
+            else if (metodo.Contains("LightGbm"))
+                entrenador = ml.MulticlassClassification.Trainers.LightGbm("Label", "Features");
+            else
+                entrenador = ml.MulticlassClassification.Trainers.SdcaMaximumEntropy("Label", "Features");
+
+            var trainPipeline = ml.Transforms.Conversion.MapValueToKey("Label", nameof(SubcategoriaArticulo.Subcategoria))
+                .Append(ml.Transforms.Text.FeaturizeText("Features", nameof(SubcategoriaArticulo.Texto)))
+                .Append(entrenador);
+
+            var finalPipeline = trainPipeline.Append(ml.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+
+            var split = ml.Data.TrainTestSplit(datos, testFraction: 0.2, seed: 1);
+            var modelForEval = trainPipeline.Fit(split.TrainSet);
+            var preds = modelForEval.Transform(split.TestSet);
+            var metrics = ml.MulticlassClassification.Evaluate(preds, labelColumnName: "Label", predictedLabelColumnName: "PredictedLabel");
+
+            MessageBox.Show(
+                $"Métricas subcategorías ({metodo}):\n" +
+                $"MicroAccuracy: {metrics.MicroAccuracy:P2}\n" +
+                $"LogLoss: {metrics.LogLoss:F4}",
+                "Métricas - Subcategorías",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
+            resultadosModelos.Add(new ResultadoModelo
+            {
+                TipoModelo = "Subcategorías",
+                Metodo = metodo,
+                MicroAccuracy = metrics.MicroAccuracy,
+                MacroAccuracy = metrics.MacroAccuracy,
+                LogLoss = metrics.LogLoss,
+                ConfusyMatrix = metrics.ConfusionMatrix,
+                Fecha = DateTime.Now
+            });
+            ActualizarTablaComparador(form);
+            MostrarGraficoMetricasSeparadas();
+
+            var modeloFinal = finalPipeline.Fit(datos);
+            if (guardar)
+            {
+                Directory.CreateDirectory("Modelo");
+                ml.Model.Save(modeloFinal, datos.Schema, ModeloSubcategoriasPath);
+                Console.WriteLine($"✅ Modelo de subcategorías guardado en {ModeloSubcategoriasPath}\n");
             }
 
             return modeloFinal;
@@ -663,6 +834,37 @@ namespace ClasificadorNoticiasGUI
 
             plotViewMetCategorias.Model = modeloCat;
 
+            // ---------- MODELOS DE SUBCATEGORÍAS ----------
+            var modelosSubcategorias = resultadosModelos
+                .Where(x => x.TipoModelo == "Subcategorías")
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+
+            var modeloSub = new PlotModel { Title = "Modelos de Subcategorización" };
+            var ejeYSub = new CategoryAxis { Position = AxisPosition.Left, Title = "Modelo" };
+            var ejeXSub = new LinearAxis { Position = AxisPosition.Bottom, Title = "Valor Métrico", Minimum = 0, Maximum = 1 };
+
+            var serieMicroSub = new BarSeries { Title = "MicroAccuracy", FillColor = OxyColors.CadetBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieMacroSub = new BarSeries { Title = "MacroAccuracy", FillColor = OxyColors.SteelBlue, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:P2}", BarWidth = 0.18 };
+            var serieLogLossSub = new BarSeries { Title = "1 - LogLoss", FillColor = OxyColors.IndianRed, LabelPlacement = LabelPlacement.Inside, LabelFormatString = "{0:F3}", BarWidth = 0.18 };
+
+            for (int i = 0; i < modelosSubcategorias.Count; i++)
+            {
+                var r = modelosSubcategorias[i];
+                ejeYSub.Labels.Add(r.Metodo ?? $"Modelo {i + 1}");
+                serieMicroSub.Items.Add(new BarItem(r.MicroAccuracy));
+                serieMacroSub.Items.Add(new BarItem(r.MacroAccuracy));
+                serieLogLossSub.Items.Add(new BarItem(1 - r.LogLoss));
+            }
+
+            modeloSub.Series.Add(serieMicroSub);
+            modeloSub.Series.Add(serieMacroSub);
+            modeloSub.Series.Add(serieLogLossSub);
+            modeloSub.Axes.Add(ejeYSub);
+            modeloSub.Axes.Add(ejeXSub);
+
+            plotViewMetSubcategorias.Model = modeloSub;
+
             // ---------- MODELOS DE SENTIMIENTOS ----------
             var modelosSentimientos = resultadosModelos
                 .Where(x => x.TipoModelo == "Sentimientos")
@@ -825,12 +1027,12 @@ namespace ClasificadorNoticiasGUI
                 return;
             }
 
-            // Buscar columna de titulares
+            // Buscar columna de titulares (robusto: acentos/espacios)
             string titularCol = null;
             foreach (DataColumn c in original.Columns)
             {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+                var name = NormalizeHeader(c.ColumnName);
+                if (new[] { "titular", "titulo", "title", "headline" }.Contains(name))
                 {
                     titularCol = c.ColumnName;
                     break;
@@ -840,7 +1042,7 @@ namespace ClasificadorNoticiasGUI
             {
                 foreach (DataColumn c in original.Columns)
                 {
-                    var name = c.ColumnName.Trim().ToLowerInvariant();
+                    var name = NormalizeHeader(c.ColumnName);
                     if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
                     {
                         titularCol = c.ColumnName;
@@ -860,21 +1062,49 @@ namespace ClasificadorNoticiasGUI
             // Crear motores
             var engineCat = ml.Model.CreatePredictionEngine<Articulo, Prediccion>(modeloCat);
             var engineSent = ml.Model.CreatePredictionEngine<Sentimiento, SentimientoPrediccion>(modeloSent);
+            var engineSub = (modeloSub != null)
+                ? ml.Model.CreatePredictionEngine<SubcategoriaArticulo, SubcategoriaPrediccion>(modeloSub)
+                : null;
+
+            // Detectar columnas "conocidas" para NO duplicarlas como extras (p.ej. Categoría/Categoria)
+            string autorCol = null, categoriaCol = null, subcategoriaCol = null, sentimientoCol = null;
+            foreach (DataColumn c in original.Columns)
+            {
+                var name = NormalizeHeader(c.ColumnName);
+                if (name == "autor" || name == "source" || name == "fuente") autorCol = c.ColumnName;
+                else if (name == "categoria" || name == "category") categoriaCol = c.ColumnName;
+                else if (name == "subcategoria" || name == "subcategory") subcategoriaCol = c.ColumnName;
+                else if (name == "sentimiento" || name == "sentiment" || name == "label") sentimientoCol = c.ColumnName;
+            }
 
             // Preparar DataTable de resultados
             var resultadosDt = new DataTable();
             resultadosDt.Columns.Add("Titular");
             resultadosDt.Columns.Add("Categoria");
+            resultadosDt.Columns.Add("Subcategoria");
             resultadosDt.Columns.Add("Sentimiento");
+
+            // Columna informativa (si viene en el Excel)
+            if (autorCol != null && !resultadosDt.Columns.Contains("Autor"))
+                resultadosDt.Columns.Add("Autor");
 
             // 🔹 NUEVO: columnas de fiabilidad
             resultadosDt.Columns.Add("Fiabilidad Categoria");
+            resultadosDt.Columns.Add("Fiabilidad Subcategoria");
             resultadosDt.Columns.Add("Fiabilidad Sentimiento");
 
+            // Extras: todo lo que NO sea titular ni columnas conocidas (para evitar duplicados)
             var extraCols = new List<string>();
             foreach (DataColumn c in original.Columns)
             {
                 if (c.ColumnName == titularCol) continue;
+                if (autorCol != null && c.ColumnName == autorCol) continue;
+                if (categoriaCol != null && c.ColumnName == categoriaCol) continue;
+                if (subcategoriaCol != null && c.ColumnName == subcategoriaCol) continue;
+                if (sentimientoCol != null && c.ColumnName == sentimientoCol) continue;
+
+                // Evitar añadir columnas vacías tipo Column1/Column2 si están completamente vacías
+                // (se mantiene si el Excel trae datos reales)
                 var colName = c.ColumnName;
                 int suffix = 1;
                 while (resultadosDt.Columns.Contains(colName))
@@ -892,6 +1122,7 @@ namespace ClasificadorNoticiasGUI
             var stopwatch = Stopwatch.StartNew();
 
             var catCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var subCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var senCountsLocal = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             foreach (DataRow row in original.Rows)
@@ -902,24 +1133,33 @@ namespace ClasificadorNoticiasGUI
                 // Predicción
                 var predCat = engineCat.Predict(new Articulo { Texto = titular });
                 var predSent = engineSent.Predict(new Sentimiento { Texto = titular });
+                var predSub = engineSub?.Predict(new SubcategoriaArticulo { Texto = titular });
 
                 // 🔹 Calcular fiabilidad
                 var maxScoreCat = (predCat.Score != null && predCat.Score.Length > 0) ? predCat.Score.Max() : 0f;
+                var maxScoreSub = (predSub?.Score != null && predSub.Score.Length > 0) ? predSub.Score.Max() : 0f;
                 var maxScoreSent = (predSent.Score != null && predSent.Score.Length > 0) ? predSent.Score.Max() : 0f;
 
                 // Crear fila nueva
                 var newRow = resultadosDt.NewRow();
                 newRow["Titular"] = titular;
                 newRow["Categoria"] = predCat.CategoriaPredicha;
+                newRow["Subcategoria"] = predSub?.SubcategoriaPredicha ?? "";
                 newRow["Sentimiento"] = predSent.SentimientoPredicho;
+
+                if (autorCol != null)
+                    newRow["Autor"] = row[autorCol]?.ToString() ?? "";
                 newRow["Fiabilidad Categoria"] = $"{maxScoreCat:P1}";
+                newRow["Fiabilidad Subcategoria"] = predSub != null ? $"{maxScoreSub:P1}" : "";
                 newRow["Fiabilidad Sentimiento"] = $"{maxScoreSent:P1}";
 
                 // Copiar columnas extra
+                // Índice de inicio: Titular,Categoria,Subcategoria,Sentimiento,(Autor?),FiabCat,FiabSub,FiabSent
+                int baseCount = 4 + (autorCol != null ? 1 : 0) + 3;
                 for (int ec = 0; ec < extraCols.Count; ec++)
                 {
                     var origName = extraCols[ec];
-                    var targetName = resultadosDt.Columns[5 + ec].ColumnName;
+                    var targetName = resultadosDt.Columns[baseCount + ec].ColumnName;
                     newRow[targetName] = row[origName]?.ToString() ?? "";
                 }
 
@@ -927,15 +1167,20 @@ namespace ClasificadorNoticiasGUI
 
                 // 🔹 Mostrar la última fiabilidad calculada en los TextBox
                 txtFiabilidadCategoriaExcel.Text = $"{maxScoreCat:P1}";
+                txtFiabilidadSubcategoriaExcel.Text = predSub != null ? $"{maxScoreSub:P1}" : "";
                 txtFiabilidadSentimientosExcel.Text = $"{maxScoreSent:P1}";
                 txtFiabilidadCategoriaExcel.ForeColor = maxScoreCat < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
+                txtFiabilidadSubcategoriaExcel.ForeColor = predSub == null ? System.Drawing.Color.Black : (maxScoreSub < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green);
                 txtFiabilidadSentimientosExcel.ForeColor = maxScoreSent < 0.5f ? System.Drawing.Color.Red : System.Drawing.Color.Green;
 
                 // Contadores
                 var catKey = string.IsNullOrWhiteSpace(predCat.CategoriaPredicha) ? "(sin categoria)" : predCat.CategoriaPredicha;
+                var subKey = string.IsNullOrWhiteSpace(predSub?.SubcategoriaPredicha) ? "(sin subcategoria)" : predSub.SubcategoriaPredicha;
                 var senKey = string.IsNullOrWhiteSpace(predSent.SentimientoPredicho) ? "(sin sentimiento)" : predSent.SentimientoPredicho;
                 if (!catCountsLocal.ContainsKey(catKey)) catCountsLocal[catKey] = 0;
                 catCountsLocal[catKey]++;
+                if (!subCountsLocal.ContainsKey(subKey)) subCountsLocal[subKey] = 0;
+                subCountsLocal[subKey]++;
                 if (!senCountsLocal.ContainsKey(senKey)) senCountsLocal[senKey] = 0;
                 senCountsLocal[senKey]++;
 
@@ -957,6 +1202,10 @@ namespace ClasificadorNoticiasGUI
             var metricsSb = new System.Text.StringBuilder();
             metricsSb.AppendLine("Categorías:");
             foreach (var kv in catCountsLocal.OrderByDescending(k => k.Value))
+                metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
+            metricsSb.AppendLine();
+            metricsSb.AppendLine("Subcategorías:");
+            foreach (var kv in subCountsLocal.OrderByDescending(k => k.Value))
                 metricsSb.AppendLine($"{kv.Key}: {kv.Value}");
             metricsSb.AppendLine();
             metricsSb.AppendLine("Sentimientos:");
@@ -1015,7 +1264,7 @@ namespace ClasificadorNoticiasGUI
         /// Save a single record into the minimal CSVs used for training. Returns true if the text was already present.
         /// This helper ensures that duplicated rows (by Texto) are not appended multiple times.
         /// </summary>
-        bool GuardarAlDataset(string texto, string categoria, string sentimiento)
+        bool GuardarAlDataset(string texto, string categoria, string subcategoria, string sentimiento)
         {
             bool yaExistia = false;
 
@@ -1045,6 +1294,18 @@ namespace ClasificadorNoticiasGUI
                 File.AppendAllText(DatosSentimientosPath, EscapeCSV(texto) + "," + EscapeCSV(sentimiento) + "\n");
             }
 
+            // Subcategorías (opcional)
+            if (!File.Exists(DatosSubcategoriasPath))
+            {
+                File.WriteAllText(DatosSubcategoriasPath, "Texto,Subcategoria\n");
+            }
+
+            var lineasSub = File.ReadAllLines(DatosSubcategoriasPath).Skip(1);
+            if (!lineasSub.Any(l => l.Split(',')[0].Trim().Equals(texto.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                File.AppendAllText(DatosSubcategoriasPath, EscapeCSV(texto) + "," + EscapeCSV(subcategoria ?? "") + "\n");
+            }
+
             return yaExistia;
         }
 
@@ -1066,14 +1327,46 @@ namespace ClasificadorNoticiasGUI
                 var lines = File.ReadAllLines(DatosCompletosPath);
                 if (lines.Length > 0)
                 {
-                    var headers = SplitCsvLine(lines[0]).ToList();
+                    var rawHeaders = SplitCsvLine(lines[0]).ToList();
+
+                    // Normalizar encabezados para evitar duplicados por acentos (p.ej. "Categoría" vs "Categoria")
+                    string Canonical(string h)
+                    {
+                        var n = NormalizeHeader(h);
+                        return n switch
+                        {
+                            "texto" => "Texto",
+                            "categoria" => "Categoria",
+                            "subcategoria" => "Subcategoria",
+                            "sentimiento" => "Sentimiento",
+                            "autor" => "Autor",
+                            _ => h
+                        };
+                    }
+
+                    // Mapear columnas crudas -> canónicas, consolidando duplicadas
+                    var canonicalHeaders = new List<string>();
+                    var indexToCanonical = new string[rawHeaders.Count];
+                    for (int i = 0; i < rawHeaders.Count; i++)
+                    {
+                        var canon = Canonical(rawHeaders[i]);
+                        indexToCanonical[i] = canon;
+                        if (!canonicalHeaders.Contains(canon)) canonicalHeaders.Add(canon);
+                    }
+
                     var dt = new DataTable();
-                    foreach (var h in headers) dt.Columns.Add(h);
+                    foreach (var h in canonicalHeaders) dt.Columns.Add(h);
                     for (int i = 1; i < lines.Length; i++)
                     {
                         var parts = SplitCsvLine(lines[i]);
                         var row = dt.NewRow();
-                        for (int c = 0; c < headers.Count && c < parts.Length; c++) row[c] = parts[c];
+                        for (int c = 0; c < rawHeaders.Count && c < parts.Length; c++)
+                        {
+                            var canon = indexToCanonical[c];
+                            // Si hay duplicado, preferimos el primero no vacío
+                            if (string.IsNullOrWhiteSpace(row[canon]?.ToString()))
+                                row[canon] = parts[c];
+                        }
                         dt.Rows.Add(row);
                     }
                     dgvDataset.DataSource = dt;
@@ -1081,8 +1374,8 @@ namespace ClasificadorNoticiasGUI
                 }
             }
 
-            // Fallback: existing behavior
-            var lista = new List<(string Texto, string Categoria, string Sentimiento)>();
+            // Fallback: reconstruir desde los CSV mínimos (categorías / subcategorías / sentimientos)
+            var lista = new List<(string Texto, string Categoria, string Subcategoria, string Sentimiento)>();
 
             if (File.Exists(DatosCategoriasPath))
             {
@@ -1091,7 +1384,24 @@ namespace ClasificadorNoticiasGUI
                 {
                     var parts = SplitCsvLine(l);
                     if (parts.Length >= 2)
-                        lista.Add((parts[0], parts[1], ""));
+                        lista.Add((parts[0], parts[1], "", ""));
+                }
+            }
+
+            if (File.Exists(DatosSubcategoriasPath))
+            {
+                var subLines = File.ReadAllLines(DatosSubcategoriasPath).Skip(1);
+                foreach (var l in subLines)
+                {
+                    var parts = SplitCsvLine(l);
+                    if (parts.Length >= 2)
+                    {
+                        var idx = lista.FindIndex(x => x.Texto.Equals(parts[0], StringComparison.OrdinalIgnoreCase));
+                        if (idx >= 0)
+                            lista[idx] = (lista[idx].Texto, lista[idx].Categoria, parts[1], lista[idx].Sentimiento);
+                        else
+                            lista.Add((parts[0], "", parts[1], ""));
+                    }
                 }
             }
 
@@ -1105,14 +1415,14 @@ namespace ClasificadorNoticiasGUI
                     {
                         var idx = lista.FindIndex(x => x.Texto.Equals(parts[0], StringComparison.OrdinalIgnoreCase));
                         if (idx >= 0)
-                            lista[idx] = (lista[idx].Texto, lista[idx].Categoria, parts[1]);
+                            lista[idx] = (lista[idx].Texto, lista[idx].Categoria, lista[idx].Subcategoria, parts[1]);
                         else
-                            lista.Add((parts[0], "", parts[1]));
+                            lista.Add((parts[0], "", "", parts[1]));
                     }
                 }
             }
 
-            var dt2 = lista.Select(x => new { Texto = x.Texto, Categoria = x.Categoria, Sentimiento = x.Sentimiento }).ToList();
+            var dt2 = lista.Select(x => new { Texto = x.Texto, Categoria = x.Categoria, Subcategoria = x.Subcategoria, Sentimiento = x.Sentimiento }).ToList();
             dgvDataset.DataSource = dt2;
         }
 
@@ -1195,6 +1505,7 @@ namespace ClasificadorNoticiasGUI
             {
                 if (File.Exists(DatosCategoriasPath)) File.Delete(DatosCategoriasPath);
                 if (File.Exists(DatosSentimientosPath)) File.Delete(DatosSentimientosPath);
+                if (File.Exists(DatosSubcategoriasPath)) File.Delete(DatosSubcategoriasPath);
                 if (File.Exists(DatosCompletosPath)) File.Delete(DatosCompletosPath);
 
                 // Re-crear archivos con encabezados vacíos
@@ -1203,9 +1514,12 @@ namespace ClasificadorNoticiasGUI
                 Directory.CreateDirectory(Path.GetDirectoryName(DatosSentimientosPath) ?? "Datos");
                 File.WriteAllText(DatosSentimientosPath, "Texto,Label\n");
 
+                Directory.CreateDirectory(Path.GetDirectoryName(DatosSubcategoriasPath) ?? "Datos");
+                File.WriteAllText(DatosSubcategoriasPath, "Texto,Subcategoria\n");
+
                 // Crear dataset_completo vacío con encabezados básicos
                 Directory.CreateDirectory(Path.GetDirectoryName(DatosCompletosPath) ?? "Datos");
-                File.WriteAllText(DatosCompletosPath, "Texto,Categoria,Sentimiento\n");
+                File.WriteAllText(DatosCompletosPath, "Texto,Categoria,Subcategoria,Sentimiento\n");
 
                 // Clear grid and reload
                 dgvDataset.DataSource = null;
@@ -1254,6 +1568,28 @@ namespace ClasificadorNoticiasGUI
             }
         }
 
+        private void btnReiniciarModeloSubcategorias_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show(
+                "¿Seguro que quieres reiniciar el modelo de subcategorías? Esto eliminará el archivo del modelo.",
+                "Confirmar reinicio modelo subcategorías",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+            if (res != DialogResult.Yes) return;
+
+            try
+            {
+                if (File.Exists(ModeloSubcategoriasPath)) File.Delete(ModeloSubcategoriasPath);
+                modeloSub = null;
+                MessageBox.Show("Modelo de subcategorías eliminado. Puedes reentrenarlo desde la interfaz.", "Reinicio completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                CargarModelosSiExisten();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al reiniciar modelo de subcategorías: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void btnCargarDatasetExcel_Click(object sender, EventArgs e)
         {
             using var ofd = new OpenFileDialog();
@@ -1276,12 +1612,12 @@ namespace ClasificadorNoticiasGUI
                 return;
             }
 
-            // Buscar columna de titular (case-insensitive)
+            // Buscar columna de titular (robusto: acentos/espacios)
             string titularCol = null;
             foreach (DataColumn c in dt.Columns)
             {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "titular", "título", "titulo", "title", "headline" }.Contains(name))
+                var name = NormalizeHeader(c.ColumnName);
+                if (new[] { "titular", "titulo", "title", "headline" }.Contains(name))
                 { titularCol = c.ColumnName; break; }
             }
             // Si no se encontró, intentar buscar de forma más flexible
@@ -1289,7 +1625,7 @@ namespace ClasificadorNoticiasGUI
             {
                 foreach (DataColumn c in dt.Columns)
                 {
-                    var name = c.ColumnName.Trim().ToLowerInvariant();
+                    var name = NormalizeHeader(c.ColumnName);
                     if (name.Contains("titular") || name.Contains("title") || name.Contains("headline"))
                     {
                         titularCol = c.ColumnName;
@@ -1307,14 +1643,16 @@ namespace ClasificadorNoticiasGUI
                 return;
             }
 
-            // Determine categoria and sentimiento columns (if any)
-            string categoriaCol = null, sentimientoCol = null, titularColAntiguo = null;
+            // Determine categoria/subcategoria/sentimiento/autor columns (if any)
+            string categoriaCol = null, subcategoriaCol = null, sentimientoCol = null, autorCol = null;
             var extraCols = new List<string>();
             foreach (DataColumn c in dt.Columns)
             {
-                var name = c.ColumnName.ToLower();
-                if (new[] { "categoria", "category" }.Contains(name)) categoriaCol = c.ColumnName;
-                else if (new[] { "sentimiento", "sentiment", "label" }.Contains(name)) sentimientoCol = c.ColumnName;
+                var name = NormalizeHeader(c.ColumnName);
+                if (name == "autor" || name == "source" || name == "fuente") autorCol = c.ColumnName;
+                else if (name == "categoria" || name == "category") categoriaCol = c.ColumnName;
+                else if (name == "subcategoria" || name == "subcategory") subcategoriaCol = c.ColumnName;
+                else if (name == "sentimiento" || name == "sentiment" || name == "label") sentimientoCol = c.ColumnName;
                 else if (c.ColumnName != titularCol)
                     extraCols.Add(c.ColumnName);
             }
@@ -1339,8 +1677,10 @@ namespace ClasificadorNoticiasGUI
                 }
             }
 
-            // Build union headers: Texto,Categoria,Sentimiento, then existing extras, then new extras
-            var baseHeaders = new List<string> { "Texto", "Categoria", "Sentimiento" };
+            // Build union headers: base dataset columns + optional Autor
+            var baseHeaders = new List<string> { "Texto", "Categoria", "Subcategoria", "Sentimiento" };
+            if (autorCol != null && !baseHeaders.Contains("Autor"))
+                baseHeaders.Add("Autor");
             var union = new List<string>(baseHeaders);
             if (existing != null)
             {
@@ -1377,8 +1717,9 @@ namespace ClasificadorNoticiasGUI
                 var titular = r[titularCol]?.ToString()?.Trim();
                 if (string.IsNullOrWhiteSpace(titular)) continue;
 
-                // Get categoria/sentimiento from excel if present
+                // Get categoria/subcategoria/sentimiento from excel if present
                 var cat = categoriaCol != null ? (r[categoriaCol]?.ToString()?.Trim() ?? "") : "";
+                var sub = subcategoriaCol != null ? (r[subcategoriaCol]?.ToString()?.Trim() ?? "") : "";
                 var sen = sentimientoCol != null ? (r[sentimientoCol]?.ToString()?.Trim() ?? "") : "";
 
                 // Append to minimal CSVs for training (if not present)
@@ -1396,6 +1737,13 @@ namespace ClasificadorNoticiasGUI
                     File.AppendAllText(DatosSentimientosPath, $"{EscapeCSV(titular)},{EscapeCSV(sen)}\n");
                 }
 
+                if (!File.Exists(DatosSubcategoriasPath)) File.WriteAllText(DatosSubcategoriasPath, "Texto,Subcategoria\n");
+                var lineasSub = File.ReadAllLines(DatosSubcategoriasPath).Skip(1);
+                if (!lineasSub.Any(l => SplitCsvLine(l)[0].Trim().Equals(titular, StringComparison.OrdinalIgnoreCase)))
+                {
+                    File.AppendAllText(DatosSubcategoriasPath, $"{EscapeCSV(titular)},{EscapeCSV(sub)}\n");
+                }
+
                 // Add to newDt if Texto not present
                 var existsInNew = newDt.Rows.Cast<DataRow>().Any(rr => rr["Texto"]?.ToString()?.Equals(titular, StringComparison.OrdinalIgnoreCase) == true);
                 if (!existsInNew)
@@ -1403,7 +1751,10 @@ namespace ClasificadorNoticiasGUI
                     var nr = newDt.NewRow();
                     nr["Texto"] = titular;
                     nr["Categoria"] = cat;
+                    nr["Subcategoria"] = sub;
                     nr["Sentimiento"] = sen;  // Aseguramos que se asigne el sentimiento
+                    if (autorCol != null && newDt.Columns.Contains("Autor"))
+                        nr["Autor"] = r[autorCol]?.ToString() ?? "";
                     foreach (var ec in extraCols)
                     {
                         nr[ec] = r[ec]?.ToString() ?? "";
@@ -1497,20 +1848,26 @@ namespace ClasificadorNoticiasGUI
             }
 
             var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var subCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             foreach (DataRow r in tabla.Rows)
             {
                 var cat = "";
+                var sub = "";
                 var sen = "";
                 if (tabla.Columns.Contains("Categoria")) cat = r["Categoria"]?.ToString() ?? "";
+                if (tabla.Columns.Contains("Subcategoria")) sub = r["Subcategoria"]?.ToString() ?? "";
                 if (tabla.Columns.Contains("Sentimiento")) sen = r["Sentimiento"]?.ToString() ?? "";
 
                 if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                if (string.IsNullOrWhiteSpace(sub)) sub = "(sin subcategoria)";
                 if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
 
                 if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0;
                 catCounts[cat]++;
+                if (!subCounts.ContainsKey(sub)) subCounts[sub] = 0;
+                subCounts[sub]++;
                 if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0;
                 senCounts[sen]++;
             }
@@ -1547,6 +1904,22 @@ namespace ClasificadorNoticiasGUI
             modelSen.Series.Add(senSeries);
 
             plotViewCategorias.Model = modelCat;
+            // Subcategorías plot
+            var subOrdered = subCounts.OrderByDescending(k => k.Value).ToList();
+            var subs = subOrdered.Select(k => k.Key).ToList();
+            var subValues = subOrdered.Select(k => k.Value).ToList();
+
+            var modelSub = new PlotModel { Title = "Titulares por subcategoría" };
+            var subCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var s in subs) subCategoryAxis.Labels.Add(s);
+            var subValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelSub.Axes.Add(subCategoryAxis);
+            modelSub.Axes.Add(subValueAxis);
+            var subSeries = new OxyPlot.Series.BarSeries { Title = "Subcategorías", IsStacked = false };
+            for (int i = 0; i < subValues.Count; i++) subSeries.Items.Add(new OxyPlot.Series.BarItem { Value = subValues[i] });
+            modelSub.Series.Add(subSeries);
+
+            plotViewSubcategorias.Model = modelSub;
             plotViewSentimientos.Model = modelSen;
         }
 
@@ -1559,6 +1932,7 @@ namespace ClasificadorNoticiasGUI
         {
             // Read data from dgvExcelResultados (DataTable or IEnumerable<ResultadoExcel>)
             var catCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var subCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var senCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
             if (dgvExcelResultados.DataSource is DataTable dt)
@@ -1566,15 +1940,19 @@ namespace ClasificadorNoticiasGUI
                 // Determine column names (case-insensitive)
                 string colTit = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "titular", "título", "titulo", "title", "headline" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
                 string colCat = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "categoria", "category" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
+                string colSub = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "subcategoria", "subcategoría", "subcategory" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
                 string colSen = dt.Columns.Cast<DataColumn>().FirstOrDefault(c => new[] { "sentimiento", "sentiment", "label" }.Contains(c.ColumnName.ToLower()))?.ColumnName;
 
                 foreach (DataRow r in dt.Rows)
                 {
                     var cat = colCat != null ? (r[colCat]?.ToString() ?? "") : "";
+                    var sub = colSub != null ? (r[colSub]?.ToString() ?? "") : "";
                     var sen = colSen != null ? (r[colSen]?.ToString() ?? "") : "";
                     if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                    if (string.IsNullOrWhiteSpace(sub)) sub = "(sin subcategoria)";
                     if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
                     if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
+                    if (!subCounts.ContainsKey(sub)) subCounts[sub] = 0; subCounts[sub]++;
                     if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
                 }
             }
@@ -1584,10 +1962,13 @@ namespace ClasificadorNoticiasGUI
                 foreach (var it in list)
                 {
                     var cat = it.Categoria ?? "";
+                    var sub = it.Subcategoria ?? "";
                     var sen = it.Sentimiento ?? "";
                     if (string.IsNullOrWhiteSpace(cat)) cat = "(sin categoria)";
+                    if (string.IsNullOrWhiteSpace(sub)) sub = "(sin subcategoria)";
                     if (string.IsNullOrWhiteSpace(sen)) sen = "(sin sentimiento)";
                     if (!catCounts.ContainsKey(cat)) catCounts[cat] = 0; catCounts[cat]++;
+                    if (!subCounts.ContainsKey(sub)) subCounts[sub] = 0; subCounts[sub]++;
                     if (!senCounts.ContainsKey(sen)) senCounts[sen] = 0; senCounts[sen]++;
                 }
             }
@@ -1607,6 +1988,20 @@ namespace ClasificadorNoticiasGUI
             for (int i = 0; i < catValues.Count; i++) catSeries.Items.Add(new OxyPlot.Series.BarItem { Value = catValues[i] });
             modelCat.Series.Add(catSeries);
 
+            var subOrdered = subCounts.OrderByDescending(k => k.Value).ToList();
+            var subs = subOrdered.Select(k => k.Key).ToList();
+            var subValues = subOrdered.Select(k => k.Value).ToList();
+
+            var modelSub = new PlotModel { Title = "Titulares por subcategoría (Excel)" };
+            var subCategoryAxis = new CategoryAxis { Position = AxisPosition.Left };
+            foreach (var s in subs) subCategoryAxis.Labels.Add(s);
+            var subValueAxis = new LinearAxis { Position = AxisPosition.Bottom, Minimum = 0 };
+            modelSub.Axes.Add(subCategoryAxis);
+            modelSub.Axes.Add(subValueAxis);
+            var subSeries = new OxyPlot.Series.BarSeries { Title = "Subcategorías", IsStacked = false };
+            for (int i = 0; i < subValues.Count; i++) subSeries.Items.Add(new OxyPlot.Series.BarItem { Value = subValues[i] });
+            modelSub.Series.Add(subSeries);
+
             var senOrdered = senCounts.OrderByDescending(k => k.Value).ToList();
             var sents = senOrdered.Select(k => k.Key).ToList();
             var senValues = senOrdered.Select(k => k.Value).ToList();
@@ -1622,6 +2017,7 @@ namespace ClasificadorNoticiasGUI
             modelSen.Series.Add(senSeries);
 
             plotViewExcelCategorias.Model = modelCat;
+            plotViewExcelSubcategorias.Model = modelSub;
             plotViewExcelSentimientos.Model = modelSen;
         }
 
@@ -1804,7 +2200,7 @@ namespace ClasificadorNoticiasGUI
 
         // --------------------------------------------
         // MÉTODO DE EXPORTACIÓN A EXCEL FINAL
-       // mostrando visualmente la intensidad de aciertos(valores más altos = verde más oscuro). Esto hará que tu heatmap sea aún más informativo.
+        // mostrando visualmente la intensidad de aciertos(valores más altos = verde más oscuro). Esto hará que tu heatmap sea aún más informativo.
         // --------------------------------------------
                // --------------------------------------------
         // MÉTODO COMPLETO DE EXPORTACIÓN A EXCEL PROFESIONAL CON GRÁFICOS VISUALES Y ETIQUETAS

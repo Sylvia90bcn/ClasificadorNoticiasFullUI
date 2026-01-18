@@ -40,25 +40,37 @@ namespace ClasificadorNoticiasGUI
             btnClasificar = new Button();
             txtSentimiento = new TextBox();
             txtCategoria = new TextBox();
+            txtSubcategoria = new TextBox();
             txtTitular = new TextBox();
             label3 = new Label();
             label2 = new Label();
+            labelSubcategoria = new Label();
             label1 = new Label();
+            labelFiabilidadSubcategoria = new Label();
+            txtFiabilidadSubcategoria = new TextBox();
+            btnReentrenarSubcategorias = new Button();
             tabDataset = new TabPage();
             labelModeloCat = new Label();
             labelModeloSent = new Label();
+            labelModeloSub = new Label();
             label9 = new Label();
             label8 = new Label();
             txtLogLossSent = new TextBox();
             txtMicroAccuracySent = new TextBox();
+            labelMicroAccuracySub = new Label();
+            labelLogLossSub = new Label();
+            txtMicroAccuracySub = new TextBox();
+            txtLogLossSub = new TextBox();
             label6 = new Label();
             txtLogLoss = new TextBox();
             label7 = new Label();
             txtMicroAccuracy = new TextBox();
             btnReentrenarCategoriasDataset = new Button();
             btnReentrenarSentimientosDataset = new Button();
+            btnReentrenarSubcategoriasDataset = new Button();
             btnReiniciarModeloSentimientos = new Button();
             btnReiniciarModeloCategorias = new Button();
+            btnReiniciarModeloSubcategorias = new Button();
             btnReiniciarDataset = new Button();
             btnActualizarDataset = new Button();
             btnCargarDatasetExcel = new Button();
@@ -66,6 +78,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficas = new TabPage();
             btnActualizarGraficas = new Button();
             plotViewSentimientos = new OxyPlot.WindowsForms.PlotView();
+            plotViewSubcategorias = new OxyPlot.WindowsForms.PlotView();
             plotViewCategorias = new OxyPlot.WindowsForms.PlotView();
             tabComparador = new TabPage();
             dgvComparador = new DataGridView();
@@ -84,14 +97,18 @@ namespace ClasificadorNoticiasGUI
             btnExportar = new Button();
             tabVisualizacion = new TabPage();
             label11 = new Label();
+            label12 = new Label();
             label10 = new Label();
             plotViewMetSentimientos = new OxyPlot.WindowsForms.PlotView();
+            plotViewMetSubcategorias = new OxyPlot.WindowsForms.PlotView();
             plotViewMetCategorias = new OxyPlot.WindowsForms.PlotView();
             tabExcel = new TabPage();
             label5 = new Label();
             txtFiabilidadSentimientosExcel = new TextBox();
             label4 = new Label();
             txtFiabilidadCategoriaExcel = new TextBox();
+            labelFiabilidadSubcategoriaExcel = new Label();
+            txtFiabilidadSubcategoriaExcel = new TextBox();
             btnExportarResultados = new Button();
             dgvExcelResultados = new DataGridView();
             btnCargarExcel = new Button();
@@ -104,6 +121,7 @@ namespace ClasificadorNoticiasGUI
             tabGraficasExcel = new TabPage();
             btnActualizarGraficasExcel = new Button();
             plotViewExcelSentimientos = new OxyPlot.WindowsForms.PlotView();
+            plotViewExcelSubcategorias = new OxyPlot.WindowsForms.PlotView();
             plotViewExcelCategorias = new OxyPlot.WindowsForms.PlotView();
             tabPrincipal.SuspendLayout();
             tabClasificar.SuspendLayout();
@@ -171,10 +189,15 @@ namespace ClasificadorNoticiasGUI
             tabClasificar.Controls.Add(btnClasificar);
             tabClasificar.Controls.Add(txtSentimiento);
             tabClasificar.Controls.Add(txtCategoria);
+            tabClasificar.Controls.Add(txtSubcategoria);
             tabClasificar.Controls.Add(txtTitular);
             tabClasificar.Controls.Add(label3);
             tabClasificar.Controls.Add(label2);
+            tabClasificar.Controls.Add(labelSubcategoria);
             tabClasificar.Controls.Add(label1);
+            tabClasificar.Controls.Add(labelFiabilidadSubcategoria);
+            tabClasificar.Controls.Add(txtFiabilidadSubcategoria);
+            tabClasificar.Controls.Add(btnReentrenarSubcategorias);
             tabClasificar.Location = new Point(4, 26);
             tabClasificar.Name = "tabClasificar";
             tabClasificar.Padding = new Padding(3);
@@ -207,7 +230,7 @@ namespace ClasificadorNoticiasGUI
             labelFiabilidadSentimiento.Name = "labelFiabilidadSentimiento";
             labelFiabilidadSentimiento.Size = new Size(129, 19);
             labelFiabilidadSentimiento.TabIndex = 12;
-            labelFiabilidadSentimiento.Text = "Fiabilidad CategorÌa";
+            labelFiabilidadSentimiento.Text = "Fiabilidad Categor√≠a";
             // 
             // txtFiabilidadCategoria
             // 
@@ -219,7 +242,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // btnReentrenarSentimientos
             // 
-            btnReentrenarSentimientos.Location = new Point(377, 225);
+            btnReentrenarSentimientos.Location = new Point(710, 225);
             btnReentrenarSentimientos.Name = "btnReentrenarSentimientos";
             btnReentrenarSentimientos.Size = new Size(193, 29);
             btnReentrenarSentimientos.TabIndex = 0;
@@ -229,7 +252,7 @@ namespace ClasificadorNoticiasGUI
             // btnReentrenarCategorias
             // 
             btnReentrenarCategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnReentrenarCategorias.Location = new Point(377, 277);
+            btnReentrenarCategorias.Location = new Point(710, 277);
             btnReentrenarCategorias.Name = "btnReentrenarCategorias";
             btnReentrenarCategorias.Size = new Size(193, 30);
             btnReentrenarCategorias.TabIndex = 8;
@@ -239,7 +262,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // btnGuardar
             // 
-            btnGuardar.Location = new Point(620, 120);
+            btnGuardar.Location = new Point(441, 383);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(120, 30);
             btnGuardar.TabIndex = 7;
@@ -249,7 +272,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // btnClasificar
             // 
-            btnClasificar.Location = new Point(480, 120);
+            btnClasificar.Location = new Point(275, 383);
             btnClasificar.Name = "btnClasificar";
             btnClasificar.Size = new Size(120, 30);
             btnClasificar.TabIndex = 6;
@@ -270,6 +293,13 @@ namespace ClasificadorNoticiasGUI
             txtCategoria.Name = "txtCategoria";
             txtCategoria.Size = new Size(300, 25);
             txtCategoria.TabIndex = 4;
+            // 
+            // txtSubcategoria
+            // 
+            txtSubcategoria.Location = new Point(544, 130);
+            txtSubcategoria.Name = "txtSubcategoria";
+            txtSubcategoria.Size = new Size(878, 25);
+            txtSubcategoria.TabIndex = 4;
             // 
             // txtTitular
             // 
@@ -297,6 +327,15 @@ namespace ClasificadorNoticiasGUI
             label2.TabIndex = 1;
             label2.Text = "Categoria";
             // 
+            // labelSubcategoria
+            // 
+            labelSubcategoria.AutoSize = true;
+            labelSubcategoria.Location = new Point(450, 133);
+            labelSubcategoria.Name = "labelSubcategoria";
+            labelSubcategoria.Size = new Size(88, 19);
+            labelSubcategoria.TabIndex = 16;
+            labelSubcategoria.Text = "Subcategor√≠a";
+            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -306,24 +345,58 @@ namespace ClasificadorNoticiasGUI
             label1.TabIndex = 0;
             label1.Text = "Titular";
             // 
+            // labelFiabilidadSubcategoria
+            // 
+            labelFiabilidadSubcategoria.AutoSize = true;
+            labelFiabilidadSubcategoria.Location = new Point(320, 229);
+            labelFiabilidadSubcategoria.Name = "labelFiabilidadSubcategoria";
+            labelFiabilidadSubcategoria.Size = new Size(149, 19);
+            labelFiabilidadSubcategoria.TabIndex = 16;
+            labelFiabilidadSubcategoria.Text = "Fiabilidad Subcategor√≠a";
+            // 
+            // txtFiabilidadSubcategoria
+            // 
+            txtFiabilidadSubcategoria.Location = new Point(490, 229);
+            txtFiabilidadSubcategoria.Name = "txtFiabilidadSubcategoria";
+            txtFiabilidadSubcategoria.ReadOnly = true;
+            txtFiabilidadSubcategoria.Size = new Size(130, 25);
+            txtFiabilidadSubcategoria.TabIndex = 17;
+            // 
+            // btnReentrenarSubcategorias
+            // 
+            btnReentrenarSubcategorias.Location = new Point(710, 320);
+            btnReentrenarSubcategorias.Name = "btnReentrenarSubcategorias";
+            btnReentrenarSubcategorias.Size = new Size(193, 30);
+            btnReentrenarSubcategorias.TabIndex = 18;
+            btnReentrenarSubcategorias.Text = "Reentrenar Subcategor√≠as";
+            btnReentrenarSubcategorias.UseVisualStyleBackColor = true;
+            btnReentrenarSubcategorias.Click += btnReentrenarSubcategorias_Click;
+            // 
             // tabDataset
             // 
             tabDataset.Controls.Add(labelModeloCat);
             tabDataset.Controls.Add(labelModeloSent);
+            tabDataset.Controls.Add(labelModeloSub);
             tabDataset.Controls.Add(cmbModeloSentimientos);
             tabDataset.Controls.Add(cmbModeloCategorias);
             tabDataset.Controls.Add(label9);
             tabDataset.Controls.Add(label8);
             tabDataset.Controls.Add(txtLogLossSent);
             tabDataset.Controls.Add(txtMicroAccuracySent);
+            tabDataset.Controls.Add(labelMicroAccuracySub);
+            tabDataset.Controls.Add(labelLogLossSub);
+            tabDataset.Controls.Add(txtMicroAccuracySub);
+            tabDataset.Controls.Add(txtLogLossSub);
             tabDataset.Controls.Add(label6);
             tabDataset.Controls.Add(txtLogLoss);
             tabDataset.Controls.Add(label7);
             tabDataset.Controls.Add(txtMicroAccuracy);
             tabDataset.Controls.Add(btnReentrenarCategoriasDataset);
             tabDataset.Controls.Add(btnReentrenarSentimientosDataset);
+            tabDataset.Controls.Add(btnReentrenarSubcategoriasDataset);
             tabDataset.Controls.Add(btnReiniciarModeloSentimientos);
             tabDataset.Controls.Add(btnReiniciarModeloCategorias);
+            tabDataset.Controls.Add(btnReiniciarModeloSubcategorias);
             tabDataset.Controls.Add(btnReiniciarDataset);
             tabDataset.Controls.Add(btnActualizarDataset);
             tabDataset.Controls.Add(btnCargarDatasetExcel);
@@ -354,10 +427,19 @@ namespace ClasificadorNoticiasGUI
             labelModeloSent.TabIndex = 28;
             labelModeloSent.Text = "Modelo Sentimientos";
             // 
+            // labelModeloSub
+            // 
+            labelModeloSub.AutoSize = true;
+            labelModeloSub.Location = new Point(1179, 305);
+            labelModeloSub.Name = "labelModeloSub";
+            labelModeloSub.Size = new Size(145, 19);
+            labelModeloSub.TabIndex = 60;
+            labelModeloSub.Text = "Modelo Subcategor√≠as";
+            // 
             // label9
             // 
             label9.AutoSize = true;
-            label9.Location = new Point(1055, 679);
+            label9.Location = new Point(705, 741);
             label9.Name = "label9";
             label9.Size = new Size(142, 19);
             label9.TabIndex = 25;
@@ -366,7 +448,7 @@ namespace ClasificadorNoticiasGUI
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new Point(1049, 636);
+            label8.Location = new Point(697, 704);
             label8.Name = "label8";
             label8.Size = new Size(181, 19);
             label8.TabIndex = 24;
@@ -374,7 +456,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtLogLossSent
             // 
-            txtLogLossSent.Location = new Point(1240, 673);
+            txtLogLossSent.Location = new Point(890, 735);
             txtLogLossSent.Name = "txtLogLossSent";
             txtLogLossSent.ReadOnly = true;
             txtLogLossSent.Size = new Size(130, 25);
@@ -382,11 +464,45 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtMicroAccuracySent
             // 
-            txtMicroAccuracySent.Location = new Point(1240, 630);
+            txtMicroAccuracySent.Location = new Point(890, 698);
             txtMicroAccuracySent.Name = "txtMicroAccuracySent";
             txtMicroAccuracySent.ReadOnly = true;
             txtMicroAccuracySent.Size = new Size(130, 25);
             txtMicroAccuracySent.TabIndex = 22;
+            // 
+            // labelMicroAccuracySub
+            // 
+            labelMicroAccuracySub.AutoSize = true;
+            labelMicroAccuracySub.Location = new Point(1083, 679);
+            labelMicroAccuracySub.Name = "labelMicroAccuracySub";
+            labelMicroAccuracySub.Size = new Size(187, 19);
+            labelMicroAccuracySub.TabIndex = 61;
+            labelMicroAccuracySub.Text = "MicroAccuracy Subcategor√≠as";
+            // 
+            // labelLogLossSub
+            // 
+            labelLogLossSub.AutoSize = true;
+            labelLogLossSub.Location = new Point(1089, 636);
+            labelLogLossSub.Name = "labelLogLossSub";
+            labelLogLossSub.Size = new Size(148, 19);
+            labelLogLossSub.TabIndex = 63;
+            labelLogLossSub.Text = "LogLoss Subcategor√≠as";
+            // 
+            // txtMicroAccuracySub
+            // 
+            txtMicroAccuracySub.Location = new Point(1274, 673);
+            txtMicroAccuracySub.Name = "txtMicroAccuracySub";
+            txtMicroAccuracySub.ReadOnly = true;
+            txtMicroAccuracySub.Size = new Size(130, 25);
+            txtMicroAccuracySub.TabIndex = 62;
+            // 
+            // txtLogLossSub
+            // 
+            txtLogLossSub.Location = new Point(1274, 630);
+            txtLogLossSub.Name = "txtLogLossSub";
+            txtLogLossSub.ReadOnly = true;
+            txtLogLossSub.Size = new Size(130, 25);
+            txtLogLossSub.TabIndex = 64;
             // 
             // label6
             // 
@@ -442,6 +558,16 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarSentimientosDataset.Text = "Reentrenar Sentimientos";
             btnReentrenarSentimientosDataset.Click += btnReentrenarSentimientos_Click;
             // 
+            // btnReentrenarSubcategoriasDataset
+            // 
+            btnReentrenarSubcategoriasDataset.Location = new Point(20, 725);
+            btnReentrenarSubcategoriasDataset.Name = "btnReentrenarSubcategoriasDataset";
+            btnReentrenarSubcategoriasDataset.Size = new Size(193, 29);
+            btnReentrenarSubcategoriasDataset.TabIndex = 30;
+            btnReentrenarSubcategoriasDataset.Text = "Reentrenar Subcategor√≠as";
+            btnReentrenarSubcategoriasDataset.UseVisualStyleBackColor = true;
+            btnReentrenarSubcategoriasDataset.Click += btnReentrenarSubcategorias_Click;
+            // 
             // btnReiniciarModeloSentimientos
             // 
             btnReiniciarModeloSentimientos.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -463,6 +589,17 @@ namespace ClasificadorNoticiasGUI
             btnReiniciarModeloCategorias.Text = "Reiniciar Modelo Categorias";
             btnReiniciarModeloCategorias.UseVisualStyleBackColor = true;
             btnReiniciarModeloCategorias.Click += btnReiniciarModeloCategorias_Click;
+            // 
+            // btnReiniciarModeloSubcategorias
+            // 
+            btnReiniciarModeloSubcategorias.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnReiniciarModeloSubcategorias.Location = new Point(304, 725);
+            btnReiniciarModeloSubcategorias.Name = "btnReiniciarModeloSubcategorias";
+            btnReiniciarModeloSubcategorias.Size = new Size(203, 30);
+            btnReiniciarModeloSubcategorias.TabIndex = 31;
+            btnReiniciarModeloSubcategorias.Text = "Reiniciar Modelo Subcategor√≠as";
+            btnReiniciarModeloSubcategorias.UseVisualStyleBackColor = true;
+            btnReiniciarModeloSubcategorias.Click += btnReiniciarModeloSubcategorias_Click;
             // 
             // btnReiniciarDataset
             // 
@@ -508,18 +645,19 @@ namespace ClasificadorNoticiasGUI
             // 
             tabGraficas.Controls.Add(btnActualizarGraficas);
             tabGraficas.Controls.Add(plotViewSentimientos);
+            tabGraficas.Controls.Add(plotViewSubcategorias);
             tabGraficas.Controls.Add(plotViewCategorias);
             tabGraficas.Location = new Point(4, 26);
             tabGraficas.Name = "tabGraficas";
             tabGraficas.Size = new Size(1456, 764);
             tabGraficas.TabIndex = 3;
-            tabGraficas.Text = "Gr·ficas Dataset";
+            tabGraficas.Text = "Gr√°ficas Dataset";
             tabGraficas.UseVisualStyleBackColor = true;
             // 
             // btnActualizarGraficas
             // 
             btnActualizarGraficas.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarGraficas.Location = new Point(1048, 668);
+            btnActualizarGraficas.Location = new Point(1320, 716);
             btnActualizarGraficas.Name = "btnActualizarGraficas";
             btnActualizarGraficas.Size = new Size(120, 30);
             btnActualizarGraficas.TabIndex = 2;
@@ -529,21 +667,35 @@ namespace ClasificadorNoticiasGUI
             // 
             // plotViewSentimientos
             // 
-            plotViewSentimientos.Location = new Point(10, 270);
+            plotViewSentimientos.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewSentimientos.Location = new Point(10, 510);
             plotViewSentimientos.Name = "plotViewSentimientos";
             plotViewSentimientos.PanCursor = Cursors.Hand;
-            plotViewSentimientos.Size = new Size(872, 250);
+            plotViewSentimientos.Size = new Size(1430, 230);
             plotViewSentimientos.TabIndex = 1;
             plotViewSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
             plotViewSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
             // 
+            // plotViewSubcategorias
+            // 
+            plotViewSubcategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewSubcategorias.Location = new Point(10, 260);
+            plotViewSubcategorias.Name = "plotViewSubcategorias";
+            plotViewSubcategorias.PanCursor = Cursors.Hand;
+            plotViewSubcategorias.Size = new Size(1430, 230);
+            plotViewSubcategorias.TabIndex = 3;
+            plotViewSubcategorias.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewSubcategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewSubcategorias.ZoomVerticalCursor = Cursors.SizeNS;
+            // 
             // plotViewCategorias
             // 
+            plotViewCategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             plotViewCategorias.Location = new Point(10, 10);
             plotViewCategorias.Name = "plotViewCategorias";
             plotViewCategorias.PanCursor = Cursors.Hand;
-            plotViewCategorias.Size = new Size(872, 250);
+            plotViewCategorias.Size = new Size(1430, 230);
             plotViewCategorias.TabIndex = 0;
             plotViewCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
             plotViewCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
@@ -595,7 +747,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // dataGridViewTextBoxColumn3
             // 
-            dataGridViewTextBoxColumn3.HeaderText = "MÈtodo";
+            dataGridViewTextBoxColumn3.HeaderText = "M√©todo";
             dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
             // 
             // dataGridViewTextBoxColumn4
@@ -661,25 +813,36 @@ namespace ClasificadorNoticiasGUI
             // tabVisualizacion
             // 
             tabVisualizacion.Controls.Add(label11);
+            tabVisualizacion.Controls.Add(label12);
             tabVisualizacion.Controls.Add(label10);
             tabVisualizacion.Controls.Add(plotViewMetSentimientos);
+            tabVisualizacion.Controls.Add(plotViewMetSubcategorias);
             tabVisualizacion.Controls.Add(plotViewMetCategorias);
             tabVisualizacion.Location = new Point(4, 26);
             tabVisualizacion.Name = "tabVisualizacion";
             tabVisualizacion.Padding = new Padding(3);
             tabVisualizacion.Size = new Size(1456, 764);
             tabVisualizacion.TabIndex = 6;
-            tabVisualizacion.Text = "VisualizaciÛn de MÈtricas";
+            tabVisualizacion.Text = "Visualizaci√≥n de M√©tricas";
             tabVisualizacion.UseVisualStyleBackColor = true;
             // 
             // label11
             // 
             label11.AutoSize = true;
-            label11.Location = new Point(21, 384);
+            label11.Location = new Point(8, 521);
             label11.Name = "label11";
             label11.Size = new Size(139, 19);
             label11.TabIndex = 3;
             label11.Text = "Modelo Sentimientos";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new Point(8, 276);
+            label12.Name = "label12";
+            label12.Size = new Size(145, 19);
+            label12.TabIndex = 4;
+            label12.Text = "Modelo Subcategor√≠as";
             // 
             // label10
             // 
@@ -692,22 +855,37 @@ namespace ClasificadorNoticiasGUI
             // 
             // plotViewMetSentimientos
             // 
-            plotViewMetSentimientos.Location = new Point(8, 422);
+            plotViewMetSentimientos.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewMetSentimientos.Location = new Point(8, 545);
             plotViewMetSentimientos.Name = "plotViewMetSentimientos";
             plotViewMetSentimientos.PanCursor = Cursors.Hand;
-            plotViewMetSentimientos.Size = new Size(1371, 334);
+            plotViewMetSentimientos.Size = new Size(1440, 210);
             plotViewMetSentimientos.TabIndex = 1;
             plotViewMetSentimientos.Text = "plotView1";
             plotViewMetSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
             plotViewMetSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewMetSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
             // 
+            // plotViewMetSubcategorias
+            // 
+            plotViewMetSubcategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewMetSubcategorias.Location = new Point(8, 300);
+            plotViewMetSubcategorias.Name = "plotViewMetSubcategorias";
+            plotViewMetSubcategorias.PanCursor = Cursors.Hand;
+            plotViewMetSubcategorias.Size = new Size(1440, 210);
+            plotViewMetSubcategorias.TabIndex = 5;
+            plotViewMetSubcategorias.Text = "plotView1";
+            plotViewMetSubcategorias.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewMetSubcategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewMetSubcategorias.ZoomVerticalCursor = Cursors.SizeNS;
+            // 
             // plotViewMetCategorias
             // 
+            plotViewMetCategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             plotViewMetCategorias.Location = new Point(8, 47);
             plotViewMetCategorias.Name = "plotViewMetCategorias";
             plotViewMetCategorias.PanCursor = Cursors.Hand;
-            plotViewMetCategorias.Size = new Size(1371, 334);
+            plotViewMetCategorias.Size = new Size(1440, 210);
             plotViewMetCategorias.TabIndex = 0;
             plotViewMetCategorias.Text = "plotView1";
             plotViewMetCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
@@ -720,6 +898,8 @@ namespace ClasificadorNoticiasGUI
             tabExcel.Controls.Add(txtFiabilidadSentimientosExcel);
             tabExcel.Controls.Add(label4);
             tabExcel.Controls.Add(txtFiabilidadCategoriaExcel);
+            tabExcel.Controls.Add(labelFiabilidadSubcategoriaExcel);
+            tabExcel.Controls.Add(txtFiabilidadSubcategoriaExcel);
             tabExcel.Controls.Add(btnExportarResultados);
             tabExcel.Controls.Add(dgvExcelResultados);
             tabExcel.Controls.Add(btnCargarExcel);
@@ -739,7 +919,7 @@ namespace ClasificadorNoticiasGUI
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(280, 703);
+            label5.Location = new Point(274, 725);
             label5.Name = "label5";
             label5.Size = new Size(149, 19);
             label5.TabIndex = 17;
@@ -747,7 +927,7 @@ namespace ClasificadorNoticiasGUI
             // 
             // txtFiabilidadSentimientosExcel
             // 
-            txtFiabilidadSentimientosExcel.Location = new Point(433, 700);
+            txtFiabilidadSentimientosExcel.Location = new Point(427, 722);
             txtFiabilidadSentimientosExcel.Name = "txtFiabilidadSentimientosExcel";
             txtFiabilidadSentimientosExcel.ReadOnly = true;
             txtFiabilidadSentimientosExcel.Size = new Size(130, 25);
@@ -756,19 +936,36 @@ namespace ClasificadorNoticiasGUI
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(280, 669);
+            label4.Location = new Point(274, 691);
             label4.Name = "label4";
             label4.Size = new Size(129, 19);
             label4.TabIndex = 14;
-            label4.Text = "Fiabilidad CategorÌa";
+            label4.Text = "Fiabilidad Categor√≠a";
             // 
             // txtFiabilidadCategoriaExcel
             // 
-            txtFiabilidadCategoriaExcel.Location = new Point(433, 666);
+            txtFiabilidadCategoriaExcel.Location = new Point(427, 688);
             txtFiabilidadCategoriaExcel.Name = "txtFiabilidadCategoriaExcel";
             txtFiabilidadCategoriaExcel.ReadOnly = true;
             txtFiabilidadCategoriaExcel.Size = new Size(130, 25);
             txtFiabilidadCategoriaExcel.TabIndex = 15;
+            // 
+            // labelFiabilidadSubcategoriaExcel
+            // 
+            labelFiabilidadSubcategoriaExcel.AutoSize = true;
+            labelFiabilidadSubcategoriaExcel.Location = new Point(274, 658);
+            labelFiabilidadSubcategoriaExcel.Name = "labelFiabilidadSubcategoriaExcel";
+            labelFiabilidadSubcategoriaExcel.Size = new Size(149, 19);
+            labelFiabilidadSubcategoriaExcel.TabIndex = 18;
+            labelFiabilidadSubcategoriaExcel.Text = "Fiabilidad Subcategor√≠a";
+            // 
+            // txtFiabilidadSubcategoriaExcel
+            // 
+            txtFiabilidadSubcategoriaExcel.Location = new Point(427, 655);
+            txtFiabilidadSubcategoriaExcel.Name = "txtFiabilidadSubcategoriaExcel";
+            txtFiabilidadSubcategoriaExcel.ReadOnly = true;
+            txtFiabilidadSubcategoriaExcel.Size = new Size(130, 25);
+            txtFiabilidadSubcategoriaExcel.TabIndex = 19;
             // 
             // btnExportarResultados
             // 
@@ -807,7 +1004,7 @@ namespace ClasificadorNoticiasGUI
             btnReentrenarCategoriasExcel.Name = "btnReentrenarCategoriasExcel";
             btnReentrenarCategoriasExcel.Size = new Size(207, 30);
             btnReentrenarCategoriasExcel.TabIndex = 4;
-            btnReentrenarCategoriasExcel.Text = "Reentrenar CategorÌas";
+            btnReentrenarCategoriasExcel.Text = "Reentrenar Categor√≠as";
             btnReentrenarCategoriasExcel.UseVisualStyleBackColor = true;
             btnReentrenarCategoriasExcel.Visible = false;
             btnReentrenarCategoriasExcel.Click += btnReentrenarCategorias_Click;
@@ -831,7 +1028,7 @@ namespace ClasificadorNoticiasGUI
             labelTiempoClasificacion.Name = "labelTiempoClasificacion";
             labelTiempoClasificacion.Size = new Size(147, 19);
             labelTiempoClasificacion.TabIndex = 10;
-            labelTiempoClasificacion.Text = "Tiempo de clasificaciÛn";
+            labelTiempoClasificacion.Text = "Tiempo de clasificaci√≥n";
             // 
             // txtTiempoClasificacion
             // 
@@ -848,7 +1045,7 @@ namespace ClasificadorNoticiasGUI
             labelMetricasClasificacion.Name = "labelMetricasClasificacion";
             labelMetricasClasificacion.Size = new Size(154, 19);
             labelMetricasClasificacion.TabIndex = 12;
-            labelMetricasClasificacion.Text = "MÈtricas de clasificaciÛn";
+            labelMetricasClasificacion.Text = "M√©tricas de clasificaci√≥n";
             // 
             // txtMetricasClasificacion
             // 
@@ -864,18 +1061,19 @@ namespace ClasificadorNoticiasGUI
             // 
             tabGraficasExcel.Controls.Add(btnActualizarGraficasExcel);
             tabGraficasExcel.Controls.Add(plotViewExcelSentimientos);
+            tabGraficasExcel.Controls.Add(plotViewExcelSubcategorias);
             tabGraficasExcel.Controls.Add(plotViewExcelCategorias);
             tabGraficasExcel.Location = new Point(4, 26);
             tabGraficasExcel.Name = "tabGraficasExcel";
             tabGraficasExcel.Size = new Size(1456, 764);
             tabGraficasExcel.TabIndex = 4;
-            tabGraficasExcel.Text = "Gr·ficas Clasificar Excel";
+            tabGraficasExcel.Text = "Gr√°ficas Clasificar Excel";
             tabGraficasExcel.UseVisualStyleBackColor = true;
             // 
             // btnActualizarGraficasExcel
             // 
             btnActualizarGraficasExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnActualizarGraficasExcel.Location = new Point(740, 520);
+            btnActualizarGraficasExcel.Location = new Point(1320, 716);
             btnActualizarGraficasExcel.Name = "btnActualizarGraficasExcel";
             btnActualizarGraficasExcel.Size = new Size(120, 30);
             btnActualizarGraficasExcel.TabIndex = 2;
@@ -885,21 +1083,35 @@ namespace ClasificadorNoticiasGUI
             // 
             // plotViewExcelSentimientos
             // 
-            plotViewExcelSentimientos.Location = new Point(10, 270);
+            plotViewExcelSentimientos.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewExcelSentimientos.Location = new Point(10, 510);
             plotViewExcelSentimientos.Name = "plotViewExcelSentimientos";
             plotViewExcelSentimientos.PanCursor = Cursors.Hand;
-            plotViewExcelSentimientos.Size = new Size(872, 250);
+            plotViewExcelSentimientos.Size = new Size(1430, 230);
             plotViewExcelSentimientos.TabIndex = 1;
             plotViewExcelSentimientos.ZoomHorizontalCursor = Cursors.SizeWE;
             plotViewExcelSentimientos.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotViewExcelSentimientos.ZoomVerticalCursor = Cursors.SizeNS;
             // 
+            // plotViewExcelSubcategorias
+            // 
+            plotViewExcelSubcategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            plotViewExcelSubcategorias.Location = new Point(10, 260);
+            plotViewExcelSubcategorias.Name = "plotViewExcelSubcategorias";
+            plotViewExcelSubcategorias.PanCursor = Cursors.Hand;
+            plotViewExcelSubcategorias.Size = new Size(1430, 230);
+            plotViewExcelSubcategorias.TabIndex = 3;
+            plotViewExcelSubcategorias.ZoomHorizontalCursor = Cursors.SizeWE;
+            plotViewExcelSubcategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
+            plotViewExcelSubcategorias.ZoomVerticalCursor = Cursors.SizeNS;
+            // 
             // plotViewExcelCategorias
             // 
+            plotViewExcelCategorias.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             plotViewExcelCategorias.Location = new Point(10, 10);
             plotViewExcelCategorias.Name = "plotViewExcelCategorias";
             plotViewExcelCategorias.PanCursor = Cursors.Hand;
-            plotViewExcelCategorias.Size = new Size(872, 250);
+            plotViewExcelCategorias.Size = new Size(1430, 230);
             plotViewExcelCategorias.TabIndex = 0;
             plotViewExcelCategorias.ZoomHorizontalCursor = Cursors.SizeWE;
             plotViewExcelCategorias.ZoomRectangleCursor = Cursors.SizeNWSE;
@@ -948,9 +1160,14 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.Button btnClasificar;
         private System.Windows.Forms.TextBox txtSentimiento;
         private System.Windows.Forms.TextBox txtCategoria;
+        private System.Windows.Forms.TextBox txtSubcategoria;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelSubcategoria;
         private System.Windows.Forms.Button btnGuardar;
+        private System.Windows.Forms.Label labelFiabilidadSubcategoria;
+        private System.Windows.Forms.TextBox txtFiabilidadSubcategoria;
+        private System.Windows.Forms.Button btnReentrenarSubcategorias;
         private System.Windows.Forms.Button btnReentrenarCategorias;
         private System.Windows.Forms.Button btnActualizarDataset;
         private System.Windows.Forms.Button btnReiniciarDataset;
@@ -964,11 +1181,13 @@ namespace ClasificadorNoticiasGUI
         private System.Windows.Forms.Button btnReentrenarCategoriasExcel;
         private System.Windows.Forms.Button btnReentrenarSentimientosExcel;
         private OxyPlot.WindowsForms.PlotView plotViewCategorias;
+        private OxyPlot.WindowsForms.PlotView plotViewSubcategorias;
         private OxyPlot.WindowsForms.PlotView plotViewSentimientos;
         private System.Windows.Forms.Button btnActualizarGraficas;
         private System.Windows.Forms.Button btnReentrenarSentimientos;
         private System.Windows.Forms.TabPage tabGraficasExcel;
         private OxyPlot.WindowsForms.PlotView plotViewExcelCategorias;
+        private OxyPlot.WindowsForms.PlotView plotViewExcelSubcategorias;
         private OxyPlot.WindowsForms.PlotView plotViewExcelSentimientos;
         private System.Windows.Forms.Button btnActualizarGraficasExcel;
         private System.Windows.Forms.Label labelTiempoClasificacion;
@@ -981,10 +1200,14 @@ namespace ClasificadorNoticiasGUI
         private TextBox txtFiabilidadSentimiento;
         private Button btnReentrenarCategoriasDataset;
         private Button btnReentrenarSentimientosDataset;
+        private Button btnReentrenarSubcategoriasDataset;
+        private Button btnReiniciarModeloSubcategorias;
         private Label label5;
         private TextBox txtFiabilidadSentimientosExcel;
         private Label label4;
         private TextBox txtFiabilidadCategoriaExcel;
+        private Label labelFiabilidadSubcategoriaExcel;
+        private TextBox txtFiabilidadSubcategoriaExcel;
         private Label label6;
         private TextBox txtLogLoss;
         private Label label7;
@@ -999,13 +1222,20 @@ namespace ClasificadorNoticiasGUI
         private ComboBox cmbModeloSentimientos;
         private Label labelModeloCat;
         private Label labelModeloSent;
+        private Label labelModeloSub;
+        private Label labelMicroAccuracySub;
+        private Label labelLogLossSub;
+        private TextBox txtMicroAccuracySub;
+        private TextBox txtLogLossSub;
         private TabPage tabComparador;
         private DataGridView dgvComparador;
           private Button btnExportar;
         private TabPage tabVisualizacion;
         private OxyPlot.WindowsForms.PlotView plotViewMetCategorias;
+        private OxyPlot.WindowsForms.PlotView plotViewMetSubcategorias;
         private OxyPlot.WindowsForms.PlotView plotViewMetSentimientos;
         private Label label11;
+        private Label label12;
         private Label label10;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
